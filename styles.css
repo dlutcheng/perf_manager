@@ -128,13 +128,10 @@ main {
 
 .data-top-row.single-panel {
     grid-template-columns: 1fr;
-    justify-content: center;
 }
 
 .data-top-row.single-panel .data-operation-panel {
     width: 100%;
-    max-width: 550px;
-    margin: 0 auto;
 }
 
 .data-operation-panel {
