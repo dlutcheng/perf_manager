@@ -44,7 +44,9 @@ Generate performance charts from recorded data.
 
 #### Features
 - **Multi-series Line Charts**: Plot multiple Arch/Configuration combinations
-- **Y-Axis Metrics**: Duration (ms) or any custom extra field
+- **Y-Axis Metrics**:
+  - Selecting a single Arch: shows all its custom extra fields
+  - Selecting multiple Archs: shows only common extra fields (intersection), otherwise defaults to Duration (ms)
 - **Interactive Tooltips**: Hover to see detailed values
 - **Fullscreen Mode**: Expand chart for better viewing
 - **Select All/Deselect All**: Quick selection controls

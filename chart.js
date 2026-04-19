@@ -101,6 +101,29 @@ function getExtraFieldsUnionForVendors(benchmark, vendors) {
     return Array.from(fieldsMap.entries()).map(([id, name]) => ({ id: parseInt(id), name }));
 }
 
+function getExtraFieldsIntersectionForVendors(benchmark, vendors) {
+    if (vendors.length === 0) return [];
+
+    let intersection = null;
+    vendors.forEach(vendor => {
+        const vendorFields = getExtraFieldsForVendor(benchmark, vendor);
+        const vendorFieldIds = new Set(vendorFields.map(f => f.id));
+
+        if (intersection === null) {
+            intersection = vendorFieldIds;
+        } else {
+            intersection = new Set([...intersection].filter(id => vendorFieldIds.has(id)));
+        }
+    });
+
+    if (!intersection || intersection.size === 0) return [];
+
+    const firstVendorFields = getExtraFieldsForVendor(benchmark, vendors[0]);
+    return firstVendorFields
+        .filter(f => intersection.has(f.id))
+        .map(f => ({ id: f.id, name: f.name }));
+}
+
 function populateYAxisSelect() {
     const yAxisSelect = document.getElementById('yAxisSelect');
     yAxisSelect.innerHTML = `
@@ -264,7 +287,12 @@ function updateExtraFieldsFromSelection() {
     });
 
     if (selectedVendors.size > 0) {
-        extraFields = getExtraFieldsUnionForVendors(benchmark, Array.from(selectedVendors));
+        const vendors = Array.from(selectedVendors);
+        if (selectedVendors.size === 1) {
+            extraFields = getExtraFieldsUnionForVendors(benchmark, vendors);
+        } else {
+            extraFields = getExtraFieldsIntersectionForVendors(benchmark, vendors);
+        }
     } else {
         extraFields = [];
     }
@@ -274,6 +302,8 @@ function updateExtraFieldsFromSelection() {
     const yAxisSelect = document.getElementById('yAxisSelect');
     if (yAxisSelect.querySelector(`option[value="${currentYAxis}"]`)) {
         yAxisSelect.value = currentYAxis;
+    } else {
+        yAxisSelect.value = 'duration';
     }
 }
 
