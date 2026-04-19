@@ -65,15 +65,15 @@ function saveData() {
 function setupEventListeners() {
     document.getElementById('benchmarkSelect').addEventListener('change', onBenchmarkChange);
     document.getElementById('vendorSelect').addEventListener('change', onVendorChange);
-    document.getElementById('precisionSelect').addEventListener('change', onPrecisionChange);
+    document.getElementById('configurationSelect').addEventListener('change', onConfigurationChange);
 
     document.getElementById('addBenchmarkBtn').addEventListener('click', addBenchmark);
     document.getElementById('addVendorBtn').addEventListener('click', addVendor);
-    document.getElementById('addPrecisionBtn').addEventListener('click', addPrecision);
+    document.getElementById('addConfigurationBtn').addEventListener('click', addConfiguration);
 
     document.getElementById('deleteBenchmarkBtn').addEventListener('click', deleteBenchmark);
     document.getElementById('deleteVendorBtn').addEventListener('click', deleteVendor);
-    document.getElementById('deletePrecisionBtn').addEventListener('click', deletePrecision);
+    document.getElementById('deleteConfigurationBtn').addEventListener('click', deleteConfiguration);
 
     document.getElementById('saveRecordBtn').addEventListener('click', saveRecord);
     document.getElementById('clearFormBtn').addEventListener('click', clearForm);
@@ -110,13 +110,13 @@ function onBenchmarkChange() {
 
     document.getElementById('newVendor').disabled = !benchmark;
 
-    document.getElementById('precisionSelect').innerHTML = '<option value="">-- Select Precision --</option>';
-    document.getElementById('precisionSelect').disabled = true;
+    document.getElementById('configurationSelect').innerHTML = '<option value="">-- Select Configuration --</option>';
+    document.getElementById('configurationSelect').disabled = true;
 
     document.getElementById('addVendorBtn').disabled = !benchmark;
     document.getElementById('deleteBenchmarkBtn').disabled = !benchmark;
-    document.getElementById('addPrecisionBtn').disabled = true;
-    document.getElementById('deletePrecisionBtn').disabled = true;
+    document.getElementById('addConfigurationBtn').disabled = true;
+    document.getElementById('deleteConfigurationBtn').disabled = true;
     document.getElementById('saveRecordBtn').disabled = true;
     document.getElementById('addFieldBtn').disabled = true;
     document.getElementById('deleteVendorBtn').disabled = true;
@@ -135,24 +135,24 @@ function onBenchmarkChange() {
 function onVendorChange() {
     const benchmark = document.getElementById('benchmarkSelect').value;
     const vendor = document.getElementById('vendorSelect').value;
-    const precisionSelect = document.getElementById('precisionSelect');
+    const configurationSelect = document.getElementById('configurationSelect');
 
     currentVendor = vendor;
 
-    precisionSelect.innerHTML = '<option value="">-- Select Precision --</option>';
-    precisionSelect.disabled = !vendor;
+    configurationSelect.innerHTML = '<option value="">-- Select Configuration --</option>';
+    configurationSelect.disabled = !vendor;
 
-    document.getElementById('newPrecision').disabled = !vendor;
+    document.getElementById('newConfiguration').disabled = !vendor;
 
-    document.getElementById('addPrecisionBtn').disabled = !vendor;
-    document.getElementById('deletePrecisionBtn').disabled = !vendor;
+    document.getElementById('addConfigurationBtn').disabled = !vendor;
+    document.getElementById('deleteConfigurationBtn').disabled = !vendor;
     document.getElementById('saveRecordBtn').disabled = true;
     document.getElementById('addFieldBtn').disabled = !vendor;
     document.getElementById('deleteVendorBtn').disabled = !vendor;
 
     if (benchmark && vendor && data[benchmark]?.[vendor]) {
-        Object.keys(data[benchmark][vendor]).sort().forEach(precision => {
-            precisionSelect.innerHTML += `<option value="${precision}">${precision}</option>`;
+        Object.keys(data[benchmark][vendor]).sort().forEach(configuration => {
+            configurationSelect.innerHTML += `<option value="${configuration}">${configuration}</option>`;
         });
     }
 
@@ -161,10 +161,10 @@ function onVendorChange() {
     displayRecords();
 }
 
-function onPrecisionChange() {
-    const precision = document.getElementById('precisionSelect').value;
-    document.getElementById('saveRecordBtn').disabled = !precision;
-    document.getElementById('addFieldBtn').disabled = !precision;
+function onConfigurationChange() {
+    const configuration = document.getElementById('configurationSelect').value;
+    document.getElementById('saveRecordBtn').disabled = !configuration;
+    document.getElementById('addFieldBtn').disabled = !configuration;
     displayRecords();
 }
 
@@ -217,34 +217,34 @@ function addVendor() {
     onVendorChange();
 }
 
-function addPrecision() {
+function addConfiguration() {
     const benchmark = document.getElementById('benchmarkSelect').value;
     const vendor = document.getElementById('vendorSelect').value;
-    const name = document.getElementById('newPrecision').value.trim();
+    const name = document.getElementById('newConfiguration').value.trim();
     if (!name) {
-        alert('Please enter Precision name');
+        alert('Please enter Configuration name');
         return;
     }
     if (!data[benchmark][vendor]) {
         data[benchmark][vendor] = {};
     }
     if (data[benchmark][vendor][name]) {
-        alert('Precision already exists');
+        alert('Configuration already exists');
         return;
     }
 
     data[benchmark][vendor][name] = [];
     saveData();
 
-    const precisionSelect = document.getElementById('precisionSelect');
-    precisionSelect.innerHTML = '<option value="">-- Select Precision --</option>';
-    Object.keys(data[benchmark][vendor]).sort().forEach(precision => {
-        precisionSelect.innerHTML += `<option value="${precision}">${precision}</option>`;
+    const configurationSelect = document.getElementById('configurationSelect');
+    configurationSelect.innerHTML = '<option value="">-- Select Configuration --</option>';
+    Object.keys(data[benchmark][vendor]).sort().forEach(configuration => {
+        configurationSelect.innerHTML += `<option value="${configuration}">${configuration}</option>`;
     });
 
-    precisionSelect.value = name;
-    document.getElementById('newPrecision').value = '';
-    onPrecisionChange();
+    configurationSelect.value = name;
+    document.getElementById('newConfiguration').value = '';
+    onConfigurationChange();
 }
 
 function deleteBenchmark() {
@@ -299,29 +299,29 @@ function deleteVendor() {
     onVendorChange();
 }
 
-function deletePrecision() {
+function deleteConfiguration() {
     const benchmark = document.getElementById('benchmarkSelect').value;
     const vendor = document.getElementById('vendorSelect').value;
-    const precision = document.getElementById('precisionSelect').value;
-    if (!benchmark || !vendor || !precision) return;
+    const configuration = document.getElementById('configurationSelect').value;
+    if (!benchmark || !vendor || !configuration) return;
 
-    if (!confirm(`Delete Precision "${precision}"? All related data will be deleted.`)) {
+    if (!confirm(`Delete Configuration "${configuration}"? All related data will be deleted.`)) {
         return;
     }
 
-    delete data[benchmark][vendor][precision];
+    delete data[benchmark][vendor][configuration];
 
     saveData();
     notifyDataChanged();
 
-    const precisionSelect = document.getElementById('precisionSelect');
-    precisionSelect.innerHTML = '<option value="">-- Select Precision --</option>';
+    const configurationSelect = document.getElementById('configurationSelect');
+    configurationSelect.innerHTML = '<option value="">-- Select Configuration --</option>';
     Object.keys(data[benchmark][vendor]).sort().forEach(p => {
-        precisionSelect.innerHTML += `<option value="${p}">${p}</option>`;
+        configurationSelect.innerHTML += `<option value="${p}">${p}</option>`;
     });
-    precisionSelect.value = '';
+    configurationSelect.value = '';
 
-    onPrecisionChange();
+    onConfigurationChange();
 }
 
 function notifyDataChanged() {
@@ -334,7 +334,7 @@ function notifyDataChanged() {
 function saveRecord() {
     const benchmark = document.getElementById('benchmarkSelect').value;
     const vendor = document.getElementById('vendorSelect').value;
-    const precision = document.getElementById('precisionSelect').value;
+    const configuration = document.getElementById('configurationSelect').value;
 
     const date = document.getElementById('recordDate').value;
     const duration = parseFloat(document.getElementById('recordDuration').value) || 0;
@@ -355,11 +355,11 @@ function saveRecord() {
     });
 
     if (editingRecord !== null) {
-        data[benchmark][vendor][precision][editingRecord] = record;
+        data[benchmark][vendor][configuration][editingRecord] = record;
         editingRecord = null;
         document.getElementById('saveRecordBtn').textContent = 'Save Record';
     } else {
-        data[benchmark][vendor][precision].push(record);
+        data[benchmark][vendor][configuration].push(record);
     }
 
     saveData();
@@ -462,20 +462,20 @@ function updateYAxisOptions() {
 function displayRecords() {
     const benchmark = document.getElementById('benchmarkSelect').value;
     const vendor = document.getElementById('vendorSelect').value;
-    const precision = document.getElementById('precisionSelect').value;
+    const configuration = document.getElementById('configurationSelect').value;
     const container = document.getElementById('recordsList');
     const subtitle = document.getElementById('recordsSubtitle');
 
-    subtitle.textContent = benchmark && vendor && precision
-        ? `${benchmark} - ${vendor} - ${precision}`
+    subtitle.textContent = benchmark && vendor && configuration
+        ? `${benchmark} - ${vendor} - ${configuration}`
         : '';
 
-    if (!benchmark || !vendor || !precision) {
-        container.innerHTML = '<p class="empty-message">Select Benchmark, Arch and Precision first</p>';
+    if (!benchmark || !vendor || !configuration) {
+        container.innerHTML = '<p class="empty-message">Select Benchmark, Arch and Configuration first</p>';
         return;
     }
 
-    const records = data[benchmark]?.[vendor]?.[precision] || [];
+    const records = data[benchmark]?.[vendor]?.[configuration] || [];
 
     if (records.length === 0) {
         container.innerHTML = '<p class="empty-message">No records</p>';
@@ -564,9 +564,9 @@ function toggleSortInternal(fieldId) {
 function editRecord(index) {
     const benchmark = document.getElementById('benchmarkSelect').value;
     const vendor = document.getElementById('vendorSelect').value;
-    const precision = document.getElementById('precisionSelect').value;
+    const configuration = document.getElementById('configurationSelect').value;
 
-    const record = data[benchmark][vendor][precision][index];
+    const record = data[benchmark][vendor][configuration][index];
 
     document.getElementById('recordDate').value = record.date;
     document.getElementById('recordDuration').value = record.duration;
@@ -591,13 +591,13 @@ function editRecord(index) {
 function deleteRecord(index) {
     const benchmark = document.getElementById('benchmarkSelect').value;
     const vendor = document.getElementById('vendorSelect').value;
-    const precision = document.getElementById('precisionSelect').value;
+    const configuration = document.getElementById('configurationSelect').value;
 
     if (!confirm('Delete this record?')) {
         return;
     }
 
-    data[benchmark][vendor][precision].splice(index, 1);
+    data[benchmark][vendor][configuration].splice(index, 1);
     saveData();
     displayRecords();
 }

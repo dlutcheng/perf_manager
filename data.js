@@ -20,8 +20,8 @@ function updateDataStatus() {
             const benchmarkCount = Object.keys(data).length;
             let recordCount = 0;
             Object.values(data).forEach(vendors => {
-                Object.values(vendors).forEach(precisions => {
-                    Object.values(precisions).forEach(records => {
+                Object.values(vendors).forEach(configurations => {
+                    Object.values(configurations).forEach(records => {
                         recordCount += records.length;
                     });
                 });
@@ -66,9 +66,9 @@ function exportData() {
         const vendorFields = loadExtraFields();
 
         Object.entries(data).forEach(([benchmark, vendors]) => {
-            Object.entries(vendors).forEach(([vendor, precisions]) => {
+            Object.entries(vendors).forEach(([vendor, configurations]) => {
                 const fields = vendorFields[benchmark]?.[vendor] || [];
-                Object.values(precisions).forEach(records => {
+                Object.values(configurations).forEach(records => {
                     records.forEach(record => {
                         if (!record.extras) {
                             record.extras = {};
@@ -109,8 +109,8 @@ function collectExtraFieldsPerVendor(dataObj) {
             vendorFieldsMap[benchmark][vendor] = new Map();
         });
 
-        Object.values(vendors).forEach((precisions) => {
-            Object.values(precisions).forEach(records => {
+        Object.values(vendors).forEach((configurations) => {
+            Object.values(configurations).forEach(records => {
                 records.forEach(record => {
                     if (record.extras) {
                         const vendor = Object.keys(vendors).find(v =>
@@ -142,8 +142,8 @@ function collectExtraFieldsPerVendor(dataObj) {
 
 function migrateOldFormatRecords(dataObj) {
     Object.values(dataObj).forEach(vendors => {
-        Object.values(vendors).forEach(precisions => {
-            Object.values(precisions).forEach(records => {
+        Object.values(vendors).forEach(configurations => {
+            Object.values(configurations).forEach(records => {
                 records.forEach(record => {
                     if (!record.extras) {
                         record.extras = {};

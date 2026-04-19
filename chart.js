@@ -155,7 +155,7 @@ function toggleVendor(vendorId) {
 function onBenchmarkChange() {
     const benchmark = document.getElementById('chartBenchmarkSelect').value;
     const selectionPanel = document.getElementById('selectionPanel');
-    const vendorPrecisionCheckboxes = document.getElementById('vendorPrecisionCheckboxes');
+    const vendorConfigurationCheckboxes = document.getElementById('vendorConfigurationCheckboxes');
     const drawChartBtn = document.getElementById('drawChartBtn');
 
     if (!benchmark) {
@@ -169,10 +169,10 @@ function onBenchmarkChange() {
     selectionPanel.style.display = 'block';
     drawChartBtn.disabled = true;
 
-    vendorPrecisionCheckboxes.innerHTML = '';
+    vendorConfigurationCheckboxes.innerHTML = '';
 
     if (!data[benchmark]) {
-        vendorPrecisionCheckboxes.innerHTML = '<p class="empty-message">No data for this Benchmark</p>';
+        vendorConfigurationCheckboxes.innerHTML = '<p class="empty-message">No data for this Benchmark</p>';
         return;
     }
 
@@ -203,39 +203,39 @@ function onBenchmarkChange() {
         vendorDiv.appendChild(vendorHeader);
 
         const contentDiv = document.createElement('div');
-        contentDiv.className = 'precision-content';
+        contentDiv.className = 'configuration-content';
         contentDiv.id = `vendor-content-${vendorIndex}`;
 
-        const precisionList = document.createElement('div');
-        precisionList.className = 'precision-list';
+        const configurationList = document.createElement('div');
+        configurationList.className = 'configuration-list';
 
-        const precisions = Object.keys(data[benchmark][vendor]).sort();
-        precisions.forEach((precision) => {
-            if (data[benchmark][vendor][precision].length > 0) {
-                const precisionCheckbox = document.createElement('div');
-                precisionCheckbox.className = 'checkbox-item';
-                precisionCheckbox.innerHTML = `
-                    <input type="checkbox" class="precision-checkbox" data-vendor="${vendor}" data-precision="${precision}" onchange="onPrecisionCheckboxChange(this)">
-                    <label>${precision}</label>
+        const configurations = Object.keys(data[benchmark][vendor]).sort();
+        configurations.forEach((configuration) => {
+            if (data[benchmark][vendor][configuration].length > 0) {
+                const configurationCheckbox = document.createElement('div');
+                configurationCheckbox.className = 'checkbox-item';
+                configurationCheckbox.innerHTML = `
+                    <input type="checkbox" class="configuration-checkbox" data-vendor="${vendor}" data-configuration="${configuration}" onchange="onConfigurationCheckboxChange(this)">
+                    <label>${configuration}</label>
                 `;
-                precisionList.appendChild(precisionCheckbox);
+                configurationList.appendChild(configurationCheckbox);
             }
         });
 
-        contentDiv.appendChild(precisionList);
+        contentDiv.appendChild(configurationList);
         vendorDiv.appendChild(contentDiv);
-        vendorPrecisionCheckboxes.appendChild(vendorDiv);
+        vendorConfigurationCheckboxes.appendChild(vendorDiv);
     });
 
-    if (vendorPrecisionCheckboxes.children.length === 0) {
-        vendorPrecisionCheckboxes.innerHTML = '<p class="empty-message">No data for this Benchmark</p>';
+    if (vendorConfigurationCheckboxes.children.length === 0) {
+        vendorConfigurationCheckboxes.innerHTML = '<p class="empty-message">No data for this Benchmark</p>';
     }
 }
 
 function onVendorCheckboxChange(vendor) {
     const checkbox = document.getElementById(`vendor_${Object.keys(data[document.getElementById('chartBenchmarkSelect').value]).sort().indexOf(vendor)}`);
-    const precisionCheckboxes = document.querySelectorAll(`.precision-checkbox[data-vendor="${vendor}"]`);
-    precisionCheckboxes.forEach(pc => {
+    const configurationCheckboxes = document.querySelectorAll(`.configuration-checkbox[data-vendor="${vendor}"]`);
+    configurationCheckboxes.forEach(pc => {
         pc.checked = checkbox.checked;
     });
 
@@ -243,10 +243,10 @@ function onVendorCheckboxChange(vendor) {
     updateExtraFieldsFromSelection();
 }
 
-function onPrecisionCheckboxChange(precisionCheckbox) {
-    const vendor = precisionCheckbox.dataset.vendor;
-    const allPrecisionCheckboxes = document.querySelectorAll(`.precision-checkbox[data-vendor="${vendor}"]`);
-    const anyChecked = Array.from(allPrecisionCheckboxes).some(cb => cb.checked);
+function onConfigurationCheckboxChange(configurationCheckbox) {
+    const vendor = configurationCheckbox.dataset.vendor;
+    const allConfigurationCheckboxes = document.querySelectorAll(`.configuration-checkbox[data-vendor="${vendor}"]`);
+    const anyChecked = Array.from(allConfigurationCheckboxes).some(cb => cb.checked);
 
     const vendorIndex = Object.keys(data[document.getElementById('chartBenchmarkSelect').value]).sort().indexOf(vendor);
     const vendorCheckbox = document.getElementById(`vendor_${vendorIndex}`);
@@ -259,7 +259,7 @@ function onPrecisionCheckboxChange(precisionCheckbox) {
 function updateExtraFieldsFromSelection() {
     const benchmark = document.getElementById('chartBenchmarkSelect').value;
     const selectedVendors = new Set();
-    document.querySelectorAll('.precision-checkbox:checked').forEach(cb => {
+    document.querySelectorAll('.configuration-checkbox:checked').forEach(cb => {
         selectedVendors.add(cb.dataset.vendor);
     });
 
@@ -278,19 +278,19 @@ function updateExtraFieldsFromSelection() {
 }
 
 function updateDrawButtonState() {
-    const selectedItems = document.querySelectorAll('.precision-checkbox:checked');
+    const selectedItems = document.querySelectorAll('.configuration-checkbox:checked');
     document.getElementById('drawChartBtn').disabled = selectedItems.length === 0;
 }
 
 function selectAll() {
-    document.querySelectorAll('.precision-checkbox').forEach(cb => cb.checked = true);
+    document.querySelectorAll('.configuration-checkbox').forEach(cb => cb.checked = true);
     document.querySelectorAll('[id^="vendor_"]').forEach(cb => cb.checked = true);
     updateDrawButtonState();
     updateExtraFieldsFromSelection();
 }
 
 function deselectAll() {
-    document.querySelectorAll('.precision-checkbox').forEach(cb => cb.checked = false);
+    document.querySelectorAll('.configuration-checkbox').forEach(cb => cb.checked = false);
     document.querySelectorAll('[id^="vendor_"]').forEach(cb => cb.checked = false);
     updateDrawButtonState();
     updateExtraFieldsFromSelection();
@@ -311,15 +311,15 @@ function exitFullscreen() {
 function drawChart() {
     const benchmark = document.getElementById('chartBenchmarkSelect').value;
     const yAxis = document.getElementById('yAxisSelect').value;
-    const selectedItems = document.querySelectorAll('.precision-checkbox:checked');
+    const selectedItems = document.querySelectorAll('.configuration-checkbox:checked');
 
     const datasets = [];
     let colorIndex = 0;
 
     selectedItems.forEach(item => {
         const vendor = item.dataset.vendor;
-        const precision = item.dataset.precision;
-        const records = data[benchmark][vendor][precision];
+        const configuration = item.dataset.configuration;
+        const records = data[benchmark][vendor][configuration];
 
         const sortedRecords = [...records].sort((a, b) => new Date(a.date) - new Date(b.date));
 
@@ -334,7 +334,7 @@ function drawChart() {
         });
 
         datasets.push({
-            label: `${vendor} - ${precision}`,
+            label: `${vendor} - ${configuration}`,
             dates: sortedRecords.map(r => r.date),
             values: dataPoints,
             color: COLORS[colorIndex % COLORS.length]

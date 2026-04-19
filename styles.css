@@ -484,24 +484,24 @@ button[type="button"]:disabled {
     background: rgba(255, 255, 255, 0.5) !important;
 }
 
-.precision-content {
+.configuration-content {
     padding: 15px;
     background: #fafafa;
 }
 
-.precision-content > .precision-list {
+.configuration-content > .configuration-list {
     padding-left: 28px;
     border-left: 3px solid #667eea;
     margin-left: 8px;
 }
 
-.precision-list {
+.configuration-list {
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
 }
 
-.precision-list .checkbox-item {
+.configuration-list .checkbox-item {
     background: white;
     padding: 8px 12px;
     border-radius: 6px;
@@ -510,7 +510,7 @@ button[type="button"]:disabled {
     justify-content: center;
 }
 
-.precision-list .checkbox-item:hover {
+.configuration-list .checkbox-item:hover {
     border-color: #667eea;
     background: #f0f0ff;
 }
