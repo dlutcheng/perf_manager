@@ -210,7 +210,7 @@ main {
 }
 
 .form-group.inline-input button {
-    width: auto;
+    width: 90px;
     white-space: nowrap;
 }
 
@@ -339,8 +339,6 @@ button.add-field-btn:hover:not(:disabled) {
     font-size: 14px;
     margin-bottom: 15px;
     padding: 8px 12px;
-    background-color: #f5f5f5;
-    border-radius: 4px;
 }
 
 .chart-main {
@@ -637,22 +635,27 @@ button[type="button"]:disabled {
     overflow-y: auto;
 }
 
-.edit-btn, .delete-btn {
-    padding: 6px 12px;
+button.edit-btn, button.delete-btn {
+    padding: 10px 20px;
     border: none;
-    border-radius: 6px;
-    font-size: 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
     cursor: pointer;
     transition: all 0.3s;
+    min-width: 90px;
+    width: 90px;
+    text-align: center;
+    box-sizing: border-box;
 }
 
-.edit-btn {
-    background: #409EFF;
+button.edit-btn {
+    background: #67C23A;
     color: white;
 }
 
-.edit-btn:hover {
-    background: #337ecc;
+button.edit-btn:hover {
+    background: #5daf34;
 }
 
 button.delete-btn {
