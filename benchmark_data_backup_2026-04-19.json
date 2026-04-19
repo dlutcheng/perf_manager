@@ -1,0 +1,122 @@
+{
+  "resnet50": {
+    "8T r1p0": {
+      "int8 per-layer symm": [
+        {
+          "date": "2026-04-19",
+          "duration": 2.1,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 41.2
+            }
+          }
+        },
+        {
+          "date": "2026-04-18",
+          "duration": 2.07,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 43.1
+            }
+          }
+        }
+      ]
+    },
+    "16T r2p1": {
+      "int8 per-layer symm": [
+        {
+          "date": "2026-04-19",
+          "duration": 0.97,
+          "extras": {
+            "1776571512908": {
+              "name": "MAC Utilization (%)",
+              "value": 57.1
+            }
+          }
+        },
+        {
+          "date": "2026-04-17",
+          "duration": 0.99,
+          "extras": {
+            "1776571512908": {
+              "name": "MAC Utilization (%)",
+              "value": 54.8
+            }
+          }
+        }
+      ],
+      "fp16": [
+        {
+          "date": "2026-04-19",
+          "duration": 1.72,
+          "extras": {
+            "1776571512908": {
+              "name": "MAC Utilization (%)",
+              "value": 55.1
+            }
+          }
+        },
+        {
+          "date": "2026-04-18",
+          "duration": 1.93,
+          "extras": {
+            "1776571512908": {
+              "name": "MAC Utilization (%)",
+              "value": 51.3
+            }
+          }
+        },
+        {
+          "date": "2026-04-17",
+          "duration": 1.87,
+          "extras": {
+            "1776571512908": {
+              "name": "MAC Utilization (%)",
+              "value": 53.2
+            }
+          }
+        }
+      ]
+    }
+  },
+  "llama2-7b": {
+    "16T r2p1": {
+      "seq=256 past=0: afp16 wint4 block128": [
+        {
+          "date": "2026-04-19",
+          "duration": 121.77,
+          "extras": {
+            "1776571609840": {
+              "name": "AVG Bandwidth (GB/s)",
+              "value": 49.12
+            }
+          }
+        },
+        {
+          "date": "2026-04-18",
+          "duration": 123.45,
+          "extras": {
+            "1776571609840": {
+              "name": "AVG Bandwidth (GB/s)",
+              "value": 51.4
+            }
+          }
+        }
+      ],
+      "seq=1 past=255: afp16 wint4 block128": [
+        {
+          "date": "2026-04-19",
+          "duration": 33.13,
+          "extras": {
+            "1776571609840": {
+              "name": "AVG Bandwidth (GB/s)",
+              "value": 67.33
+            }
+          }
+        }
+      ]
+    }
+  }
+}

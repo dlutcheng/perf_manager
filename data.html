@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Management - Benchmark Data Management</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Benchmark Data Management System</h1>
+            <nav class="nav-menu">
+                <a href="index.html">Home</a>
+                <a href="data-op.html">Data Operations</a>
+                <a href="chart.html">Data Visualization</a>
+                <a href="data.html" class="active">Data Management</a>
+            </nav>
+        </header>
+
+        <main class="data-section">
+            <div class="panel">
+                <h2>Data Management</h2>
+
+                <div class="form-group">
+                    <label>Current Data Status</label>
+                    <p id="dataStatus" class="data-status">Loading...</p>
+                </div>
+
+                <div class="form-group">
+                    <h3>Import / Export</h3>
+                    <div class="btn-group">
+                        <button type="button" id="importBtn">Import JSON</button>
+                        <button type="button" id="exportBtn">Export JSON</button>
+                    </div>
+                </div>
+
+                <div class="form-group danger-zone">
+                    <h3>Danger Zone</h3>
+                    <p class="warning-text">Warning: Clearing data will permanently delete all data. Please export a backup first.</p>
+                    <button type="button" id="clearBtn" class="danger-btn">Clear All Data</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="data.js"></script>
+</body>
+</html>
