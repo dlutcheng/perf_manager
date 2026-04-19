@@ -29,7 +29,8 @@
                             <span class="level-title">Benchmark</span>
                         </div>
                         <div class="level-content">
-                            <div class="form-group">
+                            <div class="form-group searchable-select">
+                                <input type="text" id="benchmarkSearch" class="select-search-input" placeholder="Search..." oninput="filterSelect('benchmarkSelect', 'benchmarkSearch')">
                                 <select id="benchmarkSelect">
                                     <option value="">-- Select Benchmark --</option>
                                 </select>
@@ -48,7 +49,8 @@
                             <span class="level-title">Arch</span>
                         </div>
                         <div class="level-content">
-                            <div class="form-group">
+                            <div class="form-group searchable-select">
+                                <input type="text" id="vendorSearch" class="select-search-input" placeholder="Search..." oninput="filterSelect('vendorSelect', 'vendorSearch')" disabled>
                                 <select id="vendorSelect" disabled>
                                     <option value="">-- Select Arch --</option>
                                 </select>
@@ -67,7 +69,8 @@
                             <span class="level-title">Configuration</span>
                         </div>
                         <div class="level-content">
-                            <div class="form-group">
+                            <div class="form-group searchable-select">
+                                <input type="text" id="configurationSearch" class="select-search-input" placeholder="Search..." oninput="filterSelect('configurationSelect', 'configurationSearch')" disabled>
                                 <select id="configurationSelect" disabled>
                                     <option value="">-- Select Configuration --</option>
                                 </select>
@@ -116,6 +119,9 @@
 
             <div class="panel records-list-panel" id="recordsListPanel" style="display: none;">
                 <h2>Existing Records</h2>
+                <div class="records-toolbar">
+                    <input type="text" id="dateSearchInput" class="date-search-input" placeholder="Search by date (e.g., 2026-04)" oninput="filterRecordsByDate()">
+                </div>
                 <div id="recordsSubtitle" class="records-subtitle"></div>
                 <div id="recordsList"></div>
             </div>

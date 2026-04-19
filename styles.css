@@ -294,6 +294,24 @@ main {
     width: 100%;
 }
 
+.records-toolbar {
+    margin-bottom: 10px;
+}
+
+.date-search-input {
+    width: 100%;
+    padding: 10px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: border-color 0.3s;
+}
+
+.date-search-input:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
 .records-subtitle {
     color: #666;
     font-size: 14px;
@@ -362,6 +380,36 @@ main {
 .form-group select:focus,
 .form-group input:focus {
     outline: none;
+    border-color: #667eea;
+}
+
+.searchable-select {
+    position: relative;
+}
+
+.searchable-select .select-search-input {
+    width: 100%;
+    padding: 8px 10px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px 8px 0 0;
+    font-size: 13px;
+    border-bottom: 1px solid #e0e0e0;
+    background: #fafafa;
+}
+
+.searchable-select .select-search-input:focus {
+    border-color: #667eea;
+    border-bottom-color: #667eea;
+    background: #fff;
+}
+
+.searchable-select select {
+    border-radius: 0 0 8px 8px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.searchable-select select:focus {
     border-color: #667eea;
 }
 

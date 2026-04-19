@@ -7,6 +7,7 @@ let sortStates = {
     date: 0,
     duration: 0
 };
+let dateFilter = '';
 const STORAGE_KEY = 'benchmark_data';
 const EXTRA_FIELDS_KEY = 'benchmark_extra_fields';
 
@@ -63,6 +64,24 @@ function saveData() {
     }
 }
 
+function filterSelect(selectId, searchId) {
+    const select = document.getElementById(selectId);
+    const search = document.getElementById(searchId);
+    const filter = search.value.toLowerCase();
+
+    for (let i = 0; i < select.options.length; i++) {
+        const option = select.options[i];
+        const text = option.text.toLowerCase();
+        const value = option.value.toLowerCase();
+
+        if (text.includes(filter) || value.includes(filter)) {
+            option.style.display = '';
+        } else {
+            option.style.display = 'none';
+        }
+    }
+}
+
 function setupEventListeners() {
     document.getElementById('benchmarkSelect').addEventListener('change', onBenchmarkChange);
     document.getElementById('vendorSelect').addEventListener('change', onVendorChange);
@@ -109,10 +128,16 @@ function onBenchmarkChange() {
     vendorSelect.innerHTML = '<option value="">-- Select Arch --</option>';
     vendorSelect.disabled = !benchmark;
 
+    document.getElementById('vendorSearch').value = '';
+    document.getElementById('vendorSearch').disabled = !benchmark;
+
     document.getElementById('newVendor').disabled = !benchmark;
 
     document.getElementById('configurationSelect').innerHTML = '<option value="">-- Select Configuration --</option>';
     document.getElementById('configurationSelect').disabled = true;
+
+    document.getElementById('configurationSearch').value = '';
+    document.getElementById('configurationSearch').disabled = true;
 
     document.getElementById('addVendorBtn').disabled = !benchmark;
     document.getElementById('deleteBenchmarkBtn').disabled = !benchmark;
@@ -146,6 +171,9 @@ function onVendorChange() {
 
     configurationSelect.innerHTML = '<option value="">-- Select Configuration --</option>';
     configurationSelect.disabled = !vendor;
+
+    document.getElementById('configurationSearch').value = '';
+    document.getElementById('configurationSearch').disabled = !vendor;
 
     document.getElementById('newConfiguration').disabled = !vendor;
 
@@ -190,6 +218,8 @@ function onConfigurationChange() {
         recordDetailPanel.style.display = 'none';
         recordsListPanel.style.display = 'none';
         dataTopRow.classList.add('single-panel');
+        document.getElementById('dateSearchInput').value = '';
+        dateFilter = '';
     }
 
     displayRecords();
@@ -486,6 +516,12 @@ function updateYAxisOptions() {
     }
 }
 
+function filterRecordsByDate() {
+    const input = document.getElementById('dateSearchInput');
+    dateFilter = input.value.trim();
+    displayRecords();
+}
+
 function displayRecords() {
     const benchmark = document.getElementById('benchmarkSelect').value;
     const vendor = document.getElementById('vendorSelect').value;
@@ -504,14 +540,21 @@ function displayRecords() {
 
     const records = data[benchmark]?.[vendor]?.[configuration] || [];
 
-    if (records.length === 0) {
-        container.innerHTML = '<p class="empty-message">No records</p>';
+    let filteredRecords = records;
+    if (dateFilter) {
+        filteredRecords = records.filter(r => r.date.includes(dateFilter));
+    }
+
+    if (filteredRecords.length === 0) {
+        container.innerHTML = dateFilter
+            ? '<p class="empty-message">No records found for the specified date</p>'
+            : '<p class="empty-message">No records</p>';
         return;
     }
 
     const activeSort = Object.keys(sortStates).find(key => sortStates[key] !== 0) || 'date';
 
-    records.sort((a, b) => {
+    filteredRecords.sort((a, b) => {
         let aVal, bVal;
         const state = sortStates[activeSort];
 
@@ -546,7 +589,8 @@ function displayRecords() {
 
     html += '<th>Action</th></tr></thead><tbody>';
 
-    records.forEach((record, index) => {
+    filteredRecords.forEach((record) => {
+        const originalIndex = records.indexOf(record);
         html += `<tr>
             <td>${record.date}</td>
             <td>${record.duration.toFixed(3)}</td>`;
@@ -557,8 +601,8 @@ function displayRecords() {
         });
 
         html += `<td>
-            <button class="edit-btn" onclick="editRecord(${index})">Edit</button>
-            <button class="delete-btn" onclick="deleteRecord(${index})">Delete</button>
+            <button class="edit-btn" onclick="editRecord(${originalIndex})">Edit</button>
+            <button class="delete-btn" onclick="deleteRecord(${originalIndex})">Delete</button>
         </td></tr>`;
     });
 
