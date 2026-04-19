@@ -449,8 +449,8 @@ function renderExtraFields() {
         const div = document.createElement('div');
         div.className = 'extra-field-item';
         div.innerHTML = `
-            <input type="text" class="field-name-input" value="${field.name}" placeholder="Field Name (Unit)" onchange="updateExtraFieldName(${field.id}, this.value)">
-            <input type="number" class="field-value-input" id="extra_${field.id}" step="0.001" placeholder="Value">
+            <input type="text" class="field-name-input" name="fieldName_${field.id}" value="${field.name}" placeholder="Field Name (Unit)" onchange="updateExtraFieldName(${field.id}, this.value)">
+            <input type="number" class="field-value-input" id="extra_${field.id}" name="extra_${field.id}" step="0.001" placeholder="Value">
             <button type="button" class="remove-field-btn" onclick="removeExtraField(${field.id})">Delete</button>
         `;
         container.appendChild(div);
