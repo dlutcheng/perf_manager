@@ -6,7 +6,7 @@
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #409EFF 0%, #53a8ff 30%, #66b1ff 60%, #79bbff 100%);
     min-height: 100vh;
     padding: 20px;
 }
@@ -55,7 +55,7 @@ header h1 {
 
 .nav-menu a.active {
     background: rgba(255, 255, 255, 0.95);
-    color: #667eea;
+    color: #409EFF;
     border-color: rgba(255, 255, 255, 0.5);
 }
 
@@ -169,32 +169,32 @@ main {
 }
 
 .level-1 {
-    background: rgba(102, 126, 234, 0.15);
-    border-left: 4px solid #667eea;
+    background: rgba(64, 158, 255, 0.15);
+    border-left: 4px solid #409EFF;
 }
 
 .level-1 .level-badge {
-    background: #667eea;
+    background: #409EFF;
 }
 
 .level-2 {
-    background: rgba(72, 187, 120, 0.12);
-    border-left: 4px solid #48bb78;
+    background: rgba(103, 194, 58, 0.12);
+    border-left: 4px solid #67C23A;
     margin-left: 10px;
 }
 
 .level-2 .level-badge {
-    background: #48bb78;
+    background: #67C23A;
 }
 
 .level-3 {
-    background: rgba(237, 137, 54, 0.12);
-    border-left: 4px solid #ed8936;
+    background: rgba(230, 162, 60, 0.12);
+    border-left: 4px solid #E6A23C;
     margin-left: 20px;
 }
 
 .level-3 .level-badge {
-    background: #ed8936;
+    background: #E6A23C;
 }
 
 .form-group.inline-input {
@@ -228,13 +228,13 @@ main {
     gap: 8px;
     padding: 10px 0;
     cursor: pointer;
-    color: #667eea;
+    color: #409EFF;
     font-size: 14px;
     user-select: none;
 }
 
 .record-extra-toggle:hover {
-    color: #5568d3;
+    color: #337ecc;
 }
 
 .record-extra-toggle span:last-child {
@@ -257,34 +257,59 @@ main {
 
 .extra-field-item input {
     flex: 1;
+    padding: 10px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: border-color 0.3s;
+}
+
+.extra-field-item input:focus {
+    outline: none;
+    border-color: #409EFF;
 }
 
 .extra-field-item .field-name-input {
-    max-width: 120px;
-}
-
-.extra-field-item .field-value-input {
     flex: 2;
 }
 
-.remove-field-btn {
-    padding: 6px 10px !important;
-    background: #f56565 !important;
-    width: auto !important;
+.extra-field-item .field-value-input {
+    flex: 1;
+    max-width: 120px;
 }
 
-.remove-field-btn:hover {
-    background: #e53e3e !important;
+button.remove-field-btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    background: #F56C6C !important;
+    width: auto;
+    color: white;
 }
 
-.add-field-btn {
+button.remove-field-btn:hover:not(:disabled) {
+    background: #e64242 !important;
+}
+
+button.add-field-btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    background: #67C23A !important;
     width: 100%;
-    background: #48bb78 !important;
-    margin-top: 10px;
+    color: white;
 }
 
-.add-field-btn:hover {
-    background: #38a169 !important;
+button.add-field-btn:hover:not(:disabled) {
+    background: #5daf34 !important;
 }
 
 .records-list-panel {
@@ -306,7 +331,7 @@ main {
 
 .date-search-input:focus {
     outline: none;
-    border-color: #667eea;
+    border-color: #409EFF;
 }
 
 .records-subtitle {
@@ -350,7 +375,7 @@ main {
     color: #333;
     margin-bottom: 20px;
     padding-bottom: 10px;
-    border-bottom: 2px solid #667eea;
+    border-bottom: 2px solid #409EFF;
 }
 
 .form-group {
@@ -377,7 +402,7 @@ main {
 .form-group select:focus,
 .form-group input:focus {
     outline: none;
-    border-color: #667eea;
+    border-color: #409EFF;
 }
 
 .searchable-select {
@@ -395,8 +420,8 @@ main {
 }
 
 .searchable-select .select-search-input:focus {
-    border-color: #667eea;
-    border-bottom-color: #667eea;
+    border-color: #409EFF;
+    border-bottom-color: #409EFF;
     background: #fff;
 }
 
@@ -407,7 +432,7 @@ main {
 }
 
 .searchable-select select:focus {
-    border-color: #667eea;
+    border-color: #409EFF;
 }
 
 .form-group button {
@@ -437,14 +462,14 @@ main {
 }
 
 button[type="button"] {
-    background: #667eea;
+    background: #409EFF;
     color: white;
 }
 
 button[type="button"]:hover:not(:disabled) {
-    background: #5568d3;
+    background: #337ecc;
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    box-shadow: 0 4px 12px rgba(64, 158, 255, 0.4);
 }
 
 button[type="button"]:disabled {
@@ -461,19 +486,19 @@ button[type="button"]:disabled {
 }
 
 .form-group.btn-group.dirty #clearFormBtn {
-    background: #f56565;
+    background: #F56C6C;
 }
 
 .form-group.btn-group.dirty #clearFormBtn:hover:not(:disabled) {
-    background: #e53e3e;
+    background: #e64242;
 }
 
 #saveRecordBtn {
-    background: #48bb78;
+    background: #67C23A;
 }
 
 #saveRecordBtn:hover:not(:disabled) {
-    background: #38a169;
+    background: #5daf34;
 }
 
 .selection-header {
@@ -514,7 +539,7 @@ button[type="button"]:disabled {
     justify-content: space-between;
     align-items: center;
     padding: 12px 15px;
-    background: #667eea;
+    background: #409EFF;
     border-bottom: 1px solid #e0e0e0;
 }
 
@@ -554,7 +579,7 @@ button[type="button"]:disabled {
 
 .configuration-content > .configuration-list {
     padding-left: 28px;
-    border-left: 3px solid #667eea;
+    border-left: 3px solid #409EFF;
     margin-left: 8px;
 }
 
@@ -574,8 +599,8 @@ button[type="button"]:disabled {
 }
 
 .configuration-list .checkbox-item:hover {
-    border-color: #667eea;
-    background: #f0f0ff;
+    border-color: #409EFF;
+    background: #ecf5ff;
 }
 
 .checkbox-group {
@@ -622,21 +647,21 @@ button[type="button"]:disabled {
 }
 
 .edit-btn {
-    background: #4299e1;
+    background: #409EFF;
     color: white;
 }
 
 .edit-btn:hover {
-    background: #3182ce;
+    background: #337ecc;
 }
 
-.delete-btn {
-    background: #f56565;
+button.delete-btn {
+    background: #F56C6C;
     color: white;
 }
 
-.delete-btn:hover {
-    background: #e53e3e;
+button.delete-btn:hover {
+    background: #e64242;
 }
 
 .chart-container {
@@ -697,7 +722,7 @@ button[type="button"]:disabled {
 }
 
 .status-good {
-    color: #48bb78;
+    color: #67C23A;
     font-weight: bold;
 }
 
@@ -706,19 +731,19 @@ button[type="button"]:disabled {
 }
 
 .status-error {
-    color: #f56565;
+    color: #F56C6C;
 }
 
 .danger-zone {
-    border: 2px solid #f56565;
+    border: 2px solid #F56C6C;
     padding: 20px;
     border-radius: 8px;
     margin-top: 20px;
 }
 
 .danger-zone h3 {
-    color: #f56565;
-    border-bottom-color: #f56565;
+    color: #F56C6C;
+    border-bottom-color: #F56C6C;
 }
 
 .warning-text {
@@ -728,12 +753,12 @@ button[type="button"]:disabled {
 }
 
 .danger-btn {
-    background: #f56565 !important;
+    background: #F56C6C !important;
     width: 100%;
 }
 
 .danger-btn:hover:not(:disabled) {
-    background: #e53e3e !important;
+    background: #e64242 !important;
 }
 
 .empty-message {
@@ -756,7 +781,7 @@ table th, table td {
 }
 
 table th {
-    background: #667eea;
+    background: #409EFF;
     color: white;
     font-weight: 600;
 }
@@ -767,7 +792,7 @@ table th.sortable {
 }
 
 table th.sortable:hover {
-    background: #5568d3;
+    background: #337ecc;
 }
 
 table tr:hover {
