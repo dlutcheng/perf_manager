@@ -1,5 +1,7 @@
 # Performance Manager
 
+> ### 🚀 Built with AI via vibe coding.
+
 A web-based tool for managing and visualizing benchmark performance data.
 
 ## Overview
