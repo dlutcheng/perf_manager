@@ -20,6 +20,7 @@ function initApp() {
     populateBenchmarkSelects();
     setupFormDirtyDetection();
     document.getElementById('recordDate').value = new Date().toISOString().split('T')[0];
+    document.getElementById('dataTopRow').classList.add('single-panel');
 }
 
 function loadData() {
@@ -121,6 +122,10 @@ function onBenchmarkChange() {
     document.getElementById('addFieldBtn').disabled = true;
     document.getElementById('deleteVendorBtn').disabled = true;
 
+    document.getElementById('recordDetailPanel').style.display = 'none';
+    document.getElementById('recordsListPanel').style.display = 'none';
+    document.getElementById('dataTopRow').classList.add('single-panel');
+
     if (benchmark && data[benchmark]) {
         Object.keys(data[benchmark]).sort().forEach(vendor => {
             vendorSelect.innerHTML += `<option value="${vendor}">${vendor}</option>`;
@@ -150,6 +155,10 @@ function onVendorChange() {
     document.getElementById('addFieldBtn').disabled = !vendor;
     document.getElementById('deleteVendorBtn').disabled = !vendor;
 
+    document.getElementById('recordDetailPanel').style.display = 'none';
+    document.getElementById('recordsListPanel').style.display = 'none';
+    document.getElementById('dataTopRow').classList.add('single-panel');
+
     if (benchmark && vendor && data[benchmark]?.[vendor]) {
         Object.keys(data[benchmark][vendor]).sort().forEach(configuration => {
             configurationSelect.innerHTML += `<option value="${configuration}">${configuration}</option>`;
@@ -162,9 +171,27 @@ function onVendorChange() {
 }
 
 function onConfigurationChange() {
+    const benchmark = document.getElementById('benchmarkSelect').value;
+    const vendor = document.getElementById('vendorSelect').value;
     const configuration = document.getElementById('configurationSelect').value;
+
     document.getElementById('saveRecordBtn').disabled = !configuration;
     document.getElementById('addFieldBtn').disabled = !configuration;
+
+    const recordDetailPanel = document.getElementById('recordDetailPanel');
+    const recordsListPanel = document.getElementById('recordsListPanel');
+    const dataTopRow = document.getElementById('dataTopRow');
+
+    if (benchmark && vendor && configuration) {
+        recordDetailPanel.style.display = 'block';
+        recordsListPanel.style.display = 'block';
+        dataTopRow.classList.remove('single-panel');
+    } else {
+        recordDetailPanel.style.display = 'none';
+        recordsListPanel.style.display = 'none';
+        dataTopRow.classList.add('single-panel');
+    }
+
     displayRecords();
 }
 

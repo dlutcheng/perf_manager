@@ -19,8 +19,8 @@
         </header>
 
         <main class="data-main">
-            <div class="data-top-row">
-                <div class="panel data-operation-panel">
+            <div class="data-top-row" id="dataTopRow">
+                <div class="panel data-operation-panel" id="dataOperationPanel">
                     <h2>Data Operations</h2>
 
                     <div class="hierarchy-level level-1">
@@ -73,7 +73,7 @@
                                 </select>
                             </div>
                             <div class="form-group inline-input">
-                                <input type="text" id="newConfiguration" placeholder="New Configuration Name (e.g., precision, shape, params)" disabled>
+                                <input type="text" id="newConfiguration" placeholder="e.g., fp32, int8, shape224" disabled>
                                 <button type="button" id="addConfigurationBtn" disabled>Add</button>
                                 <button type="button" id="deleteConfigurationBtn" class="delete-btn" disabled>Delete</button>
                             </div>
@@ -81,7 +81,7 @@
                     </div>
                 </div>
 
-                <div class="panel record-detail-panel">
+                <div class="panel record-detail-panel" id="recordDetailPanel" style="display: none;">
                     <h2>Record Details</h2>
 
                     <div class="record-form">
@@ -114,7 +114,7 @@
                 </div>
             </div>
 
-            <div class="panel records-list-panel">
+            <div class="panel records-list-panel" id="recordsListPanel" style="display: none;">
                 <h2>Existing Records</h2>
                 <div id="recordsSubtitle" class="records-subtitle"></div>
                 <div id="recordsList"></div>

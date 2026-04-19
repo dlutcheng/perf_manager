@@ -126,6 +126,17 @@ main {
     gap: 20px;
 }
 
+.data-top-row.single-panel {
+    grid-template-columns: 1fr;
+    justify-content: center;
+}
+
+.data-top-row.single-panel .data-operation-panel {
+    width: 100%;
+    max-width: 550px;
+    margin: 0 auto;
+}
+
 .data-operation-panel {
     min-width: 0;
 }
@@ -191,12 +202,14 @@ main {
 
 .form-group.inline-input {
     display: flex;
+    flex-wrap: wrap;
     gap: 8px;
     margin-bottom: 0;
 }
 
 .form-group.inline-input input {
     flex: 1;
+    min-width: 150px;
 }
 
 .form-group.inline-input button {
@@ -311,6 +324,11 @@ main {
     border-radius: 12px;
     padding: 20px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.panel.hidden {
+    display: none;
 }
 
 .panel h2, .panel h3 {
