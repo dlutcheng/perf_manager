@@ -8,15 +8,22 @@ let sortStates = {
     duration: 0
 };
 let dateFilter = '';
-const STORAGE_KEY = 'benchmark_data';
-const EXTRA_FIELDS_KEY = 'benchmark_extra_fields';
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    await initDatabase();
+    await loadData();
     initApp();
 });
 
+async function loadData() {
+    try {
+        data = await loadBenchmarkData() || {};
+    } catch (error) {
+        data = {};
+    }
+}
+
 function initApp() {
-    loadData();
     setupEventListeners();
     populateBenchmarkSelects();
     setupFormDirtyDetection();
@@ -24,41 +31,22 @@ function initApp() {
     document.getElementById('dataTopRow').classList.add('single-panel');
 }
 
-function loadData() {
+async function loadExtraFields() {
     try {
-        const stored = localStorage.getItem(STORAGE_KEY);
-        data = stored ? JSON.parse(stored) : {};
-    } catch (error) {
-        data = {};
-    }
-}
-
-function loadExtraFields() {
-    try {
-        const stored = localStorage.getItem(EXTRA_FIELDS_KEY);
-        return stored ? JSON.parse(stored) : {};
+        return await loadAllExtraFields() || {};
     } catch (error) {
         return {};
     }
 }
 
-function saveExtraFieldsForVendor(benchmark, vendor, fields) {
-    const allVendorFields = loadExtraFields();
-    if (!allVendorFields[benchmark]) {
-        allVendorFields[benchmark] = {};
-    }
-    allVendorFields[benchmark][vendor] = fields;
-    localStorage.setItem(EXTRA_FIELDS_KEY, JSON.stringify(allVendorFields));
-}
-
-function getExtraFieldsForVendor(benchmark, vendor) {
-    const allVendorFields = loadExtraFields();
+async function getExtraFieldsForVendor(benchmark, vendor) {
+    const allVendorFields = await loadExtraFields();
     return allVendorFields[benchmark]?.[vendor] || [];
 }
 
-function saveData() {
+async function saveData() {
     try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        await dbSaveBenchmarkData(data);
     } catch (error) {
         alert('Failed to save data');
     }
@@ -118,7 +106,7 @@ function populateBenchmarkSelects() {
     });
 }
 
-function onBenchmarkChange() {
+async function onBenchmarkChange() {
     const benchmark = document.getElementById('benchmarkSelect').value;
     const vendorSelect = document.getElementById('vendorSelect');
 
@@ -162,7 +150,7 @@ function onBenchmarkChange() {
     displayRecords();
 }
 
-function onVendorChange() {
+async function onVendorChange() {
     const benchmark = document.getElementById('benchmarkSelect').value;
     const vendor = document.getElementById('vendorSelect').value;
     const configurationSelect = document.getElementById('configurationSelect');
@@ -193,12 +181,12 @@ function onVendorChange() {
         });
     }
 
-    extraFields = getExtraFieldsForVendor(benchmark, vendor);
+    extraFields = await getExtraFieldsForVendor(benchmark, vendor);
     renderExtraFields();
     displayRecords();
 }
 
-function onConfigurationChange() {
+async function onConfigurationChange() {
     const benchmark = document.getElementById('benchmarkSelect').value;
     const vendor = document.getElementById('vendorSelect').value;
     const configuration = document.getElementById('configurationSelect').value;
@@ -225,7 +213,7 @@ function onConfigurationChange() {
     displayRecords();
 }
 
-function addBenchmark() {
+async function addBenchmark() {
     const name = document.getElementById('newBenchmark').value.trim();
     if (!name) {
         alert('Please enter Benchmark name');
@@ -237,15 +225,15 @@ function addBenchmark() {
     }
 
     data[name] = {};
-    saveData();
+    await saveData();
     populateBenchmarkSelects();
 
     document.getElementById('benchmarkSelect').value = name;
     document.getElementById('newBenchmark').value = '';
-    onBenchmarkChange();
+    await onBenchmarkChange();
 }
 
-function addVendor() {
+async function addVendor() {
     const benchmark = document.getElementById('benchmarkSelect').value;
     const name = document.getElementById('newVendor').value.trim();
     if (!name) {
@@ -261,7 +249,7 @@ function addVendor() {
     }
 
     data[benchmark][name] = {};
-    saveData();
+    await saveData();
 
     const vendorSelect = document.getElementById('vendorSelect');
     vendorSelect.innerHTML = '<option value="">-- Select Arch --</option>';
@@ -271,10 +259,10 @@ function addVendor() {
 
     vendorSelect.value = name;
     document.getElementById('newVendor').value = '';
-    onVendorChange();
+    await onVendorChange();
 }
 
-function addConfiguration() {
+async function addConfiguration() {
     const benchmark = document.getElementById('benchmarkSelect').value;
     const vendor = document.getElementById('vendorSelect').value;
     const name = document.getElementById('newConfiguration').value.trim();
@@ -291,7 +279,7 @@ function addConfiguration() {
     }
 
     data[benchmark][vendor][name] = [];
-    saveData();
+    await saveData();
 
     const configurationSelect = document.getElementById('configurationSelect');
     configurationSelect.innerHTML = '<option value="">-- Select Configuration --</option>';
@@ -301,10 +289,10 @@ function addConfiguration() {
 
     configurationSelect.value = name;
     document.getElementById('newConfiguration').value = '';
-    onConfigurationChange();
+    await onConfigurationChange();
 }
 
-function deleteBenchmark() {
+async function deleteBenchmark() {
     const benchmark = document.getElementById('benchmarkSelect').value;
     if (!benchmark) return;
 
@@ -314,19 +302,14 @@ function deleteBenchmark() {
 
     delete data[benchmark];
 
-    const vendorFields = loadExtraFields();
-    if (vendorFields[benchmark]) {
-        delete vendorFields[benchmark];
-        localStorage.setItem(EXTRA_FIELDS_KEY, JSON.stringify(vendorFields));
-    }
-
-    saveData();
+    await deleteExtraFieldsForBenchmark(benchmark);
+    await saveData();
     notifyDataChanged();
     populateBenchmarkSelects();
-    onBenchmarkChange();
+    await onBenchmarkChange();
 }
 
-function deleteVendor() {
+async function deleteVendor() {
     const benchmark = document.getElementById('benchmarkSelect').value;
     const vendor = document.getElementById('vendorSelect').value;
     if (!benchmark || !vendor) return;
@@ -337,13 +320,8 @@ function deleteVendor() {
 
     delete data[benchmark][vendor];
 
-    const vendorFields = loadExtraFields();
-    if (vendorFields[benchmark]?.[vendor]) {
-        delete vendorFields[benchmark][vendor];
-        localStorage.setItem(EXTRA_FIELDS_KEY, JSON.stringify(vendorFields));
-    }
-
-    saveData();
+    await deleteExtraFieldsForVendor(benchmark, vendor);
+    await saveData();
     notifyDataChanged();
 
     const vendorSelect = document.getElementById('vendorSelect');
@@ -353,10 +331,10 @@ function deleteVendor() {
     });
     vendorSelect.value = '';
 
-    onVendorChange();
+    await onVendorChange();
 }
 
-function deleteConfiguration() {
+async function deleteConfiguration() {
     const benchmark = document.getElementById('benchmarkSelect').value;
     const vendor = document.getElementById('vendorSelect').value;
     const configuration = document.getElementById('configurationSelect').value;
@@ -368,7 +346,7 @@ function deleteConfiguration() {
 
     delete data[benchmark][vendor][configuration];
 
-    saveData();
+    await saveData();
     notifyDataChanged();
 
     const configurationSelect = document.getElementById('configurationSelect');
@@ -378,7 +356,7 @@ function deleteConfiguration() {
     });
     configurationSelect.value = '';
 
-    onConfigurationChange();
+    await onConfigurationChange();
 }
 
 function notifyDataChanged() {
@@ -388,7 +366,7 @@ function notifyDataChanged() {
     }
 }
 
-function saveRecord() {
+async function saveRecord() {
     const benchmark = document.getElementById('benchmarkSelect').value;
     const vendor = document.getElementById('vendorSelect').value;
     const configuration = document.getElementById('configurationSelect').value;
@@ -419,7 +397,7 @@ function saveRecord() {
         data[benchmark][vendor][configuration].push(record);
     }
 
-    saveData();
+    await saveData();
     clearForm();
     displayRecords();
 }
@@ -457,13 +435,13 @@ function renderExtraFields() {
     });
 }
 
-function addExtraField() {
+async function addExtraField() {
     const name = prompt('Enter field name (e.g., Power(W)):');
     if (!name) return;
 
     const id = Date.now();
     extraFields.push({ id, name });
-    saveExtraFieldsForVendor(currentBenchmark, currentVendor, extraFields);
+    await saveExtraFieldsForVendor(currentBenchmark, currentVendor, extraFields);
 
     const container = document.getElementById('extraFieldsList');
     const div = document.createElement('div');
@@ -478,20 +456,20 @@ function addExtraField() {
     updateYAxisOptions();
 }
 
-function updateExtraFieldName(id, newName) {
+async function updateExtraFieldName(id, newName) {
     const field = extraFields.find(f => f.id === id);
     if (field) {
         field.name = newName;
-        saveExtraFieldsForVendor(currentBenchmark, currentVendor, extraFields);
+        await saveExtraFieldsForVendor(currentBenchmark, currentVendor, extraFields);
         updateYAxisOptions();
     }
 }
 
-function removeExtraField(id) {
+async function removeExtraField(id) {
     if (!confirm('Delete this field?')) return;
 
     extraFields = extraFields.filter(f => f.id !== id);
-    saveExtraFieldsForVendor(currentBenchmark, currentVendor, extraFields);
+    await saveExtraFieldsForVendor(currentBenchmark, currentVendor, extraFields);
 
     const vendorData = data[currentBenchmark]?.[currentVendor];
     if (vendorData) {
@@ -502,7 +480,7 @@ function removeExtraField(id) {
                 }
             });
         });
-        saveData();
+        await saveData();
     }
 
     renderExtraFields();
@@ -617,37 +595,6 @@ function displayRecords() {
 
     html += '</tbody></table>';
     container.innerHTML = html;
-
-    requestAnimationFrame(() => {
-        const table = container.querySelector('table');
-        if (table) {
-            const colCount = 2 + extraFields.length;
-            const firstRow = table.rows[0];
-
-            const totalTableWidth = table.offsetWidth;
-            const firstColActualWidth = firstRow.cells[0].offsetWidth;
-            const lastColActualWidth = firstRow.cells[firstRow.cells.length - 1].offsetWidth;
-            const remainingWidth = totalTableWidth - firstColActualWidth - lastColActualWidth;
-            const middleColCount = colCount - 2;
-            const middleColWidth = Math.floor(remainingWidth / middleColCount);
-
-            for (let i = 1; i < firstRow.cells.length - 1; i++) {
-                firstRow.cells[i].style.width = middleColWidth + 'px';
-            }
-
-            const rows = table.rows;
-            console.log('=== Table Column Widths ===');
-            for (let i = 0; i < rows.length; i++) {
-                const cells = rows[i].cells;
-                const widths = [];
-                for (let j = 0; j < cells.length; j++) {
-                    widths.push(`${j}:${cells[j].offsetWidth}px`);
-                }
-                console.log(`Row ${i}: [${widths.join(', ')}]`);
-            }
-            console.log(`Total: ${totalTableWidth}px, First: ${firstColActualWidth}px, Last: ${lastColActualWidth}px, Remaining: ${remainingWidth}px for ${middleColCount} cols`);
-        }
-    });
 }
 
 function getSortArrow(fieldId) {
@@ -699,7 +646,7 @@ function editRecord(index) {
     document.getElementById('toggleIcon').nextElementSibling.textContent = 'Hide More Fields';
 }
 
-function deleteRecord(index) {
+async function deleteRecord(index) {
     const benchmark = document.getElementById('benchmarkSelect').value;
     const vendor = document.getElementById('vendorSelect').value;
     const configuration = document.getElementById('configurationSelect').value;
@@ -709,7 +656,7 @@ function deleteRecord(index) {
     }
 
     data[benchmark][vendor][configuration].splice(index, 1);
-    saveData();
+    await saveData();
     displayRecords();
 }
 
@@ -765,9 +712,9 @@ window.getCurrentBenchmarkVendor = function() {
     return { benchmark: currentBenchmark, vendor: currentVendor };
 };
 
-window.reloadExtraFields = function() {
+window.reloadExtraFields = async function() {
     if (currentBenchmark && currentVendor) {
-        extraFields = getExtraFieldsForVendor(currentBenchmark, currentVendor);
+        extraFields = await getExtraFieldsForVendor(currentBenchmark, currentVendor);
         renderExtraFields();
         updateYAxisOptions();
     }

@@ -110,9 +110,32 @@ Custom fields (like Power, MAC Utilization) are specific to each Benchmark-Arch 
 
 ## Storage
 
-Data is stored in browser **localStorage**:
-- `benchmark_data`: Main benchmark records
-- `benchmark_extra_fields`: Custom field definitions per Benchmark-Arch
+Data is stored in browser **IndexedDB**:
+- **Database**: `BenchmarkDB`
+- **Object Store**: `benchmark_data` - Main benchmark records
+- **Object Store**: `extra_fields` - Custom field definitions per Benchmark-Arch
+
+### Why IndexedDB?
+
+Compared to localStorage, IndexedDB offers:
+- **Larger capacity**: Supports hundreds of MB (vs ~5-10MB limit of localStorage)
+- **Better performance**: Asynchronous API doesn't block the main thread
+- **Structured storage**: Store any JSON-serializable object directly
+- **Query support**: Built-in indexing capabilities for future enhancements
+
+### Viewing Stored Data
+
+1. Open Chrome/Edge DevTools (F12)
+2. Go to **Application** (or **应用程序** in Chinese)
+3. Expand **IndexedDB** in the left sidebar
+4. Select `BenchmarkDB` database to view stored data
+
+### Offline Support
+
+This application works completely offline via `file://` protocol:
+- No external dependencies or CDN required
+- All functionality available without network connection
+- Data persists across browser sessions
 
 ## Data Import/Export
 
@@ -129,7 +152,7 @@ Data is stored in browser **localStorage**:
 
 ## Browser Compatibility
 
-Works best with modern browsers (Chrome, Firefox, Edge, Safari). Requires localStorage support.
+Works best with modern browsers (Chrome, Firefox, Edge, Safari). Requires IndexedDB support.
 
 ## File Structure
 
@@ -143,6 +166,7 @@ perf_manager/
 ├── css/
 │   └── styles.css      # Global styles
 ├── js/
+│   ├── db.js          # IndexedDB wrapper
 │   ├── data.js         # Shared data utilities
 │   ├── data-op.js      # Data operations logic
 │   └── chart.js        # Chart rendering logic

@@ -1,7 +1,6 @@
-const STORAGE_KEY = 'benchmark_data';
-const EXTRA_FIELDS_KEY = 'benchmark_extra_fields';
 let data = {};
 let extraFields = [];
+let allExtraFieldsCache = {};
 let chartState = {
     datasets: [],
     labels: [],
@@ -25,67 +24,46 @@ const COLORS = [
     { line: '#f5a623', fill: 'rgba(245, 166, 35, 0.15)' }
 ];
 
-document.addEventListener('DOMContentLoaded', () => {
-    loadData();
-    loadExtraFields();
+document.addEventListener('DOMContentLoaded', async () => {
+    await initDatabase();
+    await refreshDataAndFields();
     setupEventListeners();
     populateBenchmarkSelect();
     populateYAxisSelect();
 });
 
-window.addEventListener('storage', (e) => {
-    if (e.key === STORAGE_KEY || e.key === EXTRA_FIELDS_KEY) {
-        loadData();
-        loadExtraFields();
-        populateBenchmarkSelect();
-        populateYAxisSelect();
-    }
-});
-
-document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible') {
-        loadData();
-        loadExtraFields();
-        populateBenchmarkSelect();
-        populateYAxisSelect();
-    }
-});
-
-window.addEventListener('benchmarkDataImported', () => {
-    loadData();
-    loadExtraFields();
-    populateBenchmarkSelect();
-    populateYAxisSelect();
-});
-
-window.addEventListener('benchmarkDataChanged', () => {
-    loadData();
-    loadExtraFields();
-    populateBenchmarkSelect();
-    populateYAxisSelect();
-});
-
-function loadData() {
+async function refreshDataAndFields() {
     try {
-        const stored = localStorage.getItem(STORAGE_KEY);
-        data = stored ? JSON.parse(stored) : {};
+        data = await loadBenchmarkData() || {};
+        allExtraFieldsCache = await loadAllExtraFields() || {};
     } catch (error) {
         data = {};
+        allExtraFieldsCache = {};
     }
 }
 
-function loadExtraFields() {
-    try {
-        const stored = localStorage.getItem(EXTRA_FIELDS_KEY);
-        return stored ? JSON.parse(stored) : {};
-    } catch (error) {
-        return {};
+document.addEventListener('visibilitychange', async () => {
+    if (document.visibilityState === 'visible') {
+        await refreshDataAndFields();
+        populateBenchmarkSelect();
+        populateYAxisSelect();
     }
-}
+});
+
+window.addEventListener('benchmarkDataImported', async () => {
+    await refreshDataAndFields();
+    populateBenchmarkSelect();
+    populateYAxisSelect();
+});
+
+window.addEventListener('benchmarkDataChanged', async () => {
+    await refreshDataAndFields();
+    populateBenchmarkSelect();
+    populateYAxisSelect();
+});
 
 function getExtraFieldsForVendor(benchmark, vendor) {
-    const allVendorFields = loadExtraFields();
-    return allVendorFields[benchmark]?.[vendor] || [];
+    return allExtraFieldsCache[benchmark]?.[vendor] || [];
 }
 
 function getExtraFieldsUnionForVendors(benchmark, vendors) {
@@ -134,7 +112,7 @@ function populateYAxisSelect() {
     });
 }
 
-window.updateChartYAxisOptions = function(benchmark, vendor) {
+window.updateChartYAxisOptions = async function(benchmark, vendor) {
     if (benchmark && vendor) {
         extraFields = getExtraFieldsForVendor(benchmark, vendor);
     }

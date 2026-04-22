@@ -1,8 +1,7 @@
-const STORAGE_KEY = 'benchmark_data';
-const EXTRA_FIELDS_KEY = 'benchmark_extra_fields';
 const DATA_FILE = 'benchmark_data.json';
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    await initDatabase();
     initApp();
 });
 
@@ -12,11 +11,10 @@ function initApp() {
     window.addEventListener('benchmarkDataChanged', updateDataStatus);
 }
 
-function updateDataStatus() {
+async function updateDataStatus() {
     try {
-        const stored = localStorage.getItem(STORAGE_KEY);
-        if (stored) {
-            const data = JSON.parse(stored);
+        const data = await loadBenchmarkData();
+        if (Object.keys(data).length > 0) {
             const benchmarkCount = Object.keys(data).length;
             let recordCount = 0;
             Object.values(data).forEach(vendors => {
@@ -45,25 +43,21 @@ function setupEventListeners() {
     document.getElementById('clearBtn').addEventListener('click', clearAllData);
 }
 
-function loadExtraFields() {
+async function loadExtraFields() {
     try {
-        const stored = localStorage.getItem(EXTRA_FIELDS_KEY);
-        if (stored) {
-            return JSON.parse(stored);
-        }
+        return await loadAllExtraFields();
     } catch (error) {}
     return {};
 }
 
-function exportData() {
+async function exportData() {
     try {
-        const stored = localStorage.getItem(STORAGE_KEY);
-        if (!stored) {
+        const data = await loadBenchmarkData();
+        if (Object.keys(data).length === 0) {
             alert('No data to export');
             return;
         }
-        const data = JSON.parse(stored);
-        const vendorFields = loadExtraFields();
+        const vendorFields = await loadExtraFields();
 
         Object.entries(data).forEach(([benchmark, vendors]) => {
             Object.entries(vendors).forEach(([vendor, configurations]) => {
@@ -155,24 +149,28 @@ function migrateOldFormatRecords(dataObj) {
     return dataObj;
 }
 
-function importData() {
+async function importData() {
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = '.json';
-    input.onchange = (e) => {
+    input.onchange = async (e) => {
         const file = e.target.files[0];
         if (!file) return;
         const reader = new FileReader();
-        reader.onload = (event) => {
+        reader.onload = async (event) => {
             try {
                 const imported = JSON.parse(event.target.result);
 
                 if (confirm('Import will overwrite existing data. Continue?')) {
                     const migrated = migrateOldFormatRecords(imported);
-                    localStorage.setItem(STORAGE_KEY, JSON.stringify(migrated));
+                    await dbSaveBenchmarkData(migrated);
 
                     const importedExtraFields = collectExtraFieldsPerVendor(migrated);
-                    localStorage.setItem(EXTRA_FIELDS_KEY, JSON.stringify(importedExtraFields));
+                    for (const [benchmark, vendors] of Object.entries(importedExtraFields)) {
+                        for (const [vendor, fields] of Object.entries(vendors)) {
+                            await saveExtraFieldsForVendor(benchmark, vendor, fields);
+                        }
+                    }
 
                     if (typeof window.updateChartYAxisOptions === 'function') {
                         window.updateChartYAxisOptions();
@@ -194,15 +192,14 @@ function importData() {
     input.click();
 }
 
-function clearAllData() {
+async function clearAllData() {
     if (!confirm('Clear all data? This cannot be undone!\n\nClick OK to auto-export backup first.')) {
         return;
     }
 
     try {
-        const stored = localStorage.getItem(STORAGE_KEY);
-        if (stored) {
-            const data = JSON.parse(stored);
+        const data = await loadBenchmarkData();
+        if (Object.keys(data).length > 0) {
             const jsonStr = JSON.stringify(data, null, 2);
             const blob = new Blob([jsonStr], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
@@ -218,7 +215,7 @@ function clearAllData() {
         console.error('Backup failed:', error);
     }
 
-    localStorage.removeItem(STORAGE_KEY);
+    await dbSaveBenchmarkData({});
     updateDataStatus();
     alert('All data cleared, backup downloaded.');
 }
