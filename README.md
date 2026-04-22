@@ -135,14 +135,17 @@ Works best with modern browsers (Chrome, Firefox, Edge, Safari). Requires localS
 
 ```
 perf_manager/
-├── index.html          # Home page
-├── data.html           # Data import/export
-├── data-op.html        # Data operations
-├── chart.html          # Data visualization
-├── data.js             # Shared data utilities
-├── data-op.js          # Data operations logic
-├── chart.js            # Chart rendering logic
-├── styles.css          # Global styles
+├── index.html          # Entry page (home page)
+├── html/
+│   ├── data.html       # Data import/export
+│   ├── data-op.html    # Data operations
+│   └── chart.html      # Data visualization
+├── css/
+│   └── styles.css      # Global styles
+├── js/
+│   ├── data.js         # Shared data utilities
+│   ├── data-op.js      # Data operations logic
+│   └── chart.js        # Chart rendering logic
 └── README.md           # This file
 ```
 
