@@ -37,6 +37,7 @@ The main interface for managing benchmark records.
   - Edit and delete existing records
 - **Dynamic Layout**: Panels rearrange based on selection state
 - **Date Search**: Filter existing records by date (e.g., `2026-04`)
+- **Expandable Fields Panel**: Extra fields area scrolls independently when content overflows
 
 #### Form Indicators
 - The Save/Clear button area highlights (orange border) when form has entered data
@@ -45,11 +46,11 @@ The main interface for managing benchmark records.
 Generate performance charts from recorded data.
 
 #### Features
-- **Multi-series Line Charts**: Plot multiple Arch/Configuration combinations
+- **Multi-series Line Charts**: Plot multiple Arch/Configuration combinations with gradient area fills
 - **Y-Axis Metrics**:
   - Selecting a single Arch: shows all its custom extra fields
   - Selecting multiple Archs: shows only common extra fields (intersection), otherwise defaults to Duration (ms)
-- **Interactive Tooltips**: Hover to see detailed values
+- **Interactive Tooltips**: Hover to see detailed values with elegant dark rounded tooltips
 - **Fullscreen Mode**: Expand chart for better viewing
 - **Select All/Deselect All**: Quick selection controls
 - **Collapsible Sections**: Vendor sections can be expanded/collapsed
@@ -144,3 +145,17 @@ perf_manager/
 ├── styles.css          # Global styles
 └── README.md           # This file
 ```
+
+## Design System
+
+The UI uses a cohesive color scheme based on ElementUI principles:
+
+| Color | Usage |
+|-------|-------|
+| Primary (#409EFF) | Main actions, links, active states |
+| Success (#67C23A) | Success states, positive actions |
+| Warning (#E6A23C) | Warning states, form dirty indicators |
+| Danger (#F56C6C) | Delete actions, danger zones |
+| Info (#909399) | Secondary actions, disabled states |
+
+All colors are defined as CSS variables for consistency across the application.

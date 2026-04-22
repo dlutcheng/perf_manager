@@ -576,7 +576,16 @@ function displayRecords() {
         }
     });
 
-    let html = '<table><thead><tr>';
+    const colCount = 2 + extraFields.length;
+    let colgroup = '<colgroup>';
+    colgroup += '<col>';
+    for (let i = 1; i < colCount - 1; i++) {
+        colgroup += '<col>';
+    }
+    colgroup += '<col>';
+    colgroup += '</colgroup>';
+
+    let html = '<table>' + colgroup + '<thead><tr>';
     html += `<th class="sortable" data-field="date">Date${getSortArrow('date')}</th>`;
     html += `<th class="sortable" data-field="duration">Duration (ms)${getSortArrow('duration')}</th>`;
 
@@ -608,6 +617,37 @@ function displayRecords() {
 
     html += '</tbody></table>';
     container.innerHTML = html;
+
+    requestAnimationFrame(() => {
+        const table = container.querySelector('table');
+        if (table) {
+            const colCount = 2 + extraFields.length;
+            const firstRow = table.rows[0];
+
+            const totalTableWidth = table.offsetWidth;
+            const firstColActualWidth = firstRow.cells[0].offsetWidth;
+            const lastColActualWidth = firstRow.cells[firstRow.cells.length - 1].offsetWidth;
+            const remainingWidth = totalTableWidth - firstColActualWidth - lastColActualWidth;
+            const middleColCount = colCount - 2;
+            const middleColWidth = Math.floor(remainingWidth / middleColCount);
+
+            for (let i = 1; i < firstRow.cells.length - 1; i++) {
+                firstRow.cells[i].style.width = middleColWidth + 'px';
+            }
+
+            const rows = table.rows;
+            console.log('=== Table Column Widths ===');
+            for (let i = 0; i < rows.length; i++) {
+                const cells = rows[i].cells;
+                const widths = [];
+                for (let j = 0; j < cells.length; j++) {
+                    widths.push(`${j}:${cells[j].offsetWidth}px`);
+                }
+                console.log(`Row ${i}: [${widths.join(', ')}]`);
+            }
+            console.log(`Total: ${totalTableWidth}px, First: ${firstColActualWidth}px, Last: ${lastColActualWidth}px, Remaining: ${remainingWidth}px for ${middleColCount} cols`);
+        }
+    });
 }
 
 function getSortArrow(fieldId) {
