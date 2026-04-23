@@ -1,188 +1,67 @@
 # Performance Manager
 
-> ### 🚀 Built with AI via vibe coding.
+> Built with AI via vibe coding.
 
-A web-based tool for managing and visualizing benchmark performance data.
+管理并可视化基准测试性能数据的Web工具。
 
-## Overview
+## 功能
 
-This tool helps you organize benchmark performance data through a hierarchical structure: **Benchmark → Arch → Configuration**. You can record, search, and visualize performance metrics over time.
+- **首页** (`index.html`) - 入口页面，导航和数据状态概览
+- **数据管理** (`data.html`) - JSON导入/导出/清除数据
+- **数据操作** (`data-op.html`) - 添加/编辑基准测试记录
+- **数据可视化** (`chart.html`) - 性能图表绘制
 
-## Pages
+## 数据层级
 
-### 1. Home (index.html)
-Landing page with navigation to all features and data status overview.
+Benchmark → Arch → Configuration
 
-### 2. Data Management (data.html)
-- **Import**: Load benchmark data from a JSON file
-- **Export**: Download current data as JSON file
-- **Clear**: Remove all data (with automatic backup download)
+| 层级 | 示例 |
+|------|------|
+| Benchmark | resnet50, bert |
+| Arch | 16T r2p1, 8T r3p0 |
+| Configuration | fp32, int8, shape224 |
 
-### 3. Data Operations (data-op.html)
-The main interface for managing benchmark records.
-
-#### Hierarchy Structure
-| Level | Name | Description |
-|-------|------|-------------|
-| Level 1 | Benchmark | Top level (e.g., resnet50, bert) |
-| Level 2 | Arch | Architecture variant (e.g., 16T r2p1, 8T r3p0) |
-| Level 3 | Configuration | Configuration type (e.g., fp32, int8, shape224) |
-
-#### Features
-- **Add/Delete**: Create or remove items at each hierarchy level
-- **Searchable Dropdowns**: Filter options in long lists
-- **Record Management**:
-  - Date and Duration (ms) fields
-  - Extra custom fields (e.g., Power, MAC Utilization)
-  - Edit and delete existing records
-- **Dynamic Layout**: Panels rearrange based on selection state
-- **Date Search**: Filter existing records by date (e.g., `2026-04`)
-- **Expandable Fields Panel**: Extra fields area scrolls independently when content overflows
-
-#### Form Indicators
-- The Save/Clear button area highlights (orange border) when form has entered data
-
-### 4. Data Visualization (chart.html)
-Generate performance charts from recorded data.
-
-#### Features
-- **Multi-series Line Charts**: Plot multiple Arch/Configuration combinations with gradient area fills
-- **Y-Axis Metrics**:
-  - Selecting a single Arch: shows all its custom extra fields
-  - Selecting multiple Archs: shows only common extra fields (intersection), otherwise defaults to Duration (ms)
-- **Interactive Tooltips**: Hover to see detailed values with elegant dark rounded tooltips
-- **Fullscreen Mode**: Expand chart for better viewing
-- **Select All/Deselect All**: Quick selection controls
-- **Collapsible Sections**: Vendor sections can be expanded/collapsed
-
-## Data Structure
+## 数据结构
 
 ```json
 {
-  "benchmark_name": {
-    "arch_name": {
-      "configuration_name": [
-        {
-          "date": "2026-04-19",
-          "duration": 123.456,
-          "extras": {
-            "field_id": {
-              "name": "Field Name",
-              "value": 789.012
-            }
-          }
-        }
-      ]
+  "benchmark": {
+    "arch": {
+      "config": [{ "date": "2026-04-19", "duration": 123.456, "extras": {} }]
     }
   }
 }
 ```
 
-## Usage
+## 使用
 
-### Adding a New Record
+1. 进入 **Data Operations** 选择或创建 Benchmark → Arch → Configuration
+2. 填写日期和耗时，可添加自定义字段
+3. 点击 **Save Record**
 
-1. Navigate to **Data Operations**
-2. Select or create a **Benchmark** (Level 1)
-3. Select or create an **Arch** (Level 2)
-4. Select or create a **Configuration** (Level 3)
-5. Fill in the **Date** and **Duration**
-6. Optionally add custom fields via **+ Add Field**
-7. Click **Save Record**
+## 可视化
 
-### Adding Custom Fields
+1. 进入 **Data Visualization** 选择 Benchmark
+2. 勾选要对比的 Arch/Configuration 组合
+3. 选择Y轴指标，点击 **Draw Chart**
 
-Custom fields (like Power, MAC Utilization) are specific to each Benchmark-Arch combination:
-1. Select a Benchmark and Arch
-2. Click **+ Add Field** in the Record Details panel
-3. Enter field name (e.g., "Power(W)" or "MAC Utilization (%)")
-4. Fill in values when saving records
+## 存储
 
-### Viewing Charts
+使用浏览器 **IndexedDB** 存储数据，完全**离线可用**。
 
-1. Navigate to **Data Visualization**
-2. Select a **Benchmark**
-3. Check the Arch/Configuration combinations to plot
-4. Choose Y-Axis metric (Duration or custom field)
-5. Click **Draw Chart**
-6. Optionally enter **fullscreen** for larger view
-7. Hover over data points for tooltips
-
-## Storage
-
-Data is stored in browser **IndexedDB**:
-- **Database**: `BenchmarkDB`
-- **Object Store**: `benchmark_data` - Main benchmark records
-- **Object Store**: `extra_fields` - Custom field definitions per Benchmark-Arch
-
-### Why IndexedDB?
-
-Compared to localStorage, IndexedDB offers:
-- **Larger capacity**: Supports hundreds of MB (vs ~5-10MB limit of localStorage)
-- **Better performance**: Asynchronous API doesn't block the main thread
-- **Structured storage**: Store any JSON-serializable object directly
-- **Query support**: Built-in indexing capabilities for future enhancements
-
-### Viewing Stored Data
-
-1. Open Chrome/Edge DevTools (F12)
-2. Go to **Application** (or **应用程序** in Chinese)
-3. Expand **IndexedDB** in the left sidebar
-4. Select `BenchmarkDB` database to view stored data
-
-### Offline Support
-
-This application works completely offline via `file://` protocol:
-- No external dependencies or CDN required
-- All functionality available without network connection
-- Data persists across browser sessions
-
-## Data Import/Export
-
-### Export
-1. Go to **Data Management**
-2. Click **Export**
-3. JSON file downloads automatically
-
-### Import
-1. Go to **Data Management**
-2. Click **Import**
-3. Select a JSON backup file
-4. Confirm overwrite existing data
-
-## Browser Compatibility
-
-Works best with modern browsers (Chrome, Firefox, Edge, Safari). Requires IndexedDB support.
-
-## File Structure
+## 文件结构
 
 ```
 perf_manager/
-├── index.html          # Entry page (home page)
+├── index.html          # 首页
 ├── html/
-│   ├── data.html       # Data import/export
-│   ├── data-op.html    # Data operations
-│   └── chart.html      # Data visualization
-├── css/
-│   └── styles.css      # Global styles
-├── js/
-│   ├── db.js          # IndexedDB wrapper
-│   ├── data.js         # Shared data utilities
-│   ├── data-op.js      # Data operations logic
-│   └── chart.js        # Chart rendering logic
-└── README.md           # This file
+│   ├── data.html       # 数据管理
+│   ├── data-op.html    # 数据操作
+│   └── chart.html      # 图表
+├── css/styles.css
+└── js/
+    ├── db.js           # IndexedDB封装
+    ├── data.js         # 数据工具
+    ├── data-op.js      # 操作逻辑
+    └── chart.js        # 图表渲染
 ```
-
-## Design System
-
-The UI uses a cohesive color scheme based on ElementUI principles:
-
-| Color | Usage |
-|-------|-------|
-| Primary (#409EFF) | Main actions, links, active states |
-| Success (#67C23A) | Success states, positive actions |
-| Warning (#E6A23C) | Warning states, form dirty indicators |
-| Danger (#F56C6C) | Delete actions, danger zones |
-| Info (#909399) | Secondary actions, disabled states |
-
-All colors are defined as CSS variables for consistency across the application.
