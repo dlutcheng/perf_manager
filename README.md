@@ -1,27 +1,27 @@
 # Performance Manager
 
-> Built with AI via vibe coding.
+> 🚀 Built with AI via vibe coding.
 
-管理并可视化基准测试性能数据的Web工具。
+A web-based tool for managing and visualizing benchmark performance data.
 
-## 功能
+## Features
 
-- **首页** (`index.html`) - 入口页面，导航和数据状态概览
-- **数据管理** (`data.html`) - JSON导入/导出/清除数据
-- **数据操作** (`data-op.html`) - 添加/编辑基准测试记录
-- **数据可视化** (`chart.html`) - 性能图表绘制
+- **Home** (`index.html`) - Entry page with navigation
+- **Data Management** (`data.html`) - JSON import/export/clear
+- **Data Operations** (`data-op.html`) - Add/edit benchmark records
+- **Data Visualization** (`chart.html`) - Performance charts
 
-## 数据层级
+## Data Hierarchy
 
 Benchmark → Arch → Configuration
 
-| 层级 | 示例 |
-|------|------|
+| Level | Example |
+|-------|---------|
 | Benchmark | resnet50, bert |
 | Arch | 16T r2p1, 8T r3p0 |
 | Configuration | fp32, int8, shape224 |
 
-## 数据结构
+## Data Structure
 
 ```json
 {
@@ -33,35 +33,35 @@ Benchmark → Arch → Configuration
 }
 ```
 
-## 使用
+## Usage
 
-1. 进入 **Data Operations** 选择或创建 Benchmark → Arch → Configuration
-2. 填写日期和耗时，可添加自定义字段
-3. 点击 **Save Record**
+1. Go to **Data Operations**, select or create Benchmark → Arch → Configuration
+2. Fill in date and duration, add custom fields if needed
+3. Click **Save Record**
 
-## 可视化
+## Visualization
 
-1. 进入 **Data Visualization** 选择 Benchmark
-2. 勾选要对比的 Arch/Configuration 组合
-3. 选择Y轴指标，点击 **Draw Chart**
+1. Go to **Data Visualization**, select a Benchmark
+2. Check Arch/Configuration combos to compare
+3. Choose Y-axis metric, click **Draw Chart**
 
-## 存储
+## Storage
 
-使用浏览器 **IndexedDB** 存储数据，完全**离线可用**。
+Data stored in browser **IndexedDB**, works **fully offline**.
 
-## 文件结构
+## File Structure
 
 ```
 perf_manager/
-├── index.html          # 首页
+├── index.html          # Home page
 ├── html/
-│   ├── data.html       # 数据管理
-│   ├── data-op.html    # 数据操作
-│   └── chart.html      # 图表
+│   ├── data.html       # Data management
+│   ├── data-op.html    # Data operations
+│   └── chart.html      # Charts
 ├── css/styles.css
 └── js/
-    ├── db.js           # IndexedDB封装
-    ├── data.js         # 数据工具
-    ├── data-op.js      # 操作逻辑
-    └── chart.js        # 图表渲染
+    ├── db.js           # IndexedDB wrapper
+    ├── data.js         # Data utilities
+    ├── data-op.js      # Operations logic
+    └── chart.js        # Chart rendering
 ```
