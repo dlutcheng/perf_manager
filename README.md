@@ -25,9 +25,20 @@ Benchmark → Arch → Configuration
 
 ```json
 {
-  "benchmark": {
-    "arch": {
-      "config": [{ "date": "2026-04-19", "duration": 123.456, "extras": {} }]
+  "benchmark_name": {
+    "arch_name": {
+      "configuration_name": [
+        {
+          "date": "2026-04-19",
+          "duration": 123.456,
+          "extras": {
+            "field_id": {
+              "name": "Field Name",
+              "value": 789.012
+            }
+          }
+        }
+      ]
     }
   }
 }

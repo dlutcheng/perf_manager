@@ -384,7 +384,14 @@ async function saveRecord() {
     extraFields.forEach(field => {
         const input = document.getElementById(`extra_${field.id}`);
         if (input) {
-            const value = parseFloat(input.value) || 0;
+            let value;
+            if (field.type === 'string') {
+                value = input.value;
+            } else if (field.type === 'int') {
+                value = parseInt(input.value) || 0;
+            } else {
+                value = parseFloat(input.value) || 0;
+            }
             record.extras[field.id] = { name: field.name, value };
         }
     });
@@ -426,9 +433,13 @@ function renderExtraFields() {
     extraFields.forEach(field => {
         const div = document.createElement('div');
         div.className = 'extra-field-item';
+        const fieldType = field.type || 'float';
+        const inputType = fieldType === 'string' ? 'text' : 'number';
+        const stepAttr = fieldType === 'int' ? '1' : '0.001';
+        const placeholder = fieldType === 'string' ? 'Text value' : 'Value';
         div.innerHTML = `
             <input type="text" class="field-name-input" name="fieldName_${field.id}" value="${field.name}" placeholder="Field Name (Unit)" onchange="updateExtraFieldName(${field.id}, this.value)">
-            <input type="number" class="field-value-input" id="extra_${field.id}" name="extra_${field.id}" step="0.001" placeholder="Value">
+            <input type="${inputType}" class="field-value-input" id="extra_${field.id}" name="extra_${field.id}" step="${stepAttr}" placeholder="${placeholder}">
             <button type="button" class="remove-field-btn" onclick="removeExtraField(${field.id})">Delete</button>
         `;
         container.appendChild(div);
@@ -439,16 +450,27 @@ async function addExtraField() {
     const name = prompt('Enter field name (e.g., Power(W)):');
     if (!name) return;
 
+    let type = prompt('Enter field type (1: Integer, 2: Float, 3: String):', '2');
+    if (!type) return;
+    type = parseInt(type);
+    if (![1, 2, 3].includes(type)) {
+        alert('Invalid field type');
+        return;
+    }
+
     const id = Date.now();
-    extraFields.push({ id, name });
+    const typeMap = { 1: 'int', 2: 'float', 3: 'string' };
+    extraFields.push({ id, name, type: typeMap[type] });
     await saveExtraFieldsForVendor(currentBenchmark, currentVendor, extraFields);
 
     const container = document.getElementById('extraFieldsList');
     const div = document.createElement('div');
     div.className = 'extra-field-item';
+    const inputType = type === 3 ? 'text' : type === 1 ? 'number' : 'number';
+    const stepAttr = type === 1 ? '1' : '0.001';
     div.innerHTML = `
         <input type="text" class="field-name-input" value="${name}" placeholder="Field Name (Unit)" onchange="updateExtraFieldName(${id}, this.value)">
-        <input type="number" class="field-value-input" id="extra_${id}" step="0.001" placeholder="Value">
+        <input type="${inputType}" class="field-value-input" id="extra_${id}" step="${stepAttr}" placeholder="${type === 3 ? 'Text value' : 'Value'}">
         <button type="button" class="remove-field-btn" onclick="removeExtraField(${id})">Delete</button>
     `;
     container.appendChild(div);
@@ -543,8 +565,17 @@ function displayRecords() {
             aVal = a.duration;
             bVal = b.duration;
         } else {
-            aVal = a.extras?.[activeSort]?.value || 0;
-            bVal = b.extras?.[activeSort]?.value || 0;
+            const field = extraFields.find(f => f.id === parseInt(activeSort));
+            const fieldType = field?.type || 'float';
+            const aExtra = a.extras?.[activeSort];
+            const bExtra = b.extras?.[activeSort];
+            if (fieldType === 'string') {
+                aVal = aExtra?.value || '';
+                bVal = bExtra?.value || '';
+            } else {
+                aVal = aExtra?.value || 0;
+                bVal = bExtra?.value || 0;
+            }
         }
 
         if (state === 1) {
@@ -555,12 +586,11 @@ function displayRecords() {
     });
 
     const colCount = 2 + extraFields.length;
+    const colWidth = 100 / colCount;
     let colgroup = '<colgroup>';
-    colgroup += '<col>';
-    for (let i = 1; i < colCount - 1; i++) {
-        colgroup += '<col>';
+    for (let i = 0; i < colCount; i++) {
+        colgroup += `<col style="width: ${colWidth.toFixed(2)}%">`;
     }
-    colgroup += '<col>';
     colgroup += '</colgroup>';
 
     let html = '<table>' + colgroup + '<thead><tr>';
@@ -583,8 +613,17 @@ function displayRecords() {
             <td>${record.duration.toFixed(3)}</td>`;
 
         extraFields.forEach(field => {
+            const fieldType = field.type || 'float';
             const extra = record.extras?.[field.id];
-            html += `<td>${extra ? extra.value.toFixed(3) : '0.000'}</td>`;
+            let displayValue;
+            if (fieldType === 'string') {
+                displayValue = extra ? extra.value : '';
+            } else if (fieldType === 'int') {
+                displayValue = extra ? extra.value : 0;
+            } else {
+                displayValue = extra ? extra.value.toFixed(3) : '0.000';
+            }
+            html += `<td>${displayValue}</td>`;
         });
 
         html += `<td>
@@ -630,10 +669,15 @@ function editRecord(index) {
     document.getElementById('recordDuration').value = record.duration;
 
     extraFields.forEach(field => {
+        const fieldType = field.type || 'float';
         const input = document.getElementById(`extra_${field.id}`);
         if (input) {
             const extra = record.extras?.[field.id];
-            input.value = extra ? extra.value : '0';
+            if (fieldType === 'string') {
+                input.value = extra ? extra.value : '';
+            } else {
+                input.value = extra ? extra.value : '0';
+            }
         }
     });
 

@@ -69,7 +69,10 @@ async function exportData() {
                         }
                         fields.forEach(field => {
                             if (record.extras[field.id] === undefined) {
-                                record.extras[field.id] = { name: field.name, value: 0 };
+                                record.extras[field.id] = { name: field.name, type: field.type, value: 0 };
+                            } else {
+                                record.extras[field.id].name = field.name;
+                                record.extras[field.id].type = field.type;
                             }
                         });
                     });
@@ -114,7 +117,7 @@ function collectExtraFieldsPerVendor(dataObj) {
                             Object.entries(record.extras).forEach(([fieldId, fieldData]) => {
                                 const id = parseInt(fieldId);
                                 if (id > 0 && !vendorFieldsMap[benchmark][vendor].has(id)) {
-                                    vendorFieldsMap[benchmark][vendor].set(id, { id, name: fieldData.name });
+                                    vendorFieldsMap[benchmark][vendor].set(id, { id, name: fieldData.name, type: fieldData.type || 'float' });
                                 }
                             });
                         }
@@ -215,7 +218,8 @@ async function clearAllData() {
         console.error('Backup failed:', error);
     }
 
-    await dbSaveBenchmarkData({});
+    await deleteDatabase();
     updateDataStatus();
     alert('All data cleared, backup downloaded.');
+    location.reload();
 }

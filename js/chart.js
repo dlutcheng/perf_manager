@@ -72,11 +72,11 @@ function getExtraFieldsUnionForVendors(benchmark, vendors) {
         const vendorFields = getExtraFieldsForVendor(benchmark, vendor);
         vendorFields.forEach(field => {
             if (!fieldsMap.has(field.id)) {
-                fieldsMap.set(field.id, field.name);
+                fieldsMap.set(field.id, { id: field.id, name: field.name, type: field.type || 'float' });
             }
         });
     });
-    return Array.from(fieldsMap.entries()).map(([id, name]) => ({ id: parseInt(id), name }));
+    return Array.from(fieldsMap.values());
 }
 
 function getExtraFieldsIntersectionForVendors(benchmark, vendors) {
@@ -99,7 +99,7 @@ function getExtraFieldsIntersectionForVendors(benchmark, vendors) {
     const firstVendorFields = getExtraFieldsForVendor(benchmark, vendors[0]);
     return firstVendorFields
         .filter(f => intersection.has(f.id))
-        .map(f => ({ id: f.id, name: f.name }));
+        .map(f => ({ id: f.id, name: f.name, type: f.type || 'float' }));
 }
 
 function populateYAxisSelect() {
@@ -108,7 +108,10 @@ function populateYAxisSelect() {
         <option value="duration">Duration (ms)</option>
     `;
     extraFields.forEach(field => {
-        yAxisSelect.innerHTML += `<option value="extra_${field.id}">${field.name}</option>`;
+        const fieldType = field.type || 'float';
+        if (fieldType !== 'string') {
+            yAxisSelect.innerHTML += `<option value="extra_${field.id}">${field.name}</option>`;
+        }
     });
 }
 

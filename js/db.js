@@ -170,3 +170,21 @@ window.saveExtraFieldsForVendor = saveExtraFieldsForVendor;
 window.dbSaveExtraFieldsForVendor = saveExtraFieldsForVendor;
 window.deleteExtraFieldsForBenchmark = deleteExtraFieldsForBenchmark;
 window.deleteExtraFieldsForVendor = deleteExtraFieldsForVendor;
+
+function deleteDatabase() {
+    return new Promise((resolve, reject) => {
+        const request = indexedDB.deleteDatabase(DB_NAME);
+        request.onsuccess = () => {
+            db = null;
+            resolve();
+        };
+        request.onerror = () => reject(request.error);
+        request.onblocked = () => {
+            console.warn('Database delete blocked');
+            db = null;
+            resolve();
+        };
+    });
+}
+
+window.deleteDatabase = deleteDatabase;
