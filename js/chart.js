@@ -10,7 +10,9 @@ let chartState = {
     chartWidth: 0,
     chartHeight: 0,
     xPosition: null,
-    yPosition: null
+    yPosition: null,
+    highlightAnnotations: [],
+    animationId: null
 };
 
 const COLORS = [
@@ -128,7 +130,12 @@ window.updateChartYAxisOptions = async function(benchmark, vendor) {
 
 function setupEventListeners() {
     document.getElementById('chartBenchmarkSelect').addEventListener('change', onBenchmarkChange);
-    document.getElementById('drawChartBtn').addEventListener('click', enterFullscreen);
+    document.getElementById('drawChartBtn').addEventListener('click', function() {
+        this.classList.remove('btn-pulse');
+        void this.offsetWidth;
+        this.classList.add('btn-pulse');
+        enterFullscreen();
+    });
     document.getElementById('selectAllBtn').addEventListener('click', selectAll);
     document.getElementById('deselectAllBtn').addEventListener('click', deselectAll);
 
@@ -314,13 +321,13 @@ function deselectAll() {
 
 function enterFullscreen() {
     document.getElementById('mainContainer').style.display = 'none';
-    document.getElementById('chartFullscreen').style.display = 'flex';
+    document.getElementById('chartFullscreen').classList.add('visible');
     updateExtraFieldsFromSelection();
     drawChart();
 }
 
 function exitFullscreen() {
-    document.getElementById('chartFullscreen').style.display = 'none';
+    document.getElementById('chartFullscreen').classList.remove('visible');
     document.getElementById('mainContainer').style.display = 'block';
 }
 
@@ -366,10 +373,38 @@ function drawChart() {
     chartState.benchmark = benchmark;
     chartState.yAxis = yAxis;
 
-    renderChart(datasets, allLabels, yAxis, benchmark);
+    animateChart(datasets, allLabels, yAxis, benchmark);
 }
 
-function renderChart(datasets, labels, yAxis, benchmark) {
+function animateChart(datasets, labels, yAxis, benchmark) {
+    if (chartState.animationId) {
+        cancelAnimationFrame(chartState.animationId);
+        chartState.animationId = null;
+    }
+
+    const duration = 800;
+    const startTime = performance.now();
+
+    function frame(now) {
+        const elapsed = now - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+
+        renderChart(datasets, labels, yAxis, benchmark, eased);
+
+        if (progress < 1) {
+            chartState.animationId = requestAnimationFrame(frame);
+        } else {
+            chartState.animationId = null;
+        }
+    }
+
+    chartState.animationId = requestAnimationFrame(frame);
+}
+
+function renderChart(datasets, labels, yAxis, benchmark, animProgress) {
+    if (animProgress === undefined) animProgress = 1;
+
     const canvas = document.getElementById('chartCanvas');
     const ctx = canvas.getContext('2d');
 
@@ -476,27 +511,32 @@ function renderChart(datasets, labels, yAxis, benchmark) {
     ctx.fillText(titleMap[yAxis] || yAxis, 0, 0);
     ctx.restore();
 
+    const totalPoints = labels.length;
+    const visibleCount = Math.max(1, Math.ceil(totalPoints * animProgress));
+
     datasets.forEach((dataset, datasetIndex) => {
         const gradient = ctx.createLinearGradient(0, padding.top, 0, padding.top + chartHeight);
         gradient.addColorStop(0, dataset.color.fill.replace('0.12', '0.20'));
         gradient.addColorStop(1, dataset.color.fill.replace('0.12', '0'));
 
-        ctx.beginPath();
         const points = [];
         dataset.dates.forEach((date, index) => {
             const labelIndex = labels.indexOf(date);
-            const x = xPosition(labelIndex);
-            const y = yPosition(dataset.values[index]);
-            points.push({ x, y });
-
-            if (index === 0) {
-                ctx.moveTo(x, y);
-            } else {
-                ctx.lineTo(x, y);
+            if (labelIndex < visibleCount) {
+                const x = xPosition(labelIndex);
+                const y = yPosition(dataset.values[index]);
+                points.push({ x, y, labelIndex });
             }
         });
 
+        if (points.length === 0) return;
+
         if (points.length > 1) {
+            ctx.beginPath();
+            ctx.moveTo(points[0].x, points[0].y);
+            for (let i = 1; i < points.length; i++) {
+                ctx.lineTo(points[i].x, points[i].y);
+            }
             ctx.lineTo(points[points.length - 1].x, padding.top + chartHeight);
             ctx.lineTo(points[0].x, padding.top + chartHeight);
             ctx.closePath();
@@ -525,6 +565,99 @@ function renderChart(datasets, labels, yAxis, benchmark) {
             ctx.lineWidth = 2;
             ctx.stroke();
         });
+    });
+
+    const highlightAnnotations = [];
+
+    if (animProgress >= 1) {
+        datasets.forEach((dataset, datasetIndex) => {
+            if (dataset.values.length <= 1) return;
+
+            let maxVal = -Infinity, minVal = Infinity;
+            let maxIdx = -1, minIdx = -1;
+            dataset.values.forEach((val, idx) => {
+                if (val >= maxVal) { maxVal = val; maxIdx = idx; }
+                if (val <= minVal) { minVal = val; minIdx = idx; }
+            });
+
+            const maxDate = dataset.dates[maxIdx];
+            const minDate = dataset.dates[minIdx];
+            const maxLabelIdx = labels.indexOf(maxDate);
+            const minLabelIdx = labels.indexOf(minDate);
+            const maxX = xPosition(maxLabelIdx);
+            const maxY = yPosition(maxVal);
+            const minX = xPosition(minLabelIdx);
+            const minY = yPosition(minVal);
+
+            ctx.beginPath();
+            ctx.arc(maxX, maxY, 7, 0, 2 * Math.PI);
+            ctx.fillStyle = dataset.color.line;
+            ctx.fill();
+            ctx.strokeStyle = '#0f172a';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.arc(minX, minY, 7, 0, 2 * Math.PI);
+            ctx.fillStyle = dataset.color.line;
+            ctx.fill();
+            ctx.strokeStyle = '#0f172a';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            highlightAnnotations.push({
+                x: maxX, y: maxY, value: maxVal, date: maxDate,
+                label: dataset.label, color: dataset.color.line, type: 'MAX'
+            });
+            highlightAnnotations.push({
+                x: minX, y: minY, value: minVal, date: minDate,
+                label: dataset.label, color: dataset.color.line, type: 'MIN'
+            });
+        });
+    }
+
+    chartState.highlightAnnotations = [];
+
+    highlightAnnotations.forEach(ann => {
+        const tagText = `${ann.type}: ${ann.value.toFixed(3)}`;
+        const dateText = ann.date;
+        const labelText = ann.label;
+
+        ctx.font = 'bold 11px "JetBrains Mono", monospace';
+        const tagWidth = Math.max(ctx.measureText(tagText).width, ctx.measureText(dateText).width, ctx.measureText(labelText).width) + 16;
+        const tagHeight = 48;
+        const tagOffsetY = ann.type === 'MAX' ? -(tagHeight + 10) : 14;
+
+        let tagX = ann.x - tagWidth / 2;
+        let tagY = ann.y + tagOffsetY;
+
+        if (tagX < padding.left) tagX = padding.left;
+        if (tagX + tagWidth > canvas.width - padding.right) tagX = canvas.width - padding.right - tagWidth;
+        if (tagY < padding.top) tagY = padding.top;
+        if (tagY + tagHeight > padding.top + chartHeight) tagY = padding.top + chartHeight - tagHeight;
+
+        ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
+        ctx.strokeStyle = ann.color;
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.roundRect(tagX, tagY, tagWidth, tagHeight, 4);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.font = 'bold 11px "JetBrains Mono", monospace';
+        ctx.fillStyle = ann.color;
+        ctx.textAlign = 'left';
+        ctx.fillText(tagText, tagX + 8, tagY + 14);
+
+        ctx.font = '10px "JetBrains Mono", monospace';
+        ctx.fillStyle = '#94a3b8';
+        ctx.fillText(dateText, tagX + 8, tagY + 28);
+
+        ctx.font = '10px "Outfit", sans-serif';
+        ctx.fillStyle = '#64748b';
+        ctx.fillText(labelText, tagX + 8, tagY + 42);
+
+        chartState.highlightAnnotations.push({ x: tagX, y: tagY, width: tagWidth, height: tagHeight });
     });
 
     const legendY = padding.top - 15;
@@ -576,6 +709,23 @@ function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
         }
     });
     ctx.fillText(line.trim(), x, y + row * lineHeight);
+    return row + 1;
+}
+
+function measureTextRows(ctx, text, maxWidth) {
+    const words = text.split(' ');
+    let line = '';
+    let row = 0;
+    words.forEach(word => {
+        const testLine = line + word + ' ';
+        const metrics = ctx.measureText(testLine);
+        if (metrics.width > maxWidth && line !== '') {
+            line = word + ' ';
+            row++;
+        } else {
+            line = testLine;
+        }
+    });
     return row + 1;
 }
 
@@ -656,6 +806,7 @@ function onCanvasMouseMove(e) {
         );
         const tooltipWidth = Math.min(maxLabelWidth + 80, 300);
         const lineHeight = 16;
+        const textMaxWidth = tooltipWidth - 30;
 
         if (tooltipX + tooltipWidth > canvas.width) {
             tooltipX = canvas.width - tooltipWidth - 10;
@@ -666,30 +817,61 @@ function onCanvasMouseMove(e) {
         }
 
         ctx.font = 'bold 12px "Outfit", sans-serif';
-        ctx.fillStyle = '#64748b';
-        ctx.textAlign = 'left';
-        const textMaxWidth = tooltipWidth - 30;
-        const rows0 = wrapText(ctx, chartState.benchmark, tooltipX, tooltipY + 10, textMaxWidth, lineHeight);
-        const rows1 = wrapText(ctx, titleMap[chartState.yAxis] || chartState.yAxis, tooltipX, tooltipY + 10 + rows0 * lineHeight, textMaxWidth, lineHeight);
-        const rows2 = wrapText(ctx, nearestLabel, tooltipX, tooltipY + 10 + (rows0 + rows1) * lineHeight, textMaxWidth, lineHeight);
+        const rows0 = measureTextRows(ctx, chartState.benchmark, textMaxWidth);
+        const rows1 = measureTextRows(ctx, titleMap[chartState.yAxis] || chartState.yAxis, textMaxWidth);
+        const rows2 = measureTextRows(ctx, nearestLabel, textMaxWidth);
 
-        let currentY = tooltipY + 10 + (rows0 + rows1 + rows2) * lineHeight + 10;
+        let measuredY = tooltipY + 10 + (rows0 + rows1 + rows2) * lineHeight + 10;
         const dataRows = [];
-        dataPointsAtNearestDate.forEach((point, i) => {
+        dataPointsAtNearestDate.forEach((point) => {
             ctx.font = '12px "JetBrains Mono", monospace';
-            ctx.fillStyle = point.color;
-            ctx.beginPath();
-            ctx.roundRect(tooltipX, currentY - 8, 12, 12, 2);
-            ctx.fill();
-
-            ctx.fillStyle = '#e2e8f0';
             const text = `${point.label}: ${point.value.toFixed(3)}`;
-            const textRows = wrapText(ctx, text, tooltipX + 18, currentY, textMaxWidth - 18, lineHeight);
+            const textRows = measureTextRows(ctx, text, textMaxWidth - 18);
             dataRows.push(textRows);
-            currentY += Math.max(textRows * lineHeight, 20);
+            measuredY += Math.max(textRows * lineHeight, 20);
         });
 
-        const tooltipHeight = currentY - tooltipY + 10;
+        const tooltipHeight = measuredY - tooltipY + 10;
+
+        const annotations = chartState.highlightAnnotations || [];
+        const rectsOverlap = (r1, r2) => {
+            return r1.x < r2.x + r2.width && r1.x + r1.width > r2.x &&
+                   r1.y < r2.y + r2.height && r1.y + r1.height > r2.y;
+        };
+
+        const tooltipRect = { x: tooltipX - 5, y: tooltipY - 5, width: tooltipWidth, height: tooltipHeight };
+        let overlaps = annotations.some(ann => rectsOverlap(tooltipRect, ann));
+
+        if (overlaps) {
+            const candidates = [
+                { x: nearestX + 20, y: tooltipY },
+                { x: nearestX - tooltipWidth - 15, y: tooltipY },
+                { x: tooltipX, y: padding.top + 5 },
+                { x: tooltipX, y: padding.top + chartHeight - tooltipHeight - 5 },
+                { x: nearestX + 20, y: padding.top + chartHeight - tooltipHeight - 5 },
+                { x: nearestX - tooltipWidth - 15, y: padding.top + chartHeight - tooltipHeight - 5 },
+                { x: padding.left + 5, y: tooltipY },
+                { x: canvas.width - tooltipWidth - padding.right - 5, y: tooltipY }
+            ];
+
+            for (const candidate of candidates) {
+                let cx = candidate.x;
+                let cy = candidate.y;
+                if (cx < padding.left) cx = padding.left;
+                if (cx + tooltipWidth > canvas.width - padding.right) cx = canvas.width - padding.right - tooltipWidth;
+                if (cy < padding.top) cy = padding.top;
+                if (cy + tooltipHeight > padding.top + chartHeight) cy = padding.top + chartHeight - tooltipHeight;
+
+                const testRect = { x: cx - 5, y: cy - 5, width: tooltipWidth, height: tooltipHeight };
+                if (!annotations.some(ann => rectsOverlap(testRect, ann))) {
+                    tooltipX = cx;
+                    tooltipY = cy;
+                    overlaps = false;
+                    break;
+                }
+            }
+        }
+
         ctx.fillStyle = 'rgba(30, 41, 59, 0.95)';
         ctx.beginPath();
         ctx.roundRect(tooltipX - 5, tooltipY - 5, tooltipWidth, tooltipHeight, 6);
@@ -702,7 +884,7 @@ function onCanvasMouseMove(e) {
         wrapText(ctx, titleMap[chartState.yAxis] || chartState.yAxis, tooltipX, tooltipY + 10 + rows0 * lineHeight, textMaxWidth, lineHeight);
         wrapText(ctx, nearestLabel, tooltipX, tooltipY + 10 + (rows0 + rows1) * lineHeight, textMaxWidth, lineHeight);
 
-        currentY = tooltipY + 10 + (rows0 + rows1 + rows2) * lineHeight + 10;
+        let currentY = tooltipY + 10 + (rows0 + rows1 + rows2) * lineHeight + 10;
         dataPointsAtNearestDate.forEach((point, i) => {
             ctx.font = '12px "JetBrains Mono", monospace';
             ctx.fillStyle = point.color;

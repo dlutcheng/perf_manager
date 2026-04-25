@@ -17,18 +17,37 @@ async function updateDataStatus() {
         if (Object.keys(data).length > 0) {
             const benchmarkCount = Object.keys(data).length;
             let recordCount = 0;
-            Object.values(data).forEach(vendors => {
+            const benchmarkStats = [];
+
+            Object.entries(data).forEach(([benchmark, vendors]) => {
+                let archCount = Object.keys(vendors).length;
+                let configCount = 0;
+                let benchRecords = 0;
                 Object.values(vendors).forEach(configurations => {
+                    configCount += Object.keys(configurations).length;
                     Object.values(configurations).forEach(records => {
-                        recordCount += records.length;
+                        benchRecords += records.length;
                     });
                 });
+                recordCount += benchRecords;
+                benchmarkStats.push({ name: benchmark, archCount, configCount, recordCount: benchRecords });
             });
-            document.getElementById('dataStatus').innerHTML = `
+
+            let statsHtml = `
                 <span class="status-good">Loaded</span><br>
-                Benchmarks: ${benchmarkCount}<br>
-                Total Records: ${recordCount}
+                Benchmarks: ${benchmarkCount} &nbsp;|&nbsp; Total Records: ${recordCount}
             `;
+
+            statsHtml += '<div class="benchmark-stats-grid">';
+            benchmarkStats.forEach(stat => {
+                statsHtml += `<div class="benchmark-stat-item">
+                    <span class="benchmark-stat-name">${stat.name}</span>
+                    <span class="benchmark-stat-detail">${stat.archCount} Arch · ${stat.configCount} Config · ${stat.recordCount} Rec</span>
+                </div>`;
+            });
+            statsHtml += '</div>';
+
+            document.getElementById('dataStatus').innerHTML = statsHtml;
         } else {
             document.getElementById('dataStatus').innerHTML = '<span class="status-empty">No Data</span>';
         }
@@ -91,9 +110,18 @@ async function exportData() {
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
         alert('Data exported successfully');
+        flashButton('exportBtn');
     } catch (error) {
         alert('Data export failed');
     }
+}
+
+function flashButton(btnId) {
+    const btn = document.getElementById(btnId);
+    if (!btn) return;
+    btn.classList.remove('btn-flash');
+    void btn.offsetWidth;
+    btn.classList.add('btn-flash');
 }
 
 function collectExtraFieldsPerVendor(dataObj) {
@@ -185,6 +213,7 @@ async function importData() {
 
                     updateDataStatus();
                     alert('Data imported successfully');
+                    flashButton('importBtn');
                 }
             } catch (error) {
                 alert('Data import failed: invalid JSON format');

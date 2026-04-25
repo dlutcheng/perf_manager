@@ -8,6 +8,30 @@ let sortStates = {
     duration: 0
 };
 let dateFilter = '';
+let pagination = {
+    currentPage: 1,
+    pageSize: 25,
+    customPageSize: ''
+};
+
+function showPanel(el, delayed) {
+    const wasHidden = el.style.display === 'none';
+    el.classList.remove('panel-animate-in', 'panel-animate-in-delayed');
+    if (wasHidden) {
+        el.style.opacity = '0';
+    }
+    el.style.display = 'block';
+    void el.offsetWidth;
+    if (wasHidden) {
+        el.style.opacity = '';
+    }
+    el.classList.add(delayed ? 'panel-animate-in-delayed' : 'panel-animate-in');
+}
+
+function hidePanel(el) {
+    el.style.display = 'none';
+    el.classList.remove('panel-animate-in', 'panel-animate-in-delayed');
+}
 
 document.addEventListener('DOMContentLoaded', async () => {
     await initDatabase();
@@ -135,9 +159,11 @@ async function onBenchmarkChange() {
     document.getElementById('addFieldBtn').disabled = true;
     document.getElementById('deleteVendorBtn').disabled = true;
 
-    document.getElementById('recordDetailPanel').style.display = 'none';
-    document.getElementById('recordsListPanel').style.display = 'none';
+    hidePanel(document.getElementById('recordDetailPanel'));
+    hidePanel(document.getElementById('recordsListPanel'));
     document.getElementById('dataTopRow').classList.add('single-panel');
+
+    pagination.currentPage = 1;
 
     if (benchmark && data[benchmark]) {
         Object.keys(data[benchmark]).sort().forEach(vendor => {
@@ -171,9 +197,11 @@ async function onVendorChange() {
     document.getElementById('addFieldBtn').disabled = !vendor;
     document.getElementById('deleteVendorBtn').disabled = !vendor;
 
-    document.getElementById('recordDetailPanel').style.display = 'none';
-    document.getElementById('recordsListPanel').style.display = 'none';
+    hidePanel(document.getElementById('recordDetailPanel'));
+    hidePanel(document.getElementById('recordsListPanel'));
     document.getElementById('dataTopRow').classList.add('single-panel');
+
+    pagination.currentPage = 1;
 
     if (benchmark && vendor && data[benchmark]?.[vendor]) {
         Object.keys(data[benchmark][vendor]).sort().forEach(configuration => {
@@ -198,13 +226,15 @@ async function onConfigurationChange() {
     const recordsListPanel = document.getElementById('recordsListPanel');
     const dataTopRow = document.getElementById('dataTopRow');
 
+    pagination.currentPage = 1;
+
     if (benchmark && vendor && configuration) {
-        recordDetailPanel.style.display = 'block';
-        recordsListPanel.style.display = 'block';
         dataTopRow.classList.remove('single-panel');
+        showPanel(recordDetailPanel, false);
+        showPanel(recordsListPanel, true);
     } else {
-        recordDetailPanel.style.display = 'none';
-        recordsListPanel.style.display = 'none';
+        hidePanel(recordDetailPanel);
+        hidePanel(recordsListPanel);
         dataTopRow.classList.add('single-panel');
         document.getElementById('dateSearchInput').value = '';
         dateFilter = '';
@@ -519,6 +549,7 @@ function updateYAxisOptions() {
 function filterRecordsByDate() {
     const input = document.getElementById('dateSearchInput');
     dateFilter = input.value.trim();
+    pagination.currentPage = 1;
     displayRecords();
 }
 
@@ -535,6 +566,7 @@ function displayRecords() {
 
     if (!benchmark || !vendor || !configuration) {
         container.innerHTML = '<p class="empty-message">Select Benchmark, Arch and Configuration first</p>';
+        document.getElementById('paginationControls').innerHTML = '';
         return;
     }
 
@@ -549,6 +581,7 @@ function displayRecords() {
         container.innerHTML = dateFilter
             ? '<p class="empty-message">No records found for the specified date</p>'
             : '<p class="empty-message">No records</p>';
+        document.getElementById('paginationControls').innerHTML = '';
         return;
     }
 
@@ -585,6 +618,18 @@ function displayRecords() {
         }
     });
 
+    const totalCount = filteredRecords.length;
+    const totalPages = Math.max(1, Math.ceil(totalCount / pagination.pageSize));
+    if (pagination.currentPage > totalPages) {
+        pagination.currentPage = totalPages;
+    }
+    if (pagination.currentPage < 1) {
+        pagination.currentPage = 1;
+    }
+    const startIndex = (pagination.currentPage - 1) * pagination.pageSize;
+    const endIndex = Math.min(startIndex + pagination.pageSize, totalCount);
+    const pageRecords = filteredRecords.slice(startIndex, endIndex);
+
     const colCount = 2 + extraFields.length;
     const colWidth = 100 / colCount;
     let colgroup = '<colgroup>';
@@ -606,7 +651,7 @@ function displayRecords() {
 
     html += '<th>Action</th></tr></thead><tbody>';
 
-    filteredRecords.forEach((record) => {
+    pageRecords.forEach((record) => {
         const originalIndex = records.indexOf(record);
         html += `<tr>
             <td>${record.date}</td>
@@ -634,6 +679,8 @@ function displayRecords() {
 
     html += '</tbody></table>';
     container.innerHTML = html;
+
+    renderPagination(totalCount, totalPages);
 }
 
 function getSortArrow(fieldId) {
@@ -655,6 +702,7 @@ function toggleSortInternal(fieldId) {
     } else {
         sortStates[fieldId] = 0;
     }
+    pagination.currentPage = 1;
     displayRecords();
 }
 
@@ -688,6 +736,8 @@ function editRecord(index) {
     document.getElementById('recordExtraFields').style.display = 'block';
     document.getElementById('toggleIcon').textContent = '▲';
     document.getElementById('toggleIcon').nextElementSibling.textContent = 'Hide More Fields';
+
+    document.getElementById('recordDetailPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 async function deleteRecord(index) {
@@ -763,3 +813,139 @@ window.reloadExtraFields = async function() {
         updateYAxisOptions();
     }
 };
+
+function renderPagination(totalCount, totalPages) {
+    const container = document.getElementById('paginationControls');
+    if (totalCount === 0) {
+        container.innerHTML = '';
+        return;
+    }
+
+    const currentPage = pagination.currentPage;
+    const pageSize = pagination.pageSize;
+    const startItem = (currentPage - 1) * pageSize + 1;
+    const endItem = Math.min(currentPage * pageSize, totalCount);
+
+    let html = '<div class="pagination-info">';
+    html += `<span class="pagination-total">${startItem}-${endItem} of ${totalCount}</span>`;
+    html += '<span class="pagination-size-label">Rows per page:</span>';
+    html += '<div class="pagination-size-selector">';
+    html += `<button class="page-size-btn${pageSize === 25 ? ' active' : ''}" onclick="changePageSize(25)">25</button>`;
+    html += `<button class="page-size-btn${pageSize === 50 ? ' active' : ''}" onclick="changePageSize(50)">50</button>`;
+    html += `<button class="page-size-btn${pageSize === 100 ? ' active' : ''}" onclick="changePageSize(100)">100</button>`;
+    html += '<div class="custom-page-size">';
+    html += `<input type="number" id="customPageSizeInput" min="1" max="500" placeholder="Custom" value="${pagination.customPageSize}" onkeydown="if(event.key==='Enter')applyCustomPageSize()">`;
+    html += '</div>';
+    html += '</div>';
+    html += '</div>';
+
+    if (totalPages > 1) {
+        html += '<div class="pagination-nav">';
+
+        html += `<button class="page-nav-btn" onclick="goToPage(1)"${currentPage === 1 ? ' disabled' : ''} title="First page">&#171;</button>`;
+        html += `<button class="page-nav-btn" onclick="goToPage(${currentPage - 1})"${currentPage === 1 ? ' disabled' : ''} title="Previous page">&#8249;</button>`;
+
+        const maxVisiblePages = 7;
+        let startPage, endPage;
+
+        if (totalPages <= maxVisiblePages) {
+            startPage = 1;
+            endPage = totalPages;
+        } else {
+            const halfVisible = Math.floor(maxVisiblePages / 2);
+            startPage = Math.max(1, currentPage - halfVisible);
+            endPage = startPage + maxVisiblePages - 1;
+
+            if (endPage > totalPages) {
+                endPage = totalPages;
+                startPage = Math.max(1, endPage - maxVisiblePages + 1);
+            }
+        }
+
+        if (startPage > 1) {
+            html += `<button class="page-nav-btn" onclick="goToPage(1)">1</button>`;
+            if (startPage > 2) {
+                html += '<span class="page-ellipsis">...</span>';
+            }
+        }
+
+        for (let i = startPage; i <= endPage; i++) {
+            if (i === currentPage) {
+                html += `<button class="page-nav-btn active" disabled>${i}</button>`;
+            } else {
+                html += `<button class="page-nav-btn" onclick="goToPage(${i})">${i}</button>`;
+            }
+        }
+
+        if (endPage < totalPages) {
+            if (endPage < totalPages - 1) {
+                html += '<span class="page-ellipsis">...</span>';
+            }
+            html += `<button class="page-nav-btn" onclick="goToPage(${totalPages})">${totalPages}</button>`;
+        }
+
+        html += `<button class="page-nav-btn" onclick="goToPage(${currentPage + 1})"${currentPage === totalPages ? ' disabled' : ''} title="Next page">&#8250;</button>`;
+        html += `<button class="page-nav-btn" onclick="goToPage(${totalPages})"${currentPage === totalPages ? ' disabled' : ''} title="Last page">&#187;</button>`;
+
+        html += '<div class="page-jump">';
+        html += `<input type="number" id="pageJumpInput" min="1" max="${totalPages}" placeholder="Page" onkeydown="if(event.key==='Enter')applyPageJump()">`;
+        html += '</div>';
+
+        html += '</div>';
+    }
+
+    container.innerHTML = html;
+}
+
+function goToPage(page) {
+    pagination.currentPage = page;
+    displayRecords();
+}
+
+function changePageSize(size) {
+    pagination.pageSize = size;
+    pagination.customPageSize = '';
+    pagination.currentPage = 1;
+    displayRecords();
+}
+
+function applyCustomPageSize() {
+    const input = document.getElementById('customPageSizeInput');
+    const value = parseInt(input.value);
+    if (!value || value < 1) {
+        alert('Please enter a valid number (>= 1)');
+        return;
+    }
+    if (value > 500) {
+        alert('Maximum 500 rows per page');
+        return;
+    }
+    pagination.pageSize = value;
+    pagination.customPageSize = value;
+    pagination.currentPage = 1;
+    displayRecords();
+}
+
+function applyPageJump() {
+    const input = document.getElementById('pageJumpInput');
+    const value = parseInt(input.value);
+    if (!value || value < 1) {
+        alert('Please enter a valid page number');
+        return;
+    }
+    const benchmark = document.getElementById('benchmarkSelect').value;
+    const vendor = document.getElementById('vendorSelect').value;
+    const configuration = document.getElementById('configurationSelect').value;
+    const records = data[benchmark]?.[vendor]?.[configuration] || [];
+    let filteredCount = records.length;
+    if (dateFilter) {
+        filteredCount = records.filter(r => r.date.includes(dateFilter)).length;
+    }
+    const totalPages = Math.max(1, Math.ceil(filteredCount / pagination.pageSize));
+    if (value > totalPages) {
+        alert(`Page number exceeds maximum (${totalPages})`);
+        return;
+    }
+    pagination.currentPage = value;
+    displayRecords();
+}

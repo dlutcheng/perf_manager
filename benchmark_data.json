@@ -1,0 +1,3087 @@
+{
+  "resnet50": {
+    "8T r1p0": {
+      "int8 per-layer symm": [
+        {
+          "date": "2026-04-19",
+          "duration": 2.1,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 41.2,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.235"
+            }
+          }
+        },
+        {
+          "date": "2026-04-18",
+          "duration": 2.07,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 43.1,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "value": "6.1.234",
+              "type": "string"
+            }
+          }
+        },
+        {
+          "date": "2026-04-18",
+          "duration": 2.64,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 39.1,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.316"
+            }
+          }
+        },
+        {
+          "date": "2026-04-18",
+          "duration": 1.86,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 40.2,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.339"
+            }
+          }
+        },
+        {
+          "date": "2026-04-15",
+          "duration": 1.8,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 40.2,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.366"
+            }
+          }
+        },
+        {
+          "date": "2026-04-14",
+          "duration": 3.18,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 35.8,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.295"
+            }
+          }
+        },
+        {
+          "date": "2026-04-13",
+          "duration": 1.52,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 42.3,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.294"
+            }
+          }
+        },
+        {
+          "date": "2026-04-13",
+          "duration": 1.13,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 39.6,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.344"
+            }
+          }
+        },
+        {
+          "date": "2026-04-12",
+          "duration": 2.09,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 48.1,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.238"
+            }
+          }
+        },
+        {
+          "date": "2026-04-11",
+          "duration": 2.93,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 37.5,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.239"
+            }
+          }
+        },
+        {
+          "date": "2026-04-10",
+          "duration": 1.91,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 48.1,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.408"
+            }
+          }
+        },
+        {
+          "date": "2026-04-09",
+          "duration": 1.5,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 45.2,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.289"
+            }
+          }
+        },
+        {
+          "date": "2026-04-09",
+          "duration": 2.18,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 42.8,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.385"
+            }
+          }
+        },
+        {
+          "date": "2026-04-09",
+          "duration": 2.19,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 45.5,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.400"
+            }
+          }
+        },
+        {
+          "date": "2026-04-07",
+          "duration": 1.66,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 44.6,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.391"
+            }
+          }
+        },
+        {
+          "date": "2026-04-04",
+          "duration": 1.22,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 42.3,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.353"
+            }
+          }
+        },
+        {
+          "date": "2026-03-30",
+          "duration": 0.6,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 49.6,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.404"
+            }
+          }
+        },
+        {
+          "date": "2026-03-27",
+          "duration": 2.17,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 42.1,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.265"
+            }
+          }
+        },
+        {
+          "date": "2026-03-23",
+          "duration": 1.56,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 48.7,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.304"
+            }
+          }
+        },
+        {
+          "date": "2026-03-23",
+          "duration": 1.51,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 43.2,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.318"
+            }
+          }
+        },
+        {
+          "date": "2026-03-23",
+          "duration": 2.35,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 47.7,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.350"
+            }
+          }
+        },
+        {
+          "date": "2026-03-21",
+          "duration": 0.9,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 47.4,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.413"
+            }
+          }
+        },
+        {
+          "date": "2026-03-20",
+          "duration": 2.31,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 49.0,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.297"
+            }
+          }
+        },
+        {
+          "date": "2026-03-19",
+          "duration": 2.9,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 40.0,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.249"
+            }
+          }
+        },
+        {
+          "date": "2026-03-19",
+          "duration": 1.65,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 47.2,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.370"
+            }
+          }
+        },
+        {
+          "date": "2026-03-19",
+          "duration": 1.26,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 38.1,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.410"
+            }
+          }
+        },
+        {
+          "date": "2026-03-17",
+          "duration": 2.26,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 38.6,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.361"
+            }
+          }
+        },
+        {
+          "date": "2026-03-16",
+          "duration": 3.66,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 40.9,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.287"
+            }
+          }
+        },
+        {
+          "date": "2026-03-15",
+          "duration": 3.04,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 36.4,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.310"
+            }
+          }
+        },
+        {
+          "date": "2026-03-15",
+          "duration": 1.98,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 42.9,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.327"
+            }
+          }
+        },
+        {
+          "date": "2026-03-12",
+          "duration": 2.26,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 35.3,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.247"
+            }
+          }
+        },
+        {
+          "date": "2026-03-12",
+          "duration": 0.96,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 41.6,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.252"
+            }
+          }
+        },
+        {
+          "date": "2026-03-12",
+          "duration": 3.1,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 43.2,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.306"
+            }
+          }
+        },
+        {
+          "date": "2026-03-11",
+          "duration": 0.75,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 43.6,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.281"
+            }
+          }
+        },
+        {
+          "date": "2026-03-10",
+          "duration": 1.44,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 41.6,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.282"
+            }
+          }
+        },
+        {
+          "date": "2026-03-10",
+          "duration": 1.36,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 37.0,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.409"
+            }
+          }
+        },
+        {
+          "date": "2026-03-09",
+          "duration": 3.14,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 37.6,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.276"
+            }
+          }
+        },
+        {
+          "date": "2026-03-09",
+          "duration": 1.95,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 44.8,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.341"
+            }
+          }
+        },
+        {
+          "date": "2026-03-09",
+          "duration": 2.5,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 44.2,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.390"
+            }
+          }
+        },
+        {
+          "date": "2026-03-07",
+          "duration": 2.32,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 39.5,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.296"
+            }
+          }
+        },
+        {
+          "date": "2026-03-07",
+          "duration": 1.07,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 35.9,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.336"
+            }
+          }
+        },
+        {
+          "date": "2026-03-05",
+          "duration": 0.7,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 35.2,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.300"
+            }
+          }
+        },
+        {
+          "date": "2026-03-03",
+          "duration": 1.5,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 40.7,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.240"
+            }
+          }
+        },
+        {
+          "date": "2026-03-03",
+          "duration": 1.9,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 43.3,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.285"
+            }
+          }
+        },
+        {
+          "date": "2026-03-03",
+          "duration": 0.97,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 47.5,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.299"
+            }
+          }
+        },
+        {
+          "date": "2026-03-03",
+          "duration": 2.28,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 47.4,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.395"
+            }
+          }
+        },
+        {
+          "date": "2026-03-02",
+          "duration": 1.9,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 50.2,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.383"
+            }
+          }
+        },
+        {
+          "date": "2026-03-01",
+          "duration": 2.66,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 48.5,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.374"
+            }
+          }
+        },
+        {
+          "date": "2026-02-26",
+          "duration": 0.86,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 42.5,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.319"
+            }
+          }
+        },
+        {
+          "date": "2026-02-26",
+          "duration": 0.44,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 39.9,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.337"
+            }
+          }
+        },
+        {
+          "date": "2026-02-25",
+          "duration": 3.6,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 45.7,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.411"
+            }
+          }
+        },
+        {
+          "date": "2026-02-24",
+          "duration": 1.57,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 38.5,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.326"
+            }
+          }
+        },
+        {
+          "date": "2026-02-24",
+          "duration": 1.54,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 44.7,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.349"
+            }
+          }
+        },
+        {
+          "date": "2026-02-22",
+          "duration": 1.09,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 47.4,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.314"
+            }
+          }
+        },
+        {
+          "date": "2026-02-21",
+          "duration": 2.29,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 38.6,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.334"
+            }
+          }
+        },
+        {
+          "date": "2026-02-21",
+          "duration": 1.7,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 39.0,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.376"
+            }
+          }
+        },
+        {
+          "date": "2026-02-21",
+          "duration": 1.25,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 38.3,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.396"
+            }
+          }
+        },
+        {
+          "date": "2026-02-19",
+          "duration": 1.65,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 42.5,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.360"
+            }
+          }
+        },
+        {
+          "date": "2026-02-19",
+          "duration": 1.71,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 49.0,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.365"
+            }
+          }
+        },
+        {
+          "date": "2026-02-18",
+          "duration": 0.26,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 44.3,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.320"
+            }
+          }
+        },
+        {
+          "date": "2026-02-17",
+          "duration": 3.18,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 38.7,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.269"
+            }
+          }
+        },
+        {
+          "date": "2026-02-16",
+          "duration": 2.17,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 37.9,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.308"
+            }
+          }
+        },
+        {
+          "date": "2026-02-16",
+          "duration": 1.69,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 45.3,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.367"
+            }
+          }
+        },
+        {
+          "date": "2026-02-14",
+          "duration": 2.35,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 42.1,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.293"
+            }
+          }
+        },
+        {
+          "date": "2026-02-13",
+          "duration": 2.9,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 49.2,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.407"
+            }
+          }
+        },
+        {
+          "date": "2026-02-12",
+          "duration": 2.96,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 39.4,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.313"
+            }
+          }
+        },
+        {
+          "date": "2026-02-11",
+          "duration": 2.28,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 34.8,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.355"
+            }
+          }
+        },
+        {
+          "date": "2026-02-11",
+          "duration": 2.04,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 43.0,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.378"
+            }
+          }
+        },
+        {
+          "date": "2026-02-10",
+          "duration": 3.14,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 48.2,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.342"
+            }
+          }
+        },
+        {
+          "date": "2026-02-10",
+          "duration": 1.01,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 38.0,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.384"
+            }
+          }
+        },
+        {
+          "date": "2026-02-08",
+          "duration": 1.04,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 45.3,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.264"
+            }
+          }
+        },
+        {
+          "date": "2026-02-08",
+          "duration": 1.85,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 42.7,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.273"
+            }
+          }
+        },
+        {
+          "date": "2026-02-07",
+          "duration": 1.72,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 48.0,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.246"
+            }
+          }
+        },
+        {
+          "date": "2026-02-07",
+          "duration": 3.13,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 35.0,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.373"
+            }
+          }
+        },
+        {
+          "date": "2026-02-06",
+          "duration": 2.62,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 37.7,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.243"
+            }
+          }
+        },
+        {
+          "date": "2026-02-05",
+          "duration": 2.48,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 38.4,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.286"
+            }
+          }
+        },
+        {
+          "date": "2026-02-05",
+          "duration": 3.27,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 41.9,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.311"
+            }
+          }
+        },
+        {
+          "date": "2026-02-02",
+          "duration": 2.56,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 39.9,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.271"
+            }
+          }
+        },
+        {
+          "date": "2026-01-31",
+          "duration": 2.58,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 37.4,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.394"
+            }
+          }
+        },
+        {
+          "date": "2026-01-28",
+          "duration": 0.62,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 40.2,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.254"
+            }
+          }
+        },
+        {
+          "date": "2026-01-27",
+          "duration": 2.77,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 43.1,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.315"
+            }
+          }
+        },
+        {
+          "date": "2026-01-24",
+          "duration": 1.63,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 48.4,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.290"
+            }
+          }
+        },
+        {
+          "date": "2026-01-23",
+          "duration": 0.21,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 43.3,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.375"
+            }
+          }
+        },
+        {
+          "date": "2026-01-22",
+          "duration": 1.91,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 35.0,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.268"
+            }
+          }
+        },
+        {
+          "date": "2026-01-22",
+          "duration": 2.62,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 41.2,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.346"
+            }
+          }
+        },
+        {
+          "date": "2026-01-21",
+          "duration": 2.23,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 37.6,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.331"
+            }
+          }
+        },
+        {
+          "date": "2026-01-19",
+          "duration": 1.89,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 52.5,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.272"
+            }
+          }
+        },
+        {
+          "date": "2026-01-17",
+          "duration": 1.75,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 35.6,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.323"
+            }
+          }
+        },
+        {
+          "date": "2026-01-12",
+          "duration": 2.85,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 37.5,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.388"
+            }
+          }
+        },
+        {
+          "date": "2026-01-12",
+          "duration": 1.81,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 43.8,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.392"
+            }
+          }
+        },
+        {
+          "date": "2026-01-09",
+          "duration": 2.86,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 43.5,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.305"
+            }
+          }
+        },
+        {
+          "date": "2026-01-07",
+          "duration": 2.2,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 39.2,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.403"
+            }
+          }
+        },
+        {
+          "date": "2026-01-06",
+          "duration": 1.18,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 48.9,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.267"
+            }
+          }
+        },
+        {
+          "date": "2026-01-06",
+          "duration": 1.4,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 36.4,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.335"
+            }
+          }
+        },
+        {
+          "date": "2026-01-04",
+          "duration": 1.42,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 41.0,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.242"
+            }
+          }
+        },
+        {
+          "date": "2026-01-03",
+          "duration": 3.71,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 39.6,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.278"
+            }
+          }
+        },
+        {
+          "date": "2026-01-02",
+          "duration": 2.79,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 57.2,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.351"
+            }
+          }
+        },
+        {
+          "date": "2026-01-01",
+          "duration": 3.11,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 43.7,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.372"
+            }
+          }
+        },
+        {
+          "date": "2025-12-31",
+          "duration": 1.99,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 39.7,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.412"
+            }
+          }
+        },
+        {
+          "date": "2025-12-30",
+          "duration": 3.63,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 42.8,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.288"
+            }
+          }
+        },
+        {
+          "date": "2025-12-30",
+          "duration": 0.19,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 37.9,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.398"
+            }
+          }
+        },
+        {
+          "date": "2025-12-28",
+          "duration": 3.43,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 46.8,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.340"
+            }
+          }
+        },
+        {
+          "date": "2025-12-27",
+          "duration": 1.39,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 44.5,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.258"
+            }
+          }
+        },
+        {
+          "date": "2025-12-27",
+          "duration": 4.05,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 36.0,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.389"
+            }
+          }
+        },
+        {
+          "date": "2025-12-26",
+          "duration": 4.13,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 47.2,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.329"
+            }
+          }
+        },
+        {
+          "date": "2025-12-25",
+          "duration": 0.51,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 46.0,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.263"
+            }
+          }
+        },
+        {
+          "date": "2025-12-22",
+          "duration": 1.78,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 44.9,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.303"
+            }
+          }
+        },
+        {
+          "date": "2025-12-21",
+          "duration": 0.62,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 37.6,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.245"
+            }
+          }
+        },
+        {
+          "date": "2025-12-19",
+          "duration": 1.54,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 31.5,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.251"
+            }
+          }
+        },
+        {
+          "date": "2025-12-18",
+          "duration": 2.22,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 32.2,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.309"
+            }
+          }
+        },
+        {
+          "date": "2025-12-18",
+          "duration": 0.96,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 36.4,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.352"
+            }
+          }
+        },
+        {
+          "date": "2025-12-17",
+          "duration": 2.14,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 42.1,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.292"
+            }
+          }
+        },
+        {
+          "date": "2025-12-17",
+          "duration": 3.76,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 41.6,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.321"
+            }
+          }
+        },
+        {
+          "date": "2025-12-16",
+          "duration": 2.51,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 42.5,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.279"
+            }
+          }
+        },
+        {
+          "date": "2025-12-15",
+          "duration": 1.71,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 41.2,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.369"
+            }
+          }
+        },
+        {
+          "date": "2025-12-14",
+          "duration": 2.79,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 45.6,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.262"
+            }
+          }
+        },
+        {
+          "date": "2025-12-14",
+          "duration": 1.47,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 46.0,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.330"
+            }
+          }
+        },
+        {
+          "date": "2025-12-13",
+          "duration": 1.94,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 42.2,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.302"
+            }
+          }
+        },
+        {
+          "date": "2025-12-13",
+          "duration": 1.89,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 45.9,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.333"
+            }
+          }
+        },
+        {
+          "date": "2025-12-11",
+          "duration": 1.42,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 44.9,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.284"
+            }
+          }
+        },
+        {
+          "date": "2025-12-10",
+          "duration": 1.88,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 49.7,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.236"
+            }
+          }
+        },
+        {
+          "date": "2025-12-09",
+          "duration": 1.98,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 41.1,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.237"
+            }
+          }
+        },
+        {
+          "date": "2025-12-08",
+          "duration": 0.69,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 45.5,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.253"
+            }
+          }
+        },
+        {
+          "date": "2025-12-07",
+          "duration": 2.8,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 32.6,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.358"
+            }
+          }
+        },
+        {
+          "date": "2025-12-06",
+          "duration": 1.71,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 47.8,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.399"
+            }
+          }
+        },
+        {
+          "date": "2025-12-05",
+          "duration": 2.32,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 39.5,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.356"
+            }
+          }
+        },
+        {
+          "date": "2025-12-03",
+          "duration": 2.13,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 49.9,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.241"
+            }
+          }
+        },
+        {
+          "date": "2025-12-03",
+          "duration": 1.69,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 41.8,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.382"
+            }
+          }
+        },
+        {
+          "date": "2025-12-01",
+          "duration": 2.56,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 44.3,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.261"
+            }
+          }
+        },
+        {
+          "date": "2025-12-01",
+          "duration": 1.95,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 39.8,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.328"
+            }
+          }
+        },
+        {
+          "date": "2025-11-30",
+          "duration": 1.82,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 38.4,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.362"
+            }
+          }
+        },
+        {
+          "date": "2025-11-29",
+          "duration": 0.78,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 40.5,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.345"
+            }
+          }
+        },
+        {
+          "date": "2025-11-27",
+          "duration": 3.61,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 38.2,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.397"
+            }
+          }
+        },
+        {
+          "date": "2025-11-25",
+          "duration": 0.9,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 42.1,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.324"
+            }
+          }
+        },
+        {
+          "date": "2025-11-24",
+          "duration": 2.94,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 41.2,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.347"
+            }
+          }
+        },
+        {
+          "date": "2025-11-23",
+          "duration": 0.3,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 32.8,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.280"
+            }
+          }
+        },
+        {
+          "date": "2025-11-23",
+          "duration": 3.68,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 37.9,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.359"
+            }
+          }
+        },
+        {
+          "date": "2025-11-20",
+          "duration": 2.98,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 44.3,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.380"
+            }
+          }
+        },
+        {
+          "date": "2025-11-17",
+          "duration": 2.63,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 39.8,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.275"
+            }
+          }
+        },
+        {
+          "date": "2025-11-16",
+          "duration": 3.0,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 49.0,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.283"
+            }
+          }
+        },
+        {
+          "date": "2025-11-14",
+          "duration": 2.66,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 41.6,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.255"
+            }
+          }
+        },
+        {
+          "date": "2025-11-14",
+          "duration": 2.45,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 44.2,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.363"
+            }
+          }
+        },
+        {
+          "date": "2025-11-14",
+          "duration": 0.86,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 40.9,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.368"
+            }
+          }
+        },
+        {
+          "date": "2025-11-13",
+          "duration": 1.78,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 42.9,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.270"
+            }
+          }
+        },
+        {
+          "date": "2025-11-12",
+          "duration": 3.12,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 43.9,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.357"
+            }
+          }
+        },
+        {
+          "date": "2025-11-12",
+          "duration": 0.94,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 43.5,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.379"
+            }
+          }
+        },
+        {
+          "date": "2025-11-07",
+          "duration": 2.63,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 36.4,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.387"
+            }
+          }
+        },
+        {
+          "date": "2025-11-07",
+          "duration": 2.15,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 42.4,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.406"
+            }
+          }
+        },
+        {
+          "date": "2025-11-06",
+          "duration": 2.53,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 39.9,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.348"
+            }
+          }
+        },
+        {
+          "date": "2025-11-06",
+          "duration": 1.96,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 51.1,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.354"
+            }
+          }
+        },
+        {
+          "date": "2025-11-03",
+          "duration": 1.43,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 41.2,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.301"
+            }
+          }
+        },
+        {
+          "date": "2025-10-31",
+          "duration": 2.22,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 41.2,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.291"
+            }
+          }
+        },
+        {
+          "date": "2025-10-30",
+          "duration": 3.42,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 35.3,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.274"
+            }
+          }
+        },
+        {
+          "date": "2025-10-30",
+          "duration": 3.03,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 45.6,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.277"
+            }
+          }
+        },
+        {
+          "date": "2025-10-30",
+          "duration": 2.8,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 45.5,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.386"
+            }
+          }
+        },
+        {
+          "date": "2025-10-29",
+          "duration": 2.61,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 38.2,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.250"
+            }
+          }
+        },
+        {
+          "date": "2025-10-29",
+          "duration": 3.19,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 42.8,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.402"
+            }
+          }
+        },
+        {
+          "date": "2025-10-28",
+          "duration": 1.14,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 47.8,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.266"
+            }
+          }
+        },
+        {
+          "date": "2025-10-28",
+          "duration": 3.71,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 46.4,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.317"
+            }
+          }
+        },
+        {
+          "date": "2025-10-28",
+          "duration": 0.83,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 45.2,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.343"
+            }
+          }
+        },
+        {
+          "date": "2025-10-27",
+          "duration": 2.35,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 38.7,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.298"
+            }
+          }
+        },
+        {
+          "date": "2025-10-25",
+          "duration": 1.65,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 33.6,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.332"
+            }
+          }
+        },
+        {
+          "date": "2025-10-23",
+          "duration": 2.64,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 37.5,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.322"
+            }
+          }
+        },
+        {
+          "date": "2025-10-21",
+          "duration": 0.99,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 38.8,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.312"
+            }
+          }
+        },
+        {
+          "date": "2025-10-20",
+          "duration": 3.08,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 45.5,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.405"
+            }
+          }
+        },
+        {
+          "date": "2025-10-19",
+          "duration": 2.13,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 40.4,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.257"
+            }
+          }
+        },
+        {
+          "date": "2025-10-19",
+          "duration": 3.05,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 43.6,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.371"
+            }
+          }
+        },
+        {
+          "date": "2025-10-19",
+          "duration": 2.67,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 35.9,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.381"
+            }
+          }
+        },
+        {
+          "date": "2025-10-18",
+          "duration": 1.24,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 43.9,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.259"
+            }
+          }
+        },
+        {
+          "date": "2025-10-17",
+          "duration": 3.8,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 39.0,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.393"
+            }
+          }
+        },
+        {
+          "date": "2025-10-14",
+          "duration": 2.21,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 45.0,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.338"
+            }
+          }
+        },
+        {
+          "date": "2025-10-11",
+          "duration": 2.25,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 38.2,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.401"
+            }
+          }
+        },
+        {
+          "date": "2025-10-09",
+          "duration": 3.61,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 46.6,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.248"
+            }
+          }
+        },
+        {
+          "date": "2025-10-09",
+          "duration": 3.13,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 44.3,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.377"
+            }
+          }
+        },
+        {
+          "date": "2025-10-08",
+          "duration": 2.5,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 47.3,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.260"
+            }
+          }
+        },
+        {
+          "date": "2025-10-06",
+          "duration": 2.84,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 43.6,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.256"
+            }
+          }
+        },
+        {
+          "date": "2025-10-05",
+          "duration": 1.65,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 42.0,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.244"
+            }
+          }
+        },
+        {
+          "date": "2025-10-04",
+          "duration": 2.02,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 39.4,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.325"
+            }
+          }
+        },
+        {
+          "date": "2025-10-03",
+          "duration": 1.78,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 43.0,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.307"
+            }
+          }
+        },
+        {
+          "date": "2025-10-03",
+          "duration": 2.78,
+          "extras": {
+            "1776571443530": {
+              "name": "MAC Utilization (%)",
+              "value": 48.1,
+              "type": "float"
+            },
+            "1776948884918": {
+              "name": "Version",
+              "type": "string",
+              "value": "6.1.364"
+            }
+          }
+        }
+      ]
+    },
+    "16T r2p1": {
+      "int8 per-layer symm": [
+        {
+          "date": "2026-04-19",
+          "duration": 0.97,
+          "extras": {
+            "1776571512908": {
+              "name": "MAC Utilization (%)",
+              "value": 57.1,
+              "type": "float"
+            },
+            "1776869244406": {
+              "name": "Power (W)",
+              "type": "float",
+              "value": 0
+            },
+            "1777113994693": {
+              "name": "Version",
+              "type": "string",
+              "value": 0
+            }
+          }
+        },
+        {
+          "date": "2026-04-17",
+          "duration": 0.99,
+          "extras": {
+            "1776571512908": {
+              "name": "MAC Utilization (%)",
+              "value": 54.8,
+              "type": "float"
+            },
+            "1776869244406": {
+              "name": "Power (W)",
+              "type": "float",
+              "value": 0
+            },
+            "1777113994693": {
+              "name": "Version",
+              "type": "string",
+              "value": 0
+            }
+          }
+        }
+      ],
+      "fp16": [
+        {
+          "date": "2026-04-19",
+          "duration": 1.72,
+          "extras": {
+            "1776571512908": {
+              "name": "MAC Utilization (%)",
+              "value": 55.1,
+              "type": "float"
+            },
+            "1776869244406": {
+              "name": "Power (W)",
+              "value": 77,
+              "type": "float"
+            },
+            "1777113994693": {
+              "name": "Version",
+              "type": "string",
+              "value": 0
+            }
+          }
+        },
+        {
+          "date": "2026-04-18",
+          "duration": 1.93,
+          "extras": {
+            "1776571512908": {
+              "name": "MAC Utilization (%)",
+              "value": 51.3,
+              "type": "float"
+            },
+            "1776869244406": {
+              "name": "Power (W)",
+              "type": "float",
+              "value": 0
+            },
+            "1777113994693": {
+              "name": "Version",
+              "type": "string",
+              "value": 0
+            }
+          }
+        },
+        {
+          "date": "2026-04-17",
+          "duration": 1.87,
+          "extras": {
+            "1776571512908": {
+              "name": "MAC Utilization (%)",
+              "value": 53.2,
+              "type": "float"
+            },
+            "1776869244406": {
+              "name": "Power (W)",
+              "type": "float",
+              "value": 0
+            },
+            "1777113994693": {
+              "name": "Version",
+              "type": "string",
+              "value": 0
+            }
+          }
+        }
+      ]
+    }
+  },
+  "llama2-7b": {
+    "16T r2p1": {
+      "seq=256 past=0: afp16 wint4 block128": [
+        {
+          "date": "2026-04-19",
+          "duration": 121.77,
+          "extras": {
+            "1776571609840": {
+              "name": "AVG Bandwidth (GB/s)",
+              "value": 49.12,
+              "type": "float"
+            },
+            "1776863704378": {
+              "name": "TTFT (ms)",
+              "value": 0,
+              "type": "float"
+            }
+          }
+        },
+        {
+          "date": "2026-04-18",
+          "duration": 123.45,
+          "extras": {
+            "1776571609840": {
+              "name": "AVG Bandwidth (GB/s)",
+              "value": 51.4,
+              "type": "float"
+            },
+            "1776863704378": {
+              "name": "TTFT (ms)",
+              "type": "float",
+              "value": 0
+            }
+          }
+        },
+        {
+          "date": "2026-04-18",
+          "duration": 110.1,
+          "extras": {
+            "1776571609840": {
+              "name": "AVG Bandwidth (GB/s)",
+              "value": 63.3,
+              "type": "float"
+            },
+            "1776863704378": {
+              "name": "TTFT (ms)",
+              "type": "float",
+              "value": 0
+            }
+          }
+        }
+      ],
+      "seq=1 past=255: afp16 wint4 block128": [
+        {
+          "date": "2026-04-19",
+          "duration": 30.1,
+          "extras": {
+            "1776571609840": {
+              "name": "AVG Bandwidth (GB/s)",
+              "value": 71.12,
+              "type": "float"
+            },
+            "1776863704378": {
+              "name": "TTFT (ms)",
+              "type": "float",
+              "value": 0
+            }
+          }
+        },
+        {
+          "date": "2026-04-18",
+          "duration": 33.13,
+          "extras": {
+            "1776571609840": {
+              "name": "AVG Bandwidth (GB/s)",
+              "value": 67.33,
+              "type": "float"
+            },
+            "1776863704378": {
+              "name": "TTFT (ms)",
+              "type": "float",
+              "value": 0
+            }
+          }
+        }
+      ]
+    }
+  }
+}

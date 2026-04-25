@@ -2,24 +2,21 @@
 
 > 🚀 Built with AI via vibe coding.
 
-A web-based tool for managing and visualizing benchmark performance data.
+A fully offline, browser-based benchmark performance management and visualization tool.
 
 ## Features
 
-- **Home** (`index.html`) - Entry page with navigation
-- **Data Management** (`data.html`) - JSON import/export/clear
-- **Data Operations** (`data-op.html`) - Add/edit benchmark records
-- **Data Visualization** (`chart.html`) - Performance charts
+- **Data Management** — Import/export JSON, per-benchmark statistics (Arch/Config/Record counts)
+- **Data Operations** — Full CRUD for benchmark records across a 3-level hierarchy (Benchmark → Architecture → Configuration). Supports custom extra fields per Architecture. Paginated record table with search, sort, and inline edit
+- **Data Visualization** — Multi-line Canvas charts with animated drawing, MAX/MIN point highlighting, hover tooltips with collision-aware positioning, and fullscreen view
 
 ## Data Hierarchy
 
-Follow the 3-step selection flow in Data Operations:
-
-| Step | Name | Examples |
-|------|------|----------|
-| 1 | **Benchmark** | resnet50, bert |
+| Step | Name | Example |
+|------|------|---------|
+| 1 | **Benchmark** | resnet50, llama2-7b |
 | 2 | **Architecture** | 16T r2p1, 8T r3p0 |
-| 3 | **Configuration** | fp32, int8, shape224 |
+| 3 | **Configuration** | fp16, int8 per-layer symm |
 
 ## Data Structure
 
@@ -27,15 +24,12 @@ Follow the 3-step selection flow in Data Operations:
 {
   "benchmark_name": {
     "arch_name": {
-      "configuration_name": [
+      "config_name": [
         {
           "date": "2026-04-19",
           "duration": 123.456,
           "extras": {
-            "field_id": {
-              "name": "Field Name",
-              "value": 789.012
-            }
+            "field_id": { "name": "MAC Utilization (%)", "type": "float", "value": 57.1 }
           }
         }
       ]
@@ -46,33 +40,29 @@ Follow the 3-step selection flow in Data Operations:
 
 ## Usage
 
-1. Go to **Data Operations**, select or create Benchmark → Arch → Configuration
-2. Fill in date and duration, add custom fields if needed
-3. Click **Save Record**
-
-## Visualization
-
-1. Go to **Data Visualization**, select a Benchmark
-2. Check Arch/Configuration combos to compare
-3. Choose Y-axis metric, click **Draw Chart**
+1. Open `index.html` in a browser (no server required for basic use)
+2. **Data Operations**: Select Benchmark → Arch → Configuration → Add/Edit records
+3. **Data Visualization**: Select Benchmark → choose Arch/Config lines → pick Y-axis metric → Draw Chart
+4. **Data Management**: Import/Export JSON backup, view per-benchmark statistics
 
 ## Storage
 
-Data stored in browser **IndexedDB**, works **fully offline**.
+All data stored in browser **IndexedDB** — works **fully offline** with no external dependencies.
 
 ## File Structure
 
 ```
 perf_manager/
-├── index.html          # Home page
+├── index.html            # Home page
 ├── html/
-│   ├── data.html       # Data management
-│   ├── data-op.html    # Data operations
-│   └── chart.html      # Charts
-├── css/styles.css
+│   ├── data.html        # Data management
+│   ├── data-op.html     # Data operations
+│   └── chart.html       # Data visualization
+├── css/styles.css       # All styles (dark theme, animations)
+├── fonts/               # JetBrains Mono + Outfit (offline)
 └── js/
-    ├── db.js           # IndexedDB wrapper
-    ├── data.js         # Data utilities
-    ├── data-op.js      # Operations logic
-    └── chart.js        # Chart rendering
+    ├── db.js            # IndexedDB wrapper
+    ├── data.js          # Import/export, statistics
+    ├── data-op.js       # CRUD logic, pagination, form handling
+    └── chart.js         # Canvas rendering, animations, tooltips
 ```
