@@ -14,14 +14,14 @@ let chartState = {
 };
 
 const COLORS = [
-    { line: '#409EFF', fill: 'rgba(64, 158, 255, 0.15)' },
-    { line: '#67C23A', fill: 'rgba(103, 194, 58, 0.15)' },
-    { line: '#E6A23C', fill: 'rgba(230, 162, 60, 0.15)' },
-    { line: '#F56C6C', fill: 'rgba(245, 108, 108, 0.15)' },
-    { line: '#909399', fill: 'rgba(144, 147, 153, 0.15)' },
-    { line: '#c261dd', fill: 'rgba(194, 97, 221, 0.15)' },
-    { line: '#36cfc9', fill: 'rgba(54, 207, 201, 0.15)' },
-    { line: '#f5a623', fill: 'rgba(245, 166, 35, 0.15)' }
+    { line: '#00d4aa', fill: 'rgba(0, 212, 170, 0.12)' },
+    { line: '#34d399', fill: 'rgba(52, 211, 153, 0.12)' },
+    { line: '#fbbf24', fill: 'rgba(251, 191, 36, 0.12)' },
+    { line: '#f87171', fill: 'rgba(248, 113, 113, 0.12)' },
+    { line: '#94a3b8', fill: 'rgba(148, 163, 184, 0.12)' },
+    { line: '#c084fc', fill: 'rgba(192, 132, 252, 0.12)' },
+    { line: '#22d3ee', fill: 'rgba(34, 211, 238, 0.12)' },
+    { line: '#fb923c', fill: 'rgba(251, 146, 60, 0.12)' }
 ];
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -402,8 +402,8 @@ function renderChart(datasets, labels, yAxis, benchmark) {
     });
 
     if (labels.length === 0) {
-        ctx.font = '15px "Segoe UI", sans-serif';
-        ctx.fillStyle = '#909399';
+        ctx.font = '15px "Outfit", sans-serif';
+        ctx.fillStyle = '#64748b';
         ctx.textAlign = 'center';
         ctx.fillText('No Data', canvas.width / 2, canvas.height / 2);
         return;
@@ -411,8 +411,8 @@ function renderChart(datasets, labels, yAxis, benchmark) {
 
     const allValues = datasets.flatMap(d => d.values);
     if (allValues.length === 0) {
-        ctx.font = '15px "Segoe UI", sans-serif';
-        ctx.fillStyle = '#909399';
+        ctx.font = '15px "Outfit", sans-serif';
+        ctx.fillStyle = '#64748b';
         ctx.textAlign = 'center';
         ctx.fillText('No Data', canvas.width / 2, canvas.height / 2);
         return;
@@ -428,7 +428,7 @@ function renderChart(datasets, labels, yAxis, benchmark) {
     const xPosition = (index) => padding.left + (chartWidth / (labels.length - 1 || 1)) * index;
     const yPosition = (value) => padding.top + chartHeight - ((value - minValue) / (maxValue - minValue || 1)) * chartHeight;
 
-    ctx.strokeStyle = '#E4E7ED';
+    ctx.strokeStyle = '#1e293b';
     ctx.lineWidth = 1;
     const gridLines = 5;
     for (let i = 0; i <= gridLines; i++) {
@@ -439,14 +439,14 @@ function renderChart(datasets, labels, yAxis, benchmark) {
         ctx.stroke();
 
         const value = maxValue - ((maxValue - minValue) / gridLines) * i;
-        ctx.font = '13px "Segoe UI", sans-serif';
-        ctx.fillStyle = '#909399';
+        ctx.font = '13px "JetBrains Mono", monospace';
+        ctx.fillStyle = '#64748b';
         ctx.textAlign = 'right';
         ctx.fillText(value.toFixed(3), padding.left - 15, y + 5);
     }
 
-    ctx.font = '13px "Segoe UI", sans-serif';
-    ctx.fillStyle = '#606266';
+    ctx.font = '13px "JetBrains Mono", monospace';
+    ctx.fillStyle = '#94a3b8';
     ctx.textAlign = 'center';
     const labelStep = Math.ceil(labels.length / 15);
     labels.forEach((label, index) => {
@@ -460,8 +460,8 @@ function renderChart(datasets, labels, yAxis, benchmark) {
         }
     });
 
-    ctx.font = '14px "Segoe UI", sans-serif';
-    ctx.fillStyle = '#303133';
+    ctx.font = '14px "Outfit", sans-serif';
+    ctx.fillStyle = '#cbd5e1';
     ctx.textAlign = 'center';
     ctx.fillText('Date', canvas.width / 2, canvas.height - 15);
 
@@ -473,8 +473,8 @@ function renderChart(datasets, labels, yAxis, benchmark) {
 
     datasets.forEach((dataset, datasetIndex) => {
         const gradient = ctx.createLinearGradient(0, padding.top, 0, padding.top + chartHeight);
-        gradient.addColorStop(0, dataset.color.fill.replace('0.15', '0.25'));
-        gradient.addColorStop(1, dataset.color.fill.replace('0.15', '0'));
+        gradient.addColorStop(0, dataset.color.fill.replace('0.12', '0.20'));
+        gradient.addColorStop(1, dataset.color.fill.replace('0.12', '0'));
 
         ctx.beginPath();
         const points = [];
@@ -514,7 +514,7 @@ function renderChart(datasets, labels, yAxis, benchmark) {
         points.forEach((point) => {
             ctx.beginPath();
             ctx.arc(point.x, point.y, 5, 0, 2 * Math.PI);
-            ctx.fillStyle = '#fff';
+            ctx.fillStyle = '#0f172a';
             ctx.fill();
             ctx.strokeStyle = dataset.color.line;
             ctx.lineWidth = 2;
@@ -546,8 +546,8 @@ function renderChart(datasets, labels, yAxis, benchmark) {
         ctx.roundRect(finalX, finalY, legendColorBox, legendColorBox, 3);
         ctx.fill();
 
-        ctx.font = '12px "Segoe UI", sans-serif';
-        ctx.fillStyle = '#606266';
+        ctx.font = '12px "Outfit", sans-serif';
+        ctx.fillStyle = '#94a3b8';
         ctx.textAlign = 'left';
         ctx.fillText(dataset.label, finalX + legendColorBox + legendSpacing, finalY + 12);
 
@@ -609,7 +609,7 @@ function onCanvasMouseMove(e) {
 
     const ctx = canvas.getContext('2d');
 
-    ctx.strokeStyle = 'rgba(64, 158, 255, 0.5)';
+    ctx.strokeStyle = 'rgba(0, 212, 170, 0.4)';
     ctx.lineWidth = 1;
     ctx.setLineDash([4, 4]);
     ctx.beginPath();
@@ -660,8 +660,8 @@ function onCanvasMouseMove(e) {
             tooltipY = padding.top + 80;
         }
 
-        ctx.font = 'bold 12px "Segoe UI", sans-serif';
-        ctx.fillStyle = '#909399';
+        ctx.font = 'bold 12px "Outfit", sans-serif';
+        ctx.fillStyle = '#64748b';
         ctx.textAlign = 'left';
         const textMaxWidth = tooltipWidth - 30;
         const rows0 = wrapText(ctx, chartState.benchmark, tooltipX, tooltipY + 10, textMaxWidth, lineHeight);
@@ -671,13 +671,13 @@ function onCanvasMouseMove(e) {
         let currentY = tooltipY + 10 + (rows0 + rows1 + rows2) * lineHeight + 10;
         const dataRows = [];
         dataPointsAtNearestDate.forEach((point, i) => {
-            ctx.font = '12px "Segoe UI", sans-serif';
+            ctx.font = '12px "JetBrains Mono", monospace';
             ctx.fillStyle = point.color;
             ctx.beginPath();
             ctx.roundRect(tooltipX, currentY - 8, 12, 12, 2);
             ctx.fill();
 
-            ctx.fillStyle = '#fff';
+            ctx.fillStyle = '#e2e8f0';
             const text = `${point.label}: ${point.value.toFixed(3)}`;
             const textRows = wrapText(ctx, text, tooltipX + 18, currentY, textMaxWidth - 18, lineHeight);
             dataRows.push(textRows);
@@ -685,13 +685,13 @@ function onCanvasMouseMove(e) {
         });
 
         const tooltipHeight = currentY - tooltipY + 10;
-        ctx.fillStyle = 'rgba(48, 49, 51, 0.95)';
+        ctx.fillStyle = 'rgba(30, 41, 59, 0.95)';
         ctx.beginPath();
         ctx.roundRect(tooltipX - 5, tooltipY - 5, tooltipWidth, tooltipHeight, 6);
         ctx.fill();
 
-        ctx.font = 'bold 12px "Segoe UI", sans-serif';
-        ctx.fillStyle = '#909399';
+        ctx.font = 'bold 12px "Outfit", sans-serif';
+        ctx.fillStyle = '#64748b';
         ctx.textAlign = 'left';
         wrapText(ctx, chartState.benchmark, tooltipX, tooltipY + 10, textMaxWidth, lineHeight);
         wrapText(ctx, titleMap[chartState.yAxis] || chartState.yAxis, tooltipX, tooltipY + 10 + rows0 * lineHeight, textMaxWidth, lineHeight);
@@ -699,13 +699,13 @@ function onCanvasMouseMove(e) {
 
         currentY = tooltipY + 10 + (rows0 + rows1 + rows2) * lineHeight + 10;
         dataPointsAtNearestDate.forEach((point, i) => {
-            ctx.font = '12px "Segoe UI", sans-serif';
+            ctx.font = '12px "JetBrains Mono", monospace';
             ctx.fillStyle = point.color;
             ctx.beginPath();
             ctx.roundRect(tooltipX, currentY - 8, 12, 12, 2);
             ctx.fill();
 
-            ctx.fillStyle = '#fff';
+            ctx.fillStyle = '#e2e8f0';
             const text = `${point.label}: ${point.value.toFixed(3)}`;
             wrapText(ctx, text, tooltipX + 18, currentY, textMaxWidth - 18, lineHeight);
             currentY += Math.max(dataRows[i] * lineHeight, 20);

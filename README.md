@@ -13,13 +13,13 @@ A web-based tool for managing and visualizing benchmark performance data.
 
 ## Data Hierarchy
 
-Benchmark → Arch → Configuration
+Follow the 3-step selection flow in Data Operations:
 
-| Level | Example |
-|-------|---------|
-| Benchmark | resnet50, bert |
-| Arch | 16T r2p1, 8T r3p0 |
-| Configuration | fp32, int8, shape224 |
+| Step | Name | Examples |
+|------|------|----------|
+| 1 | **Benchmark** | resnet50, bert |
+| 2 | **Architecture** | 16T r2p1, 8T r3p0 |
+| 3 | **Configuration** | fp32, int8, shape224 |
 
 ## Data Structure
 

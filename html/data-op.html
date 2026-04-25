@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <title>Data Operations - Benchmark Data Management</title>
     <link rel="stylesheet" href="../css/styles.css">
 </head>
@@ -25,8 +27,14 @@
 
                     <div class="hierarchy-level level-1">
                         <div class="level-header">
-                            <span class="level-badge">Level 1</span>
-                            <span class="level-title">Benchmark</span>
+                            <div class="step-indicator">
+                                <span class="step-number">1</span>
+                                <div class="step-connector"></div>
+                            </div>
+                            <div class="step-info">
+                                <span class="step-title">Benchmark</span>
+                                <span class="step-desc">resnet50, bert, etc.</span>
+                            </div>
                         </div>
                         <div class="level-content">
                             <div class="form-group searchable-select">
@@ -45,8 +53,14 @@
 
                     <div class="hierarchy-level level-2">
                         <div class="level-header">
-                            <span class="level-badge">Level 2</span>
-                            <span class="level-title">Arch</span>
+                            <div class="step-indicator">
+                                <span class="step-number">2</span>
+                                <div class="step-connector"></div>
+                            </div>
+                            <div class="step-info">
+                                <span class="step-title">Architecture</span>
+                                <span class="step-desc">16T r2p1, 8T r3p0, etc.</span>
+                            </div>
                         </div>
                         <div class="level-content">
                             <div class="form-group searchable-select">
@@ -65,8 +79,13 @@
 
                     <div class="hierarchy-level level-3">
                         <div class="level-header">
-                            <span class="level-badge">Level 3</span>
-                            <span class="level-title">Configuration</span>
+                            <div class="step-indicator">
+                                <span class="step-number">3</span>
+                            </div>
+                            <div class="step-info">
+                                <span class="step-title">Configuration</span>
+                                <span class="step-desc">fp32, int8, shape224, etc.</span>
+                            </div>
                         </div>
                         <div class="level-content">
                             <div class="form-group searchable-select">
