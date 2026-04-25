@@ -1,4 +1,182 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+@font-face {
+    font-family: 'Outfit';
+    font-style: normal;
+    font-weight: 300;
+    font-display: swap;
+    src: url('../fonts/outfit-latin-ext.woff2') format('woff2');
+    unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+    font-family: 'Outfit';
+    font-style: normal;
+    font-weight: 300;
+    font-display: swap;
+    src: url('../fonts/outfit-latin.woff2') format('woff2');
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+    font-family: 'Outfit';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url('../fonts/outfit-latin-ext.woff2') format('woff2');
+    unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+    font-family: 'Outfit';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url('../fonts/outfit-latin.woff2') format('woff2');
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+    font-family: 'Outfit';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url('../fonts/outfit-latin-ext.woff2') format('woff2');
+    unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+    font-family: 'Outfit';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url('../fonts/outfit-latin.woff2') format('woff2');
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+    font-family: 'Outfit';
+    font-style: normal;
+    font-weight: 600;
+    font-display: swap;
+    src: url('../fonts/outfit-latin-ext.woff2') format('woff2');
+    unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+    font-family: 'Outfit';
+    font-style: normal;
+    font-weight: 600;
+    font-display: swap;
+    src: url('../fonts/outfit-latin.woff2') format('woff2');
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+    font-family: 'Outfit';
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url('../fonts/outfit-latin-ext.woff2') format('woff2');
+    unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+    font-family: 'Outfit';
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url('../fonts/outfit-latin.woff2') format('woff2');
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+    font-family: 'Outfit';
+    font-style: normal;
+    font-weight: 800;
+    font-display: swap;
+    src: url('../fonts/outfit-latin-ext.woff2') format('woff2');
+    unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+    font-family: 'Outfit';
+    font-style: normal;
+    font-weight: 800;
+    font-display: swap;
+    src: url('../fonts/outfit-latin.woff2') format('woff2');
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+    font-family: 'JetBrains Mono';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url('../fonts/jetbrains-mono-latin-ext.woff2') format('woff2');
+    unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+    font-family: 'JetBrains Mono';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url('../fonts/jetbrains-mono-latin.woff2') format('woff2');
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+    font-family: 'JetBrains Mono';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url('../fonts/jetbrains-mono-latin-ext.woff2') format('woff2');
+    unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+    font-family: 'JetBrains Mono';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url('../fonts/jetbrains-mono-latin.woff2') format('woff2');
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+    font-family: 'JetBrains Mono';
+    font-style: normal;
+    font-weight: 600;
+    font-display: swap;
+    src: url('../fonts/jetbrains-mono-latin-ext.woff2') format('woff2');
+    unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+    font-family: 'JetBrains Mono';
+    font-style: normal;
+    font-weight: 600;
+    font-display: swap;
+    src: url('../fonts/jetbrains-mono-latin.woff2') format('woff2');
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+    font-family: 'JetBrains Mono';
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url('../fonts/jetbrains-mono-latin-ext.woff2') format('woff2');
+    unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+    font-family: 'JetBrains Mono';
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url('../fonts/jetbrains-mono-latin.woff2') format('woff2');
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
 
 * {
     margin: 0;
@@ -7,6 +185,7 @@
 }
 
 :root {
+    color-scheme: dark;
     --color-primary: #00d4aa;
     --color-primary-light-1: #1ae0bb;
     --color-primary-light-2: #33e6c7;
@@ -364,13 +543,14 @@ main {
 }
 
 .level-2 {
-    background: rgba(52, 211, 153, 0.06);
-    border-left: 3px solid var(--color-success);
+    background: rgba(56, 189, 248, 0.06);
+    border-left: 3px solid #38bdf8;
 }
 
 .level-2 .step-number {
-    background: var(--color-success);
-    box-shadow: 0 2px 12px rgba(52, 211, 153, 0.3);
+    background: #38bdf8;
+    color: #0a0f1a;
+    box-shadow: 0 2px 12px rgba(56, 189, 248, 0.3);
 }
 
 .level-3 {
@@ -467,6 +647,16 @@ main {
     background: var(--color-bg-base);
     color: var(--color-text-primary);
     font-family: 'JetBrains Mono', monospace;
+}
+
+.extra-field-item input[type="number"]::-webkit-inner-spin-button,
+.extra-field-item input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.extra-field-item input[type="number"] {
+    -moz-appearance: textfield;
 }
 
 .extra-field-item input:focus {
@@ -634,6 +824,38 @@ button.add-field-btn:hover:not(:disabled) {
     background: var(--color-bg-base);
     color: var(--color-text-primary);
     font-family: 'JetBrains Mono', monospace;
+}
+
+.form-group input[type="number"]::-webkit-inner-spin-button,
+.form-group input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.form-group input[type="number"] {
+    -moz-appearance: textfield;
+}
+
+.form-group input[type="date"]::-webkit-datetime-edit {
+    color: var(--color-text-primary);
+}
+
+.form-group input[type="date"]::-webkit-datetime-edit-fields-wrapper {
+    background: transparent;
+}
+
+.form-group input[type="date"]::-webkit-datetime-edit-text {
+    color: var(--color-text-secondary);
+    padding: 0 2px;
+}
+
+.form-group input[type="date"]::-webkit-datetime-edit-month-field,
+.form-group input[type="date"]::-webkit-datetime-edit-day-field,
+.form-group input[type="date"]::-webkit-datetime-edit-year-field {
+    color: var(--color-text-primary);
+    background: rgba(0, 212, 170, 0.08);
+    border-radius: 4px;
+    padding: 2px 4px;
 }
 
 .form-group select:focus,
@@ -962,11 +1184,20 @@ button.edit-btn {
     border: 1px solid rgba(52, 211, 153, 0.25);
 }
 
-button.edit-btn:hover {
+button.edit-btn:hover:not(:disabled) {
     background: var(--color-success);
     color: #0a0f1a;
     box-shadow: var(--glow-success);
     border-color: var(--color-success);
+}
+
+button.edit-btn:disabled {
+    background: rgba(52, 211, 153, 0.06);
+    color: var(--color-info-dark);
+    border-color: var(--color-border-lighter);
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
 }
 
 button.delete-btn {
@@ -975,11 +1206,20 @@ button.delete-btn {
     border: 1px solid rgba(248, 113, 113, 0.25);
 }
 
-button.delete-btn:hover {
+button.delete-btn:hover:not(:disabled) {
     background: var(--color-danger);
     color: white;
     box-shadow: var(--glow-danger);
     border-color: var(--color-danger);
+}
+
+button.delete-btn:disabled {
+    background: rgba(248, 113, 113, 0.06);
+    color: var(--color-info-dark);
+    border-color: var(--color-border-lighter);
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
 }
 
 .chart-container {

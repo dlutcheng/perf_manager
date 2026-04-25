@@ -15,13 +15,17 @@ let chartState = {
 
 const COLORS = [
     { line: '#00d4aa', fill: 'rgba(0, 212, 170, 0.12)' },
-    { line: '#34d399', fill: 'rgba(52, 211, 153, 0.12)' },
-    { line: '#fbbf24', fill: 'rgba(251, 191, 36, 0.12)' },
     { line: '#f87171', fill: 'rgba(248, 113, 113, 0.12)' },
-    { line: '#94a3b8', fill: 'rgba(148, 163, 184, 0.12)' },
+    { line: '#38bdf8', fill: 'rgba(56, 189, 248, 0.12)' },
+    { line: '#fbbf24', fill: 'rgba(251, 191, 36, 0.12)' },
     { line: '#c084fc', fill: 'rgba(192, 132, 252, 0.12)' },
+    { line: '#a3e635', fill: 'rgba(163, 230, 53, 0.12)' },
+    { line: '#fb923c', fill: 'rgba(251, 146, 60, 0.12)' },
     { line: '#22d3ee', fill: 'rgba(34, 211, 238, 0.12)' },
-    { line: '#fb923c', fill: 'rgba(251, 146, 60, 0.12)' }
+    { line: '#f472b6', fill: 'rgba(244, 114, 182, 0.12)' },
+    { line: '#34d399', fill: 'rgba(52, 211, 153, 0.12)' },
+    { line: '#818cf8', fill: 'rgba(129, 140, 248, 0.12)' },
+    { line: '#facc15', fill: 'rgba(250, 204, 21, 0.12)' }
 ];
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -200,6 +204,7 @@ function onBenchmarkChange() {
         const collapseBtn = document.createElement('button');
         collapseBtn.type = 'button';
         collapseBtn.className = 'collapse-btn';
+        collapseBtn.id = `vendor-arrow-${vendorIndex}`;
         collapseBtn.textContent = '▼';
         collapseBtn.onclick = () => toggleVendor(`${vendorIndex}`);
         vendorHeader.appendChild(collapseBtn);
