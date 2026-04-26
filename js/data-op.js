@@ -3,6 +3,7 @@ let editingRecord = null;
 let extraFields = [];
 let currentBenchmark = '';
 let currentVendor = '';
+let operatorsDateIndices = [];
 let sortStates = {
     date: 0,
     duration: 0
@@ -109,6 +110,7 @@ function setupEventListeners() {
 
     document.getElementById('saveRecordBtn').addEventListener('click', saveRecord);
     document.getElementById('clearFormBtn').addEventListener('click', clearForm);
+    document.getElementById('loadXlsxBtn').addEventListener('click', loadExternalXlsx);
 
     document.getElementById('addFieldBtn').addEventListener('click', addExtraField);
 
@@ -156,6 +158,7 @@ async function onBenchmarkChange() {
     document.getElementById('addConfigurationBtn').disabled = true;
     document.getElementById('deleteConfigurationBtn').disabled = true;
     document.getElementById('saveRecordBtn').disabled = true;
+    document.getElementById('loadXlsxBtn').disabled = true;
     document.getElementById('addFieldBtn').disabled = true;
     document.getElementById('deleteVendorBtn').disabled = true;
 
@@ -172,6 +175,7 @@ async function onBenchmarkChange() {
     }
 
     extraFields = [];
+    operatorsDateIndices = [];
     renderExtraFields();
     displayRecords();
 }
@@ -194,6 +198,7 @@ async function onVendorChange() {
     document.getElementById('addConfigurationBtn').disabled = !vendor;
     document.getElementById('deleteConfigurationBtn').disabled = !vendor;
     document.getElementById('saveRecordBtn').disabled = true;
+    document.getElementById('loadXlsxBtn').disabled = true;
     document.getElementById('addFieldBtn').disabled = !vendor;
     document.getElementById('deleteVendorBtn').disabled = !vendor;
 
@@ -210,6 +215,7 @@ async function onVendorChange() {
     }
 
     extraFields = await getExtraFieldsForVendor(benchmark, vendor);
+    operatorsDateIndices = [];
     renderExtraFields();
     displayRecords();
 }
@@ -220,6 +226,7 @@ async function onConfigurationChange() {
     const configuration = document.getElementById('configurationSelect').value;
 
     document.getElementById('saveRecordBtn').disabled = !configuration;
+    document.getElementById('loadXlsxBtn').disabled = !configuration;
     document.getElementById('addFieldBtn').disabled = !configuration;
 
     const recordDetailPanel = document.getElementById('recordDetailPanel');
@@ -232,14 +239,20 @@ async function onConfigurationChange() {
         dataTopRow.classList.remove('single-panel');
         showPanel(recordDetailPanel, false);
         showPanel(recordsListPanel, true);
+        operatorsDateIndices = [];
+        loadOperatorsIndices(benchmark, vendor, configuration);
     } else {
         hidePanel(recordDetailPanel);
         hidePanel(recordsListPanel);
         dataTopRow.classList.add('single-panel');
         document.getElementById('dateSearchInput').value = '';
         dateFilter = '';
+        operatorsDateIndices = [];
     }
+}
 
+async function loadOperatorsIndices(benchmark, vendor, configuration) {
+    operatorsDateIndices = await getOperatorsDatesForConfig(benchmark, vendor, configuration);
     displayRecords();
 }
 
@@ -333,6 +346,7 @@ async function deleteBenchmark() {
     delete data[benchmark];
 
     await deleteExtraFieldsForBenchmark(benchmark);
+    await deleteOperatorsDataForBenchmark(benchmark);
     await saveData();
     notifyDataChanged();
     populateBenchmarkSelects();
@@ -351,6 +365,7 @@ async function deleteVendor() {
     delete data[benchmark][vendor];
 
     await deleteExtraFieldsForVendor(benchmark, vendor);
+    await deleteOperatorsDataForVendor(benchmark, vendor);
     await saveData();
     notifyDataChanged();
 
@@ -653,7 +668,9 @@ function displayRecords() {
 
     pageRecords.forEach((record) => {
         const originalIndex = records.indexOf(record);
-        html += `<tr>
+        const hasOps = operatorsDateIndices.some(d => d.date === record.date && d.index === originalIndex);
+        const rowClass = hasOps ? 'has-operators' : '';
+        html += `<tr class="${rowClass}">
             <td>${record.date}</td>
             <td>${record.duration.toFixed(3)}</td>`;
 
@@ -749,8 +766,14 @@ async function deleteRecord(index) {
         return;
     }
 
+    const record = data[benchmark][vendor][configuration][index];
+    if (record) {
+        await deleteOperatorsDataForRecord(benchmark, vendor, configuration, record.date, index);
+    }
+
     data[benchmark][vendor][configuration].splice(index, 1);
     await saveData();
+    operatorsDateIndices = await getOperatorsDatesForConfig(benchmark, vendor, configuration);
     displayRecords();
 }
 
@@ -948,4 +971,297 @@ function applyPageJump() {
     }
     pagination.currentPage = value;
     displayRecords();
+}
+
+function detectValueType(rawValue) {
+    if (rawValue == null) return { type: 'string', value: '' };
+    const str = String(rawValue).trim();
+    if (str === '') return { type: 'string', value: '' };
+
+    const hasPercent = str.endsWith('%');
+    const numStr = hasPercent ? str.slice(0, -1).trim() : str;
+
+    if (/^-?\d+$/.test(numStr)) {
+        const intVal = parseInt(numStr, 10);
+        if (hasPercent) {
+            return { type: 'float', value: intVal };
+        }
+        return { type: 'int', value: intVal };
+    }
+
+    const dotCount = (numStr.match(/\./g) || []).length;
+    if (dotCount === 1 && /^-?\d+\.\d+$/.test(numStr)) {
+        const floatVal = parseFloat(numStr);
+        return { type: 'float', value: floatVal };
+    }
+
+    return { type: 'string', value: str };
+}
+
+function parseSummaryData(workbook) {
+    const sheetName = workbook.SheetNames.find(name => name === 'Summary Data');
+    if (!sheetName) return null;
+
+    const sheet = workbook.Sheets[sheetName];
+    const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+
+    if (!jsonData || jsonData.length < 2) return null;
+
+    const keys = jsonData[0];
+    const values = jsonData[1];
+
+    if (!keys || !values) return null;
+
+    const result = { duration: 0, extras: [] };
+
+    for (let i = 0; i < keys.length; i++) {
+        const key = String(keys[i]).trim();
+        const rawValue = values[i];
+
+        if (!key) continue;
+
+        if (/(total|inference)\s*time/i.test(key)) {
+            const parsed = detectValueType(rawValue);
+            result.duration = parsed.type === 'string' ? 0 : parsed.value;
+        } else {
+            const parsed = detectValueType(rawValue);
+            result.extras.push({ name: key, type: parsed.type, value: parsed.value });
+        }
+    }
+
+    return result;
+}
+
+function parseOperatorsData(workbook) {
+    const sheetName = workbook.SheetNames.find(name => {
+        const lower = name.trim().toLowerCase();
+        return lower.includes('operat') && lower.includes('data');
+    });
+    if (!sheetName) return null;
+
+    const sheet = workbook.Sheets[sheetName];
+    const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+
+    if (!jsonData || jsonData.length < 3) return null;
+
+    const operators = [];
+
+    for (let i = 2; i < jsonData.length; i++) {
+        const row = jsonData[i];
+        const operatorName = row[0] != null ? String(row[0]).trim() : '';
+        if (!operatorName) continue;
+
+        const timeRaw = row[1];
+        const ratioRaw = row[2];
+
+        let timeVal = null;
+        if (timeRaw != null && String(timeRaw).trim() !== '') {
+            const parsed = detectValueType(timeRaw);
+            timeVal = parsed.type === 'string' ? null : parsed.value;
+        }
+
+        let ratioVal = null;
+        if (ratioRaw != null && String(ratioRaw).trim() !== '') {
+            const parsed = detectValueType(ratioRaw);
+            ratioVal = parsed.type === 'string' ? null : parsed.value;
+        }
+
+        operators.push({ operator: operatorName, time: timeVal, ratio: ratioVal });
+    }
+
+    return operators.length > 0 ? operators : null;
+}
+
+function recordSignature(record, extraFieldDefs) {
+    const parts = [record.date, String(record.duration)];
+    const namedExtras = Object.entries(record.extras).map(([fieldId, fieldData]) => {
+        const fieldDef = extraFieldDefs.find(f => String(f.id) === String(fieldId));
+        const name = fieldDef ? fieldDef.name : fieldData.name || '';
+        return { name, value: fieldData.value };
+    });
+    namedExtras.sort((a, b) => a.name.localeCompare(b.name));
+    for (const extra of namedExtras) {
+        parts.push(`${extra.name}=${extra.value}`);
+    }
+    return parts.join('|');
+}
+
+function parsedSignature(parsed, date) {
+    const parts = [date, String(parsed.duration)];
+    const sortedExtras = parsed.extras.slice().sort((a, b) => a.name.localeCompare(b.name));
+    for (const extra of sortedExtras) {
+        parts.push(`${extra.name}=${extra.value}`);
+    }
+    return parts.join('|');
+}
+
+async function loadExternalXlsx() {
+    const benchmark = document.getElementById('benchmarkSelect').value;
+    const vendor = document.getElementById('vendorSelect').value;
+    const configuration = document.getElementById('configurationSelect').value;
+
+    if (!benchmark || !vendor || !configuration) {
+        alert('Please select Benchmark, Arch and Configuration first');
+        return;
+    }
+
+    if (!window.showDirectoryPicker) {
+        alert('Your browser does not support the File System Access API. Please use a modern browser (Chrome, Edge).');
+        return;
+    }
+
+    let dirHandle;
+    try {
+        dirHandle = await window.showDirectoryPicker();
+    } catch (e) {
+        return;
+    }
+
+    const btn = document.getElementById('loadXlsxBtn');
+    const progressBar = document.getElementById('xlsxProgressBar');
+    const progressFill = document.getElementById('xlsxProgressFill');
+    const progressText = document.getElementById('xlsxProgressText');
+
+    btn.classList.add('loading');
+    btn.textContent = 'Loading...';
+    progressBar.classList.add('active');
+    progressText.classList.add('active');
+
+    try {
+        const xlsxFiles = [];
+        for await (const entry of dirHandle.values()) {
+            if (entry.kind === 'file' && entry.name.toLowerCase().endsWith('.xlsx')) {
+                xlsxFiles.push(entry);
+            }
+        }
+
+        if (xlsxFiles.length === 0) {
+            alert('No .xlsx files found in the selected folder');
+            return;
+        }
+
+        const today = new Date().toISOString().split('T')[0];
+        const existingRecords = data[benchmark]?.[vendor]?.[configuration] || [];
+        const existingSigs = new Set(existingRecords.map(r => recordSignature(r, extraFields)));
+
+        const parsedResults = [];
+        const operatorsDataMap = [];
+        const seenSigs = new Set();
+        let duplicatesSkipped = 0;
+        let noSummaryData = 0;
+
+        for (let i = 0; i < xlsxFiles.length; i++) {
+            const fileEntry = xlsxFiles[i];
+            const pct = Math.round(((i + 1) / xlsxFiles.length) * 100);
+            progressFill.style.width = pct + '%';
+            progressText.textContent = `Parsing ${fileEntry.name} (${i + 1}/${xlsxFiles.length})`;
+
+            try {
+                const file = await fileEntry.getFile();
+                const arrayBuffer = await file.arrayBuffer();
+                const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+
+                const parsed = parseSummaryData(workbook);
+                if (!parsed) {
+                    noSummaryData++;
+                    continue;
+                }
+
+                const sig = parsedSignature(parsed, today);
+                if (seenSigs.has(sig) || existingSigs.has(sig)) {
+                    duplicatesSkipped++;
+                    continue;
+                }
+
+                seenSigs.add(sig);
+                const operatorsData = parseOperatorsData(workbook);
+                parsedResults.push(parsed);
+                operatorsDataMap.push(operatorsData);
+            } catch (err) {
+                console.error(`Failed to parse ${fileEntry.name}:`, err);
+            }
+        }
+
+        if (parsedResults.length === 0) {
+            let msg = 'No new records to import.';
+            if (noSummaryData > 0) msg += `\n${noSummaryData} file(s) had no "Summary Data" sheet.`;
+            if (duplicatesSkipped > 0) msg += `\n${duplicatesSkipped} duplicate(s) skipped.`;
+            alert(msg);
+            return;
+        }
+
+        const allNewFieldNames = new Set();
+        for (const parsed of parsedResults) {
+            for (const extra of parsed.extras) {
+                allNewFieldNames.add(extra.name);
+            }
+        }
+
+        const updatedExtraFields = extraFields.slice();
+        for (const name of allNewFieldNames) {
+            const existing = updatedExtraFields.find(f => f.name === name);
+            if (!existing) {
+                const newId = Date.now() + Math.floor(Math.random() * 10000);
+                let determinedType = 'float';
+                for (const parsed of parsedResults) {
+                    const matched = parsed.extras.find(e => e.name === name);
+                    if (matched) {
+                        determinedType = matched.type;
+                        break;
+                    }
+                }
+                updatedExtraFields.push({ id: newId, name, type: determinedType });
+            }
+        }
+
+        for (let idx = 0; idx < parsedResults.length; idx++) {
+            const parsed = parsedResults[idx];
+            const record = {
+                date: today,
+                duration: parsed.duration,
+                extras: {}
+            };
+
+            for (const extra of parsed.extras) {
+                const fieldDef = updatedExtraFields.find(f => f.name === extra.name);
+                if (fieldDef) {
+                    record.extras[fieldDef.id] = { name: extra.name, value: extra.value };
+                }
+            }
+
+            if (!data[benchmark][vendor][configuration]) {
+                data[benchmark][vendor][configuration] = [];
+            }
+            data[benchmark][vendor][configuration].push(record);
+
+            const operatorsData = operatorsDataMap[idx];
+            if (operatorsData) {
+                const recordIndex = data[benchmark][vendor][configuration].length - 1;
+                await saveOperatorsDataForRecord(benchmark, vendor, configuration, today, recordIndex, operatorsData);
+            }
+        }
+
+        extraFields = updatedExtraFields;
+        await saveExtraFieldsForVendor(benchmark, vendor, extraFields);
+        await saveData();
+
+        operatorsDateIndices = await getOperatorsDatesForConfig(benchmark, vendor, configuration);
+        renderExtraFields();
+        displayRecords();
+        notifyDataChanged();
+
+        let msg = `Successfully imported ${parsedResults.length} record(s).`;
+        if (duplicatesSkipped > 0) msg += `\n${duplicatesSkipped} duplicate(s) skipped.`;
+        if (noSummaryData > 0) msg += `\n${noSummaryData} file(s) had no "Summary Data" sheet.`;
+        alert(msg);
+    } catch (error) {
+        console.error('XLSX loading error:', error);
+        alert('Failed to load XLSX files: ' + error.message);
+    } finally {
+        btn.classList.remove('loading');
+        btn.textContent = 'Load External XLSX';
+        progressBar.classList.remove('active');
+        progressText.classList.remove('active');
+        progressFill.style.width = '0%';
+    }
 }

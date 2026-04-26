@@ -132,6 +132,12 @@
                         <button type="button" id="saveRecordBtn" disabled>Save Record</button>
                         <button type="button" id="clearFormBtn">Clear Form</button>
                     </div>
+
+                    <div class="form-group xlsx-load-group">
+                        <button type="button" id="loadXlsxBtn" class="xlsx-load-btn" disabled>Load External XLSX</button>
+                        <div class="xlsx-progress-bar" id="xlsxProgressBar"><div class="progress-fill" id="xlsxProgressFill"></div></div>
+                        <div class="xlsx-progress-text" id="xlsxProgressText"></div>
+                    </div>
                 </div>
             </div>
 
@@ -147,6 +153,7 @@
         </main>
     </div>
 
+    <script src="../js/xlsx.full.min.js"></script>
     <script src="../js/db.js"></script>
     <script src="../js/data-op.js"></script>
 </body>

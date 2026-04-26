@@ -1,6 +1,8 @@
 let data = {};
 let extraFields = [];
 let allExtraFieldsCache = {};
+let chartMode = 'normal';
+
 let chartState = {
     datasets: [],
     labels: [],
@@ -34,8 +36,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     await initDatabase();
     await refreshDataAndFields();
     setupEventListeners();
+    setupOperatorsEventListeners();
     populateBenchmarkSelect();
     populateYAxisSelect();
+    populateOpBenchmarkSelect();
 });
 
 async function refreshDataAndFields() {
@@ -53,6 +57,7 @@ document.addEventListener('visibilitychange', async () => {
         await refreshDataAndFields();
         populateBenchmarkSelect();
         populateYAxisSelect();
+        populateOpBenchmarkSelect();
     }
 });
 
@@ -60,12 +65,14 @@ window.addEventListener('benchmarkDataImported', async () => {
     await refreshDataAndFields();
     populateBenchmarkSelect();
     populateYAxisSelect();
+    populateOpBenchmarkSelect();
 });
 
 window.addEventListener('benchmarkDataChanged', async () => {
     await refreshDataAndFields();
     populateBenchmarkSelect();
     populateYAxisSelect();
+    populateOpBenchmarkSelect();
 });
 
 function getExtraFieldsForVendor(benchmark, vendor) {
@@ -140,8 +147,21 @@ function setupEventListeners() {
     document.getElementById('deselectAllBtn').addEventListener('click', deselectAll);
 
     const canvas = document.getElementById('chartCanvas');
-    canvas.addEventListener('mousemove', onCanvasMouseMove);
-    canvas.addEventListener('mouseleave', onCanvasMouseLeave);
+    canvas.addEventListener('mousemove', function(e) {
+        if (chartMode === 'operators') {
+            onOpCanvasMouseMove(e);
+        } else {
+            onCanvasMouseMove(e);
+        }
+    });
+    canvas.addEventListener('mouseleave', function(e) {
+        if (chartMode === 'operators') {
+            if (opChartState.operators.length === 0) return;
+            renderOpChartCurrent();
+        } else {
+            onCanvasMouseLeave();
+        }
+    });
 
     document.getElementById('chartFullscreen').addEventListener('click', exitFullscreen);
 }
@@ -320,6 +340,7 @@ function deselectAll() {
 }
 
 function enterFullscreen() {
+    chartMode = 'normal';
     document.getElementById('mainContainer').style.display = 'none';
     document.getElementById('chartFullscreen').classList.add('visible');
     updateExtraFieldsFromSelection();
@@ -906,7 +927,479 @@ function onCanvasMouseLeave() {
 }
 
 window.addEventListener('resize', () => {
-    if (document.getElementById('chartFullscreen').style.display === 'flex') {
-        drawChart();
+    if (document.getElementById('chartFullscreen').classList.contains('visible')) {
+        if (chartMode === 'operators') {
+            drawOpChart();
+        } else {
+            drawChart();
+        }
     }
 });
+
+let opChartState = {
+    leftData: null,
+    rightData: null,
+    leftDate: '',
+    rightDate: '',
+    benchmark: '',
+    vendor: '',
+    configuration: '',
+    operators: [],
+    padding: null,
+    chartWidth: 0,
+    chartHeight: 0,
+    animationId: null
+};
+
+function setupOperatorsEventListeners() {
+    document.getElementById('opBenchmarkSelect').addEventListener('change', onOpBenchmarkChange);
+    document.getElementById('opVendorSelect').addEventListener('change', onOpVendorChange);
+    document.getElementById('opConfigSelect').addEventListener('change', onOpConfigChange);
+    document.getElementById('opDateLeft').addEventListener('change', onOpDateChange);
+    document.getElementById('opDateRight').addEventListener('change', onOpDateChange);
+    document.getElementById('opDrawBtn').addEventListener('click', function() {
+        this.classList.remove('btn-pulse');
+        void this.offsetWidth;
+        this.classList.add('btn-pulse');
+        enterOpFullscreen();
+    });
+}
+
+function populateOpBenchmarkSelect() {
+    const select = document.getElementById('opBenchmarkSelect');
+    select.innerHTML = '<option value="">-- Select Benchmark --</option>';
+    Object.keys(data).sort().forEach(benchmark => {
+        select.innerHTML += `<option value="${benchmark}">${benchmark}</option>`;
+    });
+}
+
+async function onOpBenchmarkChange() {
+    const benchmark = document.getElementById('opBenchmarkSelect').value;
+    const vendorSelect = document.getElementById('opVendorSelect');
+    const configSelect = document.getElementById('opConfigSelect');
+    const dateLeftSelect = document.getElementById('opDateLeft');
+    const dateRightSelect = document.getElementById('opDateRight');
+
+    vendorSelect.innerHTML = '<option value="">-- Select Arch --</option>';
+    vendorSelect.disabled = !benchmark;
+    configSelect.innerHTML = '<option value="">-- Select Configuration --</option>';
+    configSelect.disabled = true;
+    dateLeftSelect.innerHTML = '<option value="">-- Select Date --</option>';
+    dateLeftSelect.disabled = true;
+    dateRightSelect.innerHTML = '<option value="">-- Select Date --</option>';
+    dateRightSelect.disabled = true;
+    document.getElementById('opDrawBtn').disabled = true;
+
+    if (benchmark && data[benchmark]) {
+        Object.keys(data[benchmark]).sort().forEach(vendor => {
+            vendorSelect.innerHTML += `<option value="${vendor}">${vendor}</option>`;
+        });
+    }
+}
+
+async function onOpVendorChange() {
+    const benchmark = document.getElementById('opBenchmarkSelect').value;
+    const vendor = document.getElementById('opVendorSelect').value;
+    const configSelect = document.getElementById('opConfigSelect');
+    const dateLeftSelect = document.getElementById('opDateLeft');
+    const dateRightSelect = document.getElementById('opDateRight');
+
+    configSelect.innerHTML = '<option value="">-- Select Configuration --</option>';
+    configSelect.disabled = !vendor;
+    dateLeftSelect.innerHTML = '<option value="">-- Select Date --</option>';
+    dateLeftSelect.disabled = true;
+    dateRightSelect.innerHTML = '<option value="">-- Select Date --</option>';
+    dateRightSelect.disabled = true;
+    document.getElementById('opDrawBtn').disabled = true;
+
+    if (benchmark && vendor && data[benchmark]?.[vendor]) {
+        Object.keys(data[benchmark][vendor]).sort().forEach(config => {
+            configSelect.innerHTML += `<option value="${config}">${config}</option>`;
+        });
+    }
+}
+
+async function onOpConfigChange() {
+    const benchmark = document.getElementById('opBenchmarkSelect').value;
+    const vendor = document.getElementById('opVendorSelect').value;
+    const configuration = document.getElementById('opConfigSelect').value;
+    const dateLeftSelect = document.getElementById('opDateLeft');
+    const dateRightSelect = document.getElementById('opDateRight');
+
+    dateLeftSelect.innerHTML = '<option value="">-- Select Date --</option>';
+    dateRightSelect.innerHTML = '<option value="">-- Select Date --</option>';
+    document.getElementById('opDrawBtn').disabled = true;
+
+    if (!benchmark || !vendor || !configuration) {
+        dateLeftSelect.disabled = true;
+        dateRightSelect.disabled = true;
+        return;
+    }
+
+    const dateEntries = await getOperatorsDatesForConfig(benchmark, vendor, configuration);
+
+    dateLeftSelect.disabled = dateEntries.length === 0;
+    dateRightSelect.disabled = dateEntries.length === 0;
+
+    dateLeftSelect.innerHTML = '<option value="">-- Select Date --</option>';
+    dateRightSelect.innerHTML = '<option value="">-- Select Date --</option>';
+
+    dateEntries.forEach(entry => {
+        const val = `${entry.date}|${entry.index}`;
+        dateLeftSelect.innerHTML += `<option value="${val}">${entry.label}</option>`;
+        dateRightSelect.innerHTML += `<option value="${val}">${entry.label}</option>`;
+    });
+}
+
+async function onOpDateChange() {
+    const dateLeft = document.getElementById('opDateLeft').value;
+    const dateRight = document.getElementById('opDateRight').value;
+
+    if (!dateLeft || !dateRight) {
+        document.getElementById('opDrawBtn').disabled = true;
+        return;
+    }
+
+    const benchmark = document.getElementById('opBenchmarkSelect').value;
+    const vendor = document.getElementById('opVendorSelect').value;
+    const configuration = document.getElementById('opConfigSelect').value;
+
+    const [leftDate, leftIdx] = dateLeft.split('|');
+    const [rightDate, rightIdx] = dateRight.split('|');
+
+    const leftData = await getOperatorsDataForRecord(benchmark, vendor, configuration, leftDate, parseInt(leftIdx));
+    const rightData = await getOperatorsDataForRecord(benchmark, vendor, configuration, rightDate, parseInt(rightIdx));
+
+    document.getElementById('opDrawBtn').disabled = !leftData || !rightData;
+}
+
+function enterOpFullscreen() {
+    chartMode = 'operators';
+    document.getElementById('mainContainer').style.display = 'none';
+    document.getElementById('chartFullscreen').classList.add('visible');
+    drawOpChart();
+}
+
+function drawOpChart() {
+    const benchmark = document.getElementById('opBenchmarkSelect').value;
+    const vendor = document.getElementById('opVendorSelect').value;
+    const configuration = document.getElementById('opConfigSelect').value;
+    const dateLeftVal = document.getElementById('opDateLeft').value;
+    const dateRightVal = document.getElementById('opDateRight').value;
+
+    const [leftDate, leftIdx] = dateLeftVal.split('|');
+    const [rightDate, rightIdx] = dateRightVal.split('|');
+
+    getOperatorsDataForRecord(benchmark, vendor, configuration, leftDate, parseInt(leftIdx)).then(leftData => {
+        getOperatorsDataForRecord(benchmark, vendor, configuration, rightDate, parseInt(rightIdx)).then(rightData => {
+            if (!leftData || !rightData) return;
+
+            const leftOps = new Map(leftData.map(d => [d.operator, d]));
+            const rightOps = new Map(rightData.map(d => [d.operator, d]));
+            const allOperators = [...new Set([...leftOps.keys(), ...rightOps.keys()])].sort();
+
+            const leftLabel = document.getElementById('opDateLeft').selectedOptions[0]?.text || leftDate;
+            const rightLabel = document.getElementById('opDateRight').selectedOptions[0]?.text || rightDate;
+
+            opChartState.leftData = leftData;
+            opChartState.rightData = rightData;
+            opChartState.leftDate = leftLabel;
+            opChartState.rightDate = rightLabel;
+            opChartState.benchmark = benchmark;
+            opChartState.vendor = vendor;
+            opChartState.configuration = configuration;
+            opChartState.operators = allOperators;
+
+            animateOpChart(allOperators, leftOps, rightOps, leftLabel, rightLabel);
+        });
+    });
+}
+
+function animateOpChart(allOperators, leftOps, rightOps, dateLeft, dateRight) {
+    if (opChartState.animationId) {
+        cancelAnimationFrame(opChartState.animationId);
+        opChartState.animationId = null;
+    }
+
+    const duration = 800;
+    const startTime = performance.now();
+
+    function frame(now) {
+        const elapsed = now - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+
+        renderOpChart(allOperators, leftOps, rightOps, dateLeft, dateRight, eased);
+
+        if (progress < 1) {
+            opChartState.animationId = requestAnimationFrame(frame);
+        } else {
+            opChartState.animationId = null;
+        }
+    }
+
+    opChartState.animationId = requestAnimationFrame(frame);
+}
+
+function renderOpChart(allOperators, leftOps, rightOps, dateLeft, dateRight, animProgress) {
+    if (animProgress === undefined) animProgress = 1;
+
+    const canvas = document.getElementById('chartCanvas');
+    const ctx = canvas.getContext('2d');
+
+    const container = document.getElementById('chartContainer');
+    const rect = container.getBoundingClientRect();
+    const padding = { top: 60, right: 80, bottom: 160, left: 100 };
+
+    canvas.width = rect.width - 40 || window.innerWidth - 40;
+    canvas.height = rect.height - 40 || window.innerHeight - 90;
+
+    const chartWidth = canvas.width - padding.left - padding.right;
+    const chartHeight = canvas.height - padding.top - padding.bottom;
+
+    opChartState.padding = padding;
+    opChartState.chartWidth = chartWidth;
+    opChartState.chartHeight = chartHeight;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    if (allOperators.length === 0) {
+        ctx.font = '15px "Outfit", sans-serif';
+        ctx.fillStyle = '#64748b';
+        ctx.textAlign = 'center';
+        ctx.fillText('No Operators Data', canvas.width / 2, canvas.height / 2);
+        return;
+    }
+
+    const maxTime = Math.max(
+        ...allOperators.map(op => Math.max(leftOps.get(op)?.time || 0, rightOps.get(op)?.time || 0)),
+        0
+    );
+    const timeRange = maxTime || 1;
+    const timeMargin = timeRange * 0.1;
+    const adjustedMaxTime = maxTime + timeMargin;
+
+    const groupWidth = chartWidth / allOperators.length;
+    const barWidth = Math.min(groupWidth * 0.3, 40);
+    const gap = Math.min(barWidth * 0.3, 8);
+
+    const xPosition = (index) => padding.left + groupWidth * index + groupWidth / 2;
+    const yTimePosition = (value) => padding.top + chartHeight - ((value) / adjustedMaxTime) * chartHeight;
+
+    ctx.strokeStyle = '#1e293b';
+    ctx.lineWidth = 1;
+    const gridLines = 5;
+    for (let i = 0; i <= gridLines; i++) {
+        const y = padding.top + (chartHeight / gridLines) * i;
+        ctx.beginPath();
+        ctx.moveTo(padding.left, y);
+        ctx.lineTo(padding.left + chartWidth, y);
+        ctx.stroke();
+
+        const timeVal = adjustedMaxTime - (adjustedMaxTime / gridLines) * i;
+        ctx.font = '12px "JetBrains Mono", monospace';
+        ctx.fillStyle = '#94a3b8';
+        ctx.textAlign = 'right';
+        ctx.fillText(timeVal.toFixed(2), padding.left - 12, y + 4);
+    }
+
+    ctx.font = '14px "Outfit", sans-serif';
+    ctx.fillStyle = '#cbd5e1';
+    ctx.textAlign = 'center';
+    ctx.fillText('Operators', canvas.width / 2, canvas.height - 12);
+
+    ctx.save();
+    ctx.translate(30, canvas.height / 2);
+    ctx.rotate(-Math.PI / 2);
+    ctx.fillStyle = '#cbd5e1';
+    ctx.fillText('Time (ms)', 0, 0);
+    ctx.restore();
+
+    ctx.font = '11px "JetBrains Mono", monospace';
+    ctx.fillStyle = '#94a3b8';
+    ctx.textAlign = 'right';
+    allOperators.forEach((op, index) => {
+        const x = xPosition(index);
+        ctx.save();
+        ctx.translate(x, padding.top + chartHeight + 14);
+        ctx.rotate(-Math.PI / 4);
+        ctx.fillText(op, 0, 0);
+        ctx.restore();
+    });
+
+    const visibleCount = Math.max(1, Math.ceil(allOperators.length * animProgress));
+
+    const leftTimeColor = '#00d4aa';
+    const rightTimeColor = '#f87171';
+
+    for (let i = 0; i < visibleCount; i++) {
+        const op = allOperators[i];
+        const cx = xPosition(i);
+        const leftOp = leftOps.get(op);
+        const rightOp = rightOps.get(op);
+
+        const leftTimeVal = (leftOp?.time || 0) * animProgress;
+        const rightTimeVal = (rightOp?.time || 0) * animProgress;
+
+        const leftTimeY = yTimePosition(leftTimeVal);
+        const rightTimeY = yTimePosition(rightTimeVal);
+        const baseY = padding.top + chartHeight;
+
+        if (leftOp) {
+            const leftTimeGrad = ctx.createLinearGradient(0, leftTimeY, 0, baseY);
+            leftTimeGrad.addColorStop(0, leftTimeColor);
+            leftTimeGrad.addColorStop(1, 'rgba(0, 212, 170, 0.4)');
+            ctx.fillStyle = leftTimeGrad;
+            ctx.beginPath();
+            ctx.roundRect(cx - barWidth - gap / 2, leftTimeY, barWidth, baseY - leftTimeY, [3, 3, 0, 0]);
+            ctx.fill();
+        }
+
+        if (rightOp) {
+            const rightTimeGrad = ctx.createLinearGradient(0, rightTimeY, 0, baseY);
+            rightTimeGrad.addColorStop(0, rightTimeColor);
+            rightTimeGrad.addColorStop(1, 'rgba(248, 113, 113, 0.4)');
+            ctx.fillStyle = rightTimeGrad;
+            ctx.beginPath();
+            ctx.roundRect(cx + gap / 2, rightTimeY, barWidth, baseY - rightTimeY, [3, 3, 0, 0]);
+            ctx.fill();
+        }
+    }
+
+    const legendY = padding.top - 30;
+    const legendItems = [
+        { label: `${dateLeft}`, color: leftTimeColor, type: 'bar' },
+        { label: `${dateRight}`, color: rightTimeColor, type: 'bar' }
+    ];
+
+    let legendX = padding.left;
+    ctx.font = '12px "Outfit", sans-serif';
+    legendItems.forEach(item => {
+        const labelWidth = ctx.measureText(item.label).width;
+        const itemWidth = 20 + labelWidth + 24;
+
+        ctx.fillStyle = item.color;
+        ctx.beginPath();
+        ctx.roundRect(legendX, legendY, 14, 14, 3);
+        ctx.fill();
+
+        ctx.fillStyle = '#94a3b8';
+        ctx.textAlign = 'left';
+        ctx.fillText(item.label, legendX + 20, legendY + 12);
+        legendX += itemWidth;
+    });
+}
+
+function onOpCanvasMouseMove(e) {
+    if (opChartState.operators.length === 0) return;
+
+    const canvas = document.getElementById('chartCanvas');
+    const rect = canvas.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+
+    const { padding, chartWidth, chartHeight, operators, leftData, rightData, leftDate, rightDate } = opChartState;
+
+    if (mouseX < padding.left || mouseX > padding.left + chartWidth ||
+        mouseY < padding.top || mouseY > padding.top + chartHeight) {
+        renderOpChartCurrent();
+        return;
+    }
+
+    const groupWidth = chartWidth / operators.length;
+    const nearestIndex = Math.floor((mouseX - padding.left) / groupWidth);
+    const clampedIndex = Math.max(0, Math.min(operators.length - 1, nearestIndex));
+
+    const leftOps = new Map(leftData.map(d => [d.operator, d]));
+    const rightOps = new Map(rightData.map(d => [d.operator, d]));
+
+    renderOpChartCurrent();
+
+    const ctx = canvas.getContext('2d');
+    const cx = padding.left + groupWidth * clampedIndex + groupWidth / 2;
+
+    ctx.strokeStyle = 'rgba(56, 189, 248, 0.5)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath();
+    ctx.moveTo(cx, padding.top);
+    ctx.lineTo(cx, padding.top + chartHeight);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    const op = operators[clampedIndex];
+    const leftOp = leftOps.get(op);
+    const rightOp = rightOps.get(op);
+
+    const maxTime = Math.max(...operators.map(o => Math.max(leftOps.get(o)?.time || 0, rightOps.get(o)?.time || 0)), 0);
+    const timeMargin = (maxTime || 1) * 0.1;
+    const adjustedMaxTime = maxTime + timeMargin;
+
+    const yTimePos = (v) => padding.top + chartHeight - (v / adjustedMaxTime) * chartHeight;
+
+    const tooltipWidth = 260;
+    const lineHeight = 18;
+    let tooltipX = cx + 20;
+    let tooltipY = padding.top + 20;
+
+    if (tooltipX + tooltipWidth > canvas.width - padding.right) {
+        tooltipX = cx - tooltipWidth - 20;
+    }
+
+    const lines = [
+        { text: op, bold: true, color: '#e2e8f0' },
+        { text: `── ${leftDate} ──`, bold: false, color: '#00d4aa' },
+        { text: `  Time: ${leftOp?.time != null ? leftOp.time.toFixed(3) : 'N/A'}`, bold: false, color: '#00d4aa' },
+        { text: `  Ratio: ${leftOp?.ratio != null ? (leftOp.ratio * 100).toFixed(1) + '%' : 'N/A'}`, bold: false, color: '#34d399' },
+        { text: `── ${rightDate} ──`, bold: false, color: '#f87171' },
+        { text: `  Time: ${rightOp?.time != null ? rightOp.time.toFixed(3) : 'N/A'}`, bold: false, color: '#f87171' },
+        { text: `  Ratio: ${rightOp?.ratio != null ? (rightOp.ratio * 100).toFixed(1) + '%' : 'N/A'}`, bold: false, color: '#fca5a5' }
+    ];
+
+    const tooltipHeight = lines.length * lineHeight + 16;
+
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.95)';
+    ctx.strokeStyle = 'rgba(56, 189, 248, 0.3)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.roundRect(tooltipX - 8, tooltipY - 8, tooltipWidth, tooltipHeight, 6);
+    ctx.fill();
+    ctx.stroke();
+
+    let currentY = tooltipY + 4;
+    lines.forEach(line => {
+        ctx.font = line.bold ? 'bold 12px "JetBrains Mono", monospace' : '12px "JetBrains Mono", monospace';
+        ctx.fillStyle = line.color;
+        ctx.textAlign = 'left';
+        ctx.fillText(line.text, tooltipX, currentY + 12);
+        currentY += lineHeight;
+    });
+
+    if (leftOp?.time != null) {
+        const y = yTimePos(leftOp.time);
+        ctx.beginPath();
+        ctx.arc(cx - 8, y, 5, 0, 2 * Math.PI);
+        ctx.fillStyle = '#0f172a';
+        ctx.fill();
+        ctx.strokeStyle = '#00d4aa';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+    }
+
+    if (rightOp?.time != null) {
+        const y = yTimePos(rightOp.time);
+        ctx.beginPath();
+        ctx.arc(cx + 8, y, 5, 0, 2 * Math.PI);
+        ctx.fillStyle = '#0f172a';
+        ctx.fill();
+        ctx.strokeStyle = '#f87171';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+    }
+}
+
+function renderOpChartCurrent() {
+    const leftOps = new Map(opChartState.leftData.map(d => [d.operator, d]));
+    const rightOps = new Map(opChartState.rightData.map(d => [d.operator, d]));
+    renderOpChart(opChartState.operators, leftOps, rightOps, opChartState.leftDate, opChartState.rightDate, 1);
+}
