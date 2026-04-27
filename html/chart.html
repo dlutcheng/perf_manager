@@ -18,10 +18,15 @@
             </nav>
         </header>
 
+        <div class="sub-tab-bar sub-tab-bar-animate" id="subTabBar">
+            <button class="sub-tab active" data-panel="trends" onclick="switchPanel('trends')">Performance Trends</button>
+            <button class="sub-tab" data-panel="compare" onclick="switchPanel('compare')">Compare Operators</button>
+        </div>
+
         <main class="chart-main">
             <section class="chart-section">
-                <div class="panel chart-panel panel-animate-in">
-                    <h2>Data Visualization</h2>
+                <div class="panel chart-panel" id="trendPanel" data-panel-id="trends" style="display: none;">
+                    <h2>Performance Trends</h2>
 
                     <div class="form-group">
                         <label for="chartBenchmarkSelect">Select Benchmark:</label>
@@ -53,7 +58,7 @@
                     </div>
                 </div>
 
-                <div class="panel chart-panel panel-animate-in" style="animation-delay: 0.12s;">
+                <div class="panel chart-panel" id="comparePanel" data-panel-id="compare" style="display: none;">
                     <h2>Compare Operators</h2>
 
                     <div class="form-group">
@@ -77,14 +82,22 @@
                         </select>
                     </div>
 
+                    <div class="form-group">
+                        <label>Chart Mode:</label>
+                        <div class="op-mode-toggle">
+                            <button type="button" class="op-mode-btn active" id="opModeSingle" onclick="setOpMode('single')">Single Date</button>
+                            <button type="button" class="op-mode-btn" id="opModeCompare" onclick="setOpMode('compare')">Compare Dates</button>
+                        </div>
+                    </div>
+
                     <div class="op-date-row">
                         <div class="form-group op-date-group">
-                            <label for="opDateLeft">Date (Left):</label>
+                            <label for="opDateLeft" id="opDateLeftLabel">Date:</label>
                             <select id="opDateLeft" disabled>
                                 <option value="">-- Select Date --</option>
                             </select>
                         </div>
-                        <div class="form-group op-date-group">
+                        <div class="form-group op-date-group" id="opDateRightGroup">
                             <label for="opDateRight">Date (Right):</label>
                             <select id="opDateRight" disabled>
                                 <option value="">-- Select Date --</option>

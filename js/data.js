@@ -60,6 +60,7 @@ function setupEventListeners() {
     document.getElementById('importBtn').addEventListener('click', importData);
     document.getElementById('exportBtn').addEventListener('click', exportData);
     document.getElementById('clearBtn').addEventListener('click', clearAllData);
+    document.getElementById('clearNoBackupBtn').addEventListener('click', clearAllDataNoBackup);
 }
 
 async function loadExtraFields() {
@@ -251,4 +252,18 @@ async function clearAllData() {
     updateDataStatus();
     alert('All data cleared, backup downloaded.');
     location.reload();
+}
+
+async function clearAllDataNoBackup() {
+    if (!confirm('Clear all data WITHOUT backup? This cannot be undone!')) {
+        return;
+    }
+
+    await deleteDatabase();
+    updateDataStatus();
+    alert('All data cleared.');
+    location.reload();
+}
+
+function setupDropdowns() {
 }

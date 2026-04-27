@@ -18,130 +18,134 @@
             </nav>
         </header>
 
+        <div class="sub-tab-bar sub-tab-bar-animate" id="subTabBar">
+            <button class="sub-tab active" data-panel="operations" onclick="switchPanel('operations')">Data Selection</button>
+            <button class="sub-tab disabled" data-panel="record-details" onclick="switchPanel('record-details')">Record Details</button>
+            <button class="sub-tab disabled" data-panel="existing-records" onclick="switchPanel('existing-records')">Existing Records</button>
+        </div>
+
         <main class="data-main">
-            <div class="data-top-row" id="dataTopRow">
-                <div class="panel data-operation-panel" id="dataOperationPanel">
-                    <h2>Data Operations</h2>
+            <div class="panel data-operation-panel" id="dataOperationPanel" data-panel-id="operations" style="display: none;">
+                <h2>Data Selection</h2>
 
-                    <div class="hierarchy-level level-1">
-                        <div class="level-header">
-                            <div class="step-indicator">
-                                <span class="step-number">1</span>
-                                <div class="step-connector"></div>
-                            </div>
-                            <div class="step-info">
-                                <span class="step-title">Benchmark</span>
-                                <span class="step-desc">resnet50, bert, etc.</span>
-                            </div>
+                <div class="hierarchy-level level-1">
+                    <div class="level-header">
+                        <div class="step-indicator">
+                            <span class="step-number">1</span>
+                            <div class="step-connector"></div>
                         </div>
-                        <div class="level-content">
-                            <div class="form-group searchable-select">
-                                <input type="text" id="benchmarkSearch" class="select-search-input" placeholder="Search..." oninput="filterSelect('benchmarkSelect', 'benchmarkSearch')">
-                                <select id="benchmarkSelect">
-                                    <option value="">-- Select Benchmark --</option>
-                                </select>
-                            </div>
-                            <div class="form-group inline-input">
-                                <input type="text" id="newBenchmark" placeholder="New Benchmark Name">
-                                <button type="button" id="addBenchmarkBtn">Add</button>
-                                <button type="button" id="deleteBenchmarkBtn" class="delete-btn" disabled>Delete</button>
-                            </div>
+                        <div class="step-info">
+                            <span class="step-title">Benchmark</span>
+                            <span class="step-desc">resnet50, bert, etc.</span>
                         </div>
                     </div>
-
-                    <div class="hierarchy-level level-2">
-                        <div class="level-header">
-                            <div class="step-indicator">
-                                <span class="step-number">2</span>
-                                <div class="step-connector"></div>
-                            </div>
-                            <div class="step-info">
-                                <span class="step-title">Architecture</span>
-                                <span class="step-desc">16T r2p1, 8T r3p0, etc.</span>
-                            </div>
+                    <div class="level-content">
+                        <div class="form-group searchable-select">
+                            <input type="text" id="benchmarkSearch" class="select-search-input" placeholder="Search..." oninput="filterSelect('benchmarkSelect', 'benchmarkSearch')">
+                            <select id="benchmarkSelect">
+                                <option value="">-- Select Benchmark --</option>
+                            </select>
                         </div>
-                        <div class="level-content">
-                            <div class="form-group searchable-select">
-                                <input type="text" id="vendorSearch" class="select-search-input" placeholder="Search..." oninput="filterSelect('vendorSelect', 'vendorSearch')" disabled>
-                                <select id="vendorSelect" disabled>
-                                    <option value="">-- Select Arch --</option>
-                                </select>
-                            </div>
-                            <div class="form-group inline-input">
-                                <input type="text" id="newVendor" placeholder="New Arch Name" disabled>
-                                <button type="button" id="addVendorBtn" disabled>Add</button>
-                                <button type="button" id="deleteVendorBtn" class="delete-btn" disabled>Delete</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="hierarchy-level level-3">
-                        <div class="level-header">
-                            <div class="step-indicator">
-                                <span class="step-number">3</span>
-                                <div class="step-connector"></div>
-                            </div>
-                            <div class="step-info">
-                                <span class="step-title">Configuration</span>
-                                <span class="step-desc">fp32, int8, shape224, etc.</span>
-                            </div>
-                        </div>
-                        <div class="level-content">
-                            <div class="form-group searchable-select">
-                                <input type="text" id="configurationSearch" class="select-search-input" placeholder="Search..." oninput="filterSelect('configurationSelect', 'configurationSearch')" disabled>
-                                <select id="configurationSelect" disabled>
-                                    <option value="">-- Select Configuration --</option>
-                                </select>
-                            </div>
-                            <div class="form-group inline-input">
-                                <input type="text" id="newConfiguration" placeholder="e.g., fp32, int8, shape224" disabled>
-                                <button type="button" id="addConfigurationBtn" disabled>Add</button>
-                                <button type="button" id="deleteConfigurationBtn" class="delete-btn" disabled>Delete</button>
-                            </div>
+                        <div class="form-group inline-input">
+                            <input type="text" id="newBenchmark" placeholder="New Benchmark Name">
+                            <button type="button" id="addBenchmarkBtn">Add</button>
+                            <button type="button" id="deleteBenchmarkBtn" class="delete-btn" disabled>Delete</button>
                         </div>
                     </div>
                 </div>
 
-                <div class="panel record-detail-panel" id="recordDetailPanel" style="display: none;">
-                    <h2>Record Details</h2>
-
-                    <div class="record-form">
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="recordDate">Date:</label>
-                                <input type="date" id="recordDate">
-                            </div>
-                            <div class="form-group">
-                                <label for="recordDuration">Duration (ms):</label>
-                                <input type="number" id="recordDuration" step="0.001" placeholder="e.g., 123.456">
-                            </div>
+                <div class="hierarchy-level level-2">
+                    <div class="level-header">
+                        <div class="step-indicator">
+                            <span class="step-number">2</span>
+                            <div class="step-connector"></div>
                         </div>
-
-                        <div class="record-extra-toggle" onclick="toggleRecordExtra()">
-                            <span id="toggleIcon">&#9660;</span>
-                            <span>Show More Fields</span>
-                        </div>
-
-                        <div class="record-extra-fields" id="recordExtraFields" style="display: none;">
-                            <div id="extraFieldsList"></div>
-                            <button type="button" id="addFieldBtn" class="add-field-btn" disabled>+ Add Field</button>
+                        <div class="step-info">
+                            <span class="step-title">Architecture</span>
+                            <span class="step-desc">16T r2p1, 8T r3p0, etc.</span>
                         </div>
                     </div>
-
-                    <div class="form-group btn-group" id="btnGroup">
-                        <button type="button" id="saveRecordBtn" disabled>Save Record</button>
-                        <button type="button" id="clearFormBtn">Clear Form</button>
+                    <div class="level-content">
+                        <div class="form-group searchable-select">
+                            <input type="text" id="vendorSearch" class="select-search-input" placeholder="Search..." oninput="filterSelect('vendorSelect', 'vendorSearch')" disabled>
+                            <select id="vendorSelect" disabled>
+                                <option value="">-- Select Arch --</option>
+                            </select>
+                        </div>
+                        <div class="form-group inline-input">
+                            <input type="text" id="newVendor" placeholder="New Arch Name" disabled>
+                            <button type="button" id="addVendorBtn" disabled>Add</button>
+                            <button type="button" id="deleteVendorBtn" class="delete-btn" disabled>Delete</button>
+                        </div>
                     </div>
+                </div>
 
-                    <div class="form-group xlsx-load-group">
-                        <button type="button" id="loadXlsxBtn" class="xlsx-load-btn" disabled>Load External XLSX</button>
-                        <div class="xlsx-progress-bar" id="xlsxProgressBar"><div class="progress-fill" id="xlsxProgressFill"></div></div>
-                        <div class="xlsx-progress-text" id="xlsxProgressText"></div>
+                <div class="hierarchy-level level-3">
+                    <div class="level-header">
+                        <div class="step-indicator">
+                            <span class="step-number">3</span>
+                            <div class="step-connector"></div>
+                        </div>
+                        <div class="step-info">
+                            <span class="step-title">Configuration</span>
+                            <span class="step-desc">fp32, int8, shape224, etc.</span>
+                        </div>
+                    </div>
+                    <div class="level-content">
+                        <div class="form-group searchable-select">
+                            <input type="text" id="configurationSearch" class="select-search-input" placeholder="Search..." oninput="filterSelect('configurationSelect', 'configurationSearch')" disabled>
+                            <select id="configurationSelect" disabled>
+                                <option value="">-- Select Configuration --</option>
+                            </select>
+                        </div>
+                        <div class="form-group inline-input">
+                            <input type="text" id="newConfiguration" placeholder="e.g., fp32, int8, shape224" disabled>
+                            <button type="button" id="addConfigurationBtn" disabled>Add</button>
+                            <button type="button" id="deleteConfigurationBtn" class="delete-btn" disabled>Delete</button>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div class="panel records-list-panel" id="recordsListPanel" style="display: none;">
+            <div class="panel record-detail-panel" id="recordDetailPanel" data-panel-id="record-details" style="display: none;">
+                <h2>Record Details</h2>
+
+                <div class="record-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="recordDate">Date:</label>
+                            <input type="date" id="recordDate">
+                        </div>
+                        <div class="form-group">
+                            <label for="recordDuration">Duration (ms):</label>
+                            <input type="number" id="recordDuration" step="0.001" placeholder="e.g., 123.456">
+                        </div>
+                    </div>
+
+                    <div class="record-extra-toggle" onclick="toggleRecordExtra()">
+                        <span id="toggleIcon">&#9660;</span>
+                        <span>Show More Fields</span>
+                    </div>
+
+                    <div class="record-extra-fields" id="recordExtraFields" style="display: none;">
+                        <div id="extraFieldsList"></div>
+                        <button type="button" id="addFieldBtn" class="add-field-btn" disabled>+ Add Field</button>
+                    </div>
+                </div>
+
+                <div class="form-group btn-group" id="btnGroup">
+                    <button type="button" id="saveRecordBtn" disabled>Save Record</button>
+                    <button type="button" id="clearFormBtn">Clear Form</button>
+                </div>
+
+                <div class="form-group xlsx-load-group">
+                    <button type="button" id="loadXlsxBtn" class="xlsx-load-btn" disabled>Load External XLSX</button>
+                    <div class="xlsx-progress-bar" id="xlsxProgressBar"><div class="progress-fill" id="xlsxProgressFill"></div></div>
+                    <div class="xlsx-progress-text" id="xlsxProgressText"></div>
+                </div>
+            </div>
+
+            <div class="panel records-list-panel" id="recordsListPanel" data-panel-id="existing-records" style="display: none;">
                 <h2>Existing Records</h2>
                 <div id="recordsSubtitle" class="records-subtitle"></div>
                 <div class="records-toolbar">
@@ -151,6 +155,13 @@
                 <div id="paginationControls" class="pagination-controls"></div>
             </div>
         </main>
+    </div>
+
+    <div class="chart-fullscreen" id="opCompareFullscreen">
+        <div class="chart-container-fullscreen" id="opCompareContainer">
+            <canvas id="opCompareCanvas"></canvas>
+        </div>
+        <div class="chart-hint">Click anywhere to return</div>
     </div>
 
     <script src="../js/xlsx.full.min.js"></script>

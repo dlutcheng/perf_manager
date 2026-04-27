@@ -2,6 +2,8 @@ let data = {};
 let extraFields = [];
 let allExtraFieldsCache = {};
 let chartMode = 'normal';
+let currentPanel = 'trends';
+let opChartMode = 'single';
 
 let chartState = {
     datasets: [],
@@ -40,6 +42,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     populateBenchmarkSelect();
     populateYAxisSelect();
     populateOpBenchmarkSelect();
+    initPanelFromUrl();
 });
 
 async function refreshDataAndFields() {
@@ -945,6 +948,8 @@ let opChartState = {
     vendor: '',
     configuration: '',
     operators: [],
+    maxPairCount: 1,
+    isSingleMode: false,
     padding: null,
     chartWidth: 0,
     chartHeight: 0,
@@ -963,7 +968,28 @@ function setupOperatorsEventListeners() {
         this.classList.add('btn-pulse');
         enterOpFullscreen();
     });
+
+    window.setOpMode('single');
 }
+
+window.setOpMode = function(mode) {
+    opChartMode = mode;
+    document.getElementById('opModeSingle').classList.toggle('active', mode === 'single');
+    document.getElementById('opModeCompare').classList.toggle('active', mode === 'compare');
+
+    const rightGroup = document.getElementById('opDateRightGroup');
+    const leftLabel = document.getElementById('opDateLeftLabel');
+
+    if (mode === 'single') {
+        rightGroup.style.display = 'none';
+        leftLabel.textContent = 'Date:';
+    } else {
+        rightGroup.style.display = '';
+        leftLabel.textContent = 'Date (Left):';
+    }
+
+    onOpDateChange();
+};
 
 function populateOpBenchmarkSelect() {
     const select = document.getElementById('opBenchmarkSelect');
@@ -1055,22 +1081,31 @@ async function onOpDateChange() {
     const dateLeft = document.getElementById('opDateLeft').value;
     const dateRight = document.getElementById('opDateRight').value;
 
-    if (!dateLeft || !dateRight) {
-        document.getElementById('opDrawBtn').disabled = true;
-        return;
+    if (opChartMode === 'single') {
+        if (!dateLeft) {
+            document.getElementById('opDrawBtn').disabled = true;
+            return;
+        }
+        const benchmark = document.getElementById('opBenchmarkSelect').value;
+        const vendor = document.getElementById('opVendorSelect').value;
+        const configuration = document.getElementById('opConfigSelect').value;
+        const [leftDate, leftIdx] = dateLeft.split('|');
+        const leftData = await getOperatorsDataForRecord(benchmark, vendor, configuration, leftDate, parseInt(leftIdx));
+        document.getElementById('opDrawBtn').disabled = !leftData;
+    } else {
+        if (!dateLeft || !dateRight) {
+            document.getElementById('opDrawBtn').disabled = true;
+            return;
+        }
+        const benchmark = document.getElementById('opBenchmarkSelect').value;
+        const vendor = document.getElementById('opVendorSelect').value;
+        const configuration = document.getElementById('opConfigSelect').value;
+        const [leftDate, leftIdx] = dateLeft.split('|');
+        const [rightDate, rightIdx] = dateRight.split('|');
+        const leftData = await getOperatorsDataForRecord(benchmark, vendor, configuration, leftDate, parseInt(leftIdx));
+        const rightData = await getOperatorsDataForRecord(benchmark, vendor, configuration, rightDate, parseInt(rightIdx));
+        document.getElementById('opDrawBtn').disabled = !leftData || !rightData;
     }
-
-    const benchmark = document.getElementById('opBenchmarkSelect').value;
-    const vendor = document.getElementById('opVendorSelect').value;
-    const configuration = document.getElementById('opConfigSelect').value;
-
-    const [leftDate, leftIdx] = dateLeft.split('|');
-    const [rightDate, rightIdx] = dateRight.split('|');
-
-    const leftData = await getOperatorsDataForRecord(benchmark, vendor, configuration, leftDate, parseInt(leftIdx));
-    const rightData = await getOperatorsDataForRecord(benchmark, vendor, configuration, rightDate, parseInt(rightIdx));
-
-    document.getElementById('opDrawBtn').disabled = !leftData || !rightData;
 }
 
 function enterOpFullscreen() {
@@ -1088,31 +1123,75 @@ function drawOpChart() {
     const dateRightVal = document.getElementById('opDateRight').value;
 
     const [leftDate, leftIdx] = dateLeftVal.split('|');
-    const [rightDate, rightIdx] = dateRightVal.split('|');
 
-    getOperatorsDataForRecord(benchmark, vendor, configuration, leftDate, parseInt(leftIdx)).then(leftData => {
-        getOperatorsDataForRecord(benchmark, vendor, configuration, rightDate, parseInt(rightIdx)).then(rightData => {
-            if (!leftData || !rightData) return;
+    if (opChartMode === 'single') {
+        getOperatorsDataForRecord(benchmark, vendor, configuration, leftDate, parseInt(leftIdx)).then(leftData => {
+            if (!leftData) return;
 
             const leftOps = new Map(leftData.map(d => [d.operator, d]));
-            const rightOps = new Map(rightData.map(d => [d.operator, d]));
-            const allOperators = [...new Set([...leftOps.keys(), ...rightOps.keys()])].sort();
+            const allOperators = [...leftOps.keys()].sort();
+
+            let maxPairCount = 0;
+            for (const op of allOperators) {
+                const lp = leftOps.get(op)?.pairs?.length || 0;
+                if (lp > maxPairCount) maxPairCount = lp;
+            }
+            if (maxPairCount === 0) maxPairCount = 1;
 
             const leftLabel = document.getElementById('opDateLeft').selectedOptions[0]?.text || leftDate;
-            const rightLabel = document.getElementById('opDateRight').selectedOptions[0]?.text || rightDate;
 
             opChartState.leftData = leftData;
-            opChartState.rightData = rightData;
+            opChartState.rightData = [];
             opChartState.leftDate = leftLabel;
-            opChartState.rightDate = rightLabel;
+            opChartState.rightDate = '';
             opChartState.benchmark = benchmark;
             opChartState.vendor = vendor;
             opChartState.configuration = configuration;
             opChartState.operators = allOperators;
+            opChartState.maxPairCount = maxPairCount;
+            opChartState.isSingleMode = true;
 
-            animateOpChart(allOperators, leftOps, rightOps, leftLabel, rightLabel);
+            const rightOps = new Map();
+            animateOpChart(allOperators, leftOps, rightOps, leftLabel, '');
         });
-    });
+    } else {
+        const [rightDate, rightIdx] = dateRightVal.split('|');
+
+        getOperatorsDataForRecord(benchmark, vendor, configuration, leftDate, parseInt(leftIdx)).then(leftData => {
+            getOperatorsDataForRecord(benchmark, vendor, configuration, rightDate, parseInt(rightIdx)).then(rightData => {
+                if (!leftData || !rightData) return;
+
+                const leftOps = new Map(leftData.map(d => [d.operator, d]));
+                const rightOps = new Map(rightData.map(d => [d.operator, d]));
+                const allOperators = [...new Set([...leftOps.keys(), ...rightOps.keys()])].sort();
+
+                let maxPairCount = 0;
+                for (const op of allOperators) {
+                    const lp = leftOps.get(op)?.pairs?.length || 0;
+                    const rp = rightOps.get(op)?.pairs?.length || 0;
+                    const cnt = Math.max(lp, rp);
+                    if (cnt > maxPairCount) maxPairCount = cnt;
+                }
+                if (maxPairCount === 0) maxPairCount = 1;
+
+                const leftLabel = document.getElementById('opDateLeft').selectedOptions[0]?.text || leftDate;
+                const rightLabel = document.getElementById('opDateRight').selectedOptions[0]?.text || rightDate;
+
+                opChartState.leftData = leftData;
+                opChartState.rightData = rightData;
+                opChartState.leftDate = leftLabel;
+                opChartState.rightDate = rightLabel;
+                opChartState.benchmark = benchmark;
+                opChartState.vendor = vendor;
+                opChartState.configuration = configuration;
+                opChartState.operators = allOperators;
+                opChartState.maxPairCount = maxPairCount;
+                opChartState.isSingleMode = false;
+
+                animateOpChart(allOperators, leftOps, rightOps, leftLabel, rightLabel);
+            });
+        });
+    }
 }
 
 function animateOpChart(allOperators, leftOps, rightOps, dateLeft, dateRight) {
@@ -1171,17 +1250,28 @@ function renderOpChart(allOperators, leftOps, rightOps, dateLeft, dateRight, ani
         return;
     }
 
-    const maxTime = Math.max(
-        ...allOperators.map(op => Math.max(leftOps.get(op)?.time || 0, rightOps.get(op)?.time || 0)),
-        0
-    );
-    const timeRange = maxTime || 1;
-    const timeMargin = timeRange * 0.1;
+    const isSingleMode = opChartState.isSingleMode;
+    const maxPairCount = opChartState.maxPairCount || 1;
+    const totalBarSlots = isSingleMode ? maxPairCount : 2 * maxPairCount;
+
+    let maxTime = 0;
+    for (const op of allOperators) {
+        const leftOp = leftOps.get(op);
+        const rightOp = rightOps.get(op);
+        for (let p = 0; p < maxPairCount; p++) {
+            const lt = leftOp?.pairs?.[p]?.time;
+            const rt = rightOp?.pairs?.[p]?.time;
+            if (lt != null && lt > maxTime) maxTime = lt;
+            if (rt != null && rt > maxTime) maxTime = rt;
+        }
+    }
+
+    const timeMargin = (maxTime || 1) * 0.1;
     const adjustedMaxTime = maxTime + timeMargin;
 
     const groupWidth = chartWidth / allOperators.length;
-    const barWidth = Math.min(groupWidth * 0.3, 40);
-    const gap = Math.min(barWidth * 0.3, 8);
+    const singleBarWidth = Math.min(groupWidth / (totalBarSlots + 1), 30);
+    const intraGap = Math.min(singleBarWidth * 0.15, 3);
 
     const xPosition = (index) => padding.left + groupWidth * index + groupWidth / 2;
     const yTimePosition = (value) => padding.top + chartHeight - ((value) / adjustedMaxTime) * chartHeight;
@@ -1232,45 +1322,62 @@ function renderOpChart(allOperators, leftOps, rightOps, dateLeft, dateRight, ani
     const leftTimeColor = '#00d4aa';
     const rightTimeColor = '#f87171';
 
+    const leftBlockWidth = maxPairCount * singleBarWidth + (maxPairCount - 1) * intraGap;
+    const interGroupGap = isSingleMode ? 0 : Math.min(singleBarWidth * 0.5, 6);
+
     for (let i = 0; i < visibleCount; i++) {
         const op = allOperators[i];
         const cx = xPosition(i);
         const leftOp = leftOps.get(op);
         const rightOp = rightOps.get(op);
-
-        const leftTimeVal = (leftOp?.time || 0) * animProgress;
-        const rightTimeVal = (rightOp?.time || 0) * animProgress;
-
-        const leftTimeY = yTimePosition(leftTimeVal);
-        const rightTimeY = yTimePosition(rightTimeVal);
         const baseY = padding.top + chartHeight;
 
-        if (leftOp) {
-            const leftTimeGrad = ctx.createLinearGradient(0, leftTimeY, 0, baseY);
-            leftTimeGrad.addColorStop(0, leftTimeColor);
-            leftTimeGrad.addColorStop(1, 'rgba(0, 212, 170, 0.4)');
-            ctx.fillStyle = leftTimeGrad;
+        const leftBlockStart = isSingleMode
+            ? cx - leftBlockWidth / 2
+            : cx - leftBlockWidth - interGroupGap / 2;
+        for (let p = 0; p < maxPairCount; p++) {
+            const timeVal = leftOp?.pairs?.[p]?.time;
+            if (timeVal == null) continue;
+            const animVal = timeVal * animProgress;
+            const barY = yTimePosition(animVal);
+            const barX = leftBlockStart + p * (singleBarWidth + intraGap);
+
+            const grad = ctx.createLinearGradient(0, barY, 0, baseY);
+            grad.addColorStop(0, leftTimeColor);
+            grad.addColorStop(1, 'rgba(0, 212, 170, 0.4)');
+            ctx.fillStyle = grad;
             ctx.beginPath();
-            ctx.roundRect(cx - barWidth - gap / 2, leftTimeY, barWidth, baseY - leftTimeY, [3, 3, 0, 0]);
+            ctx.roundRect(barX, barY, singleBarWidth, baseY - barY, [2, 2, 0, 0]);
             ctx.fill();
         }
 
-        if (rightOp) {
-            const rightTimeGrad = ctx.createLinearGradient(0, rightTimeY, 0, baseY);
-            rightTimeGrad.addColorStop(0, rightTimeColor);
-            rightTimeGrad.addColorStop(1, 'rgba(248, 113, 113, 0.4)');
-            ctx.fillStyle = rightTimeGrad;
-            ctx.beginPath();
-            ctx.roundRect(cx + gap / 2, rightTimeY, barWidth, baseY - rightTimeY, [3, 3, 0, 0]);
-            ctx.fill();
+        if (!isSingleMode) {
+            const rightBlockStart = cx + interGroupGap / 2;
+            for (let p = 0; p < maxPairCount; p++) {
+                const timeVal = rightOp?.pairs?.[p]?.time;
+                if (timeVal == null) continue;
+                const animVal = timeVal * animProgress;
+                const barY = yTimePosition(animVal);
+                const barX = rightBlockStart + p * (singleBarWidth + intraGap);
+
+                const grad = ctx.createLinearGradient(0, barY, 0, baseY);
+                grad.addColorStop(0, rightTimeColor);
+                grad.addColorStop(1, 'rgba(248, 113, 113, 0.4)');
+                ctx.fillStyle = grad;
+                ctx.beginPath();
+                ctx.roundRect(barX, barY, singleBarWidth, baseY - barY, [2, 2, 0, 0]);
+                ctx.fill();
+            }
         }
     }
 
     const legendY = padding.top - 30;
-    const legendItems = [
-        { label: `${dateLeft}`, color: leftTimeColor, type: 'bar' },
-        { label: `${dateRight}`, color: rightTimeColor, type: 'bar' }
-    ];
+    const legendItems = isSingleMode
+        ? [{ label: `${dateLeft}`, color: leftTimeColor }]
+        : [
+            { label: `${dateLeft}`, color: leftTimeColor },
+            { label: `${dateRight}`, color: rightTimeColor }
+        ];
 
     let legendX = padding.left;
     ctx.font = '12px "Outfit", sans-serif';
@@ -1298,7 +1405,7 @@ function onOpCanvasMouseMove(e) {
     const mouseX = e.clientX - rect.left;
     const mouseY = e.clientY - rect.top;
 
-    const { padding, chartWidth, chartHeight, operators, leftData, rightData, leftDate, rightDate } = opChartState;
+    const { padding, chartWidth, chartHeight, operators, leftData, rightData, leftDate, rightDate, maxPairCount, isSingleMode } = opChartState;
 
     if (mouseX < padding.left || mouseX > padding.left + chartWidth ||
         mouseY < padding.top || mouseY > padding.top + chartHeight) {
@@ -1330,33 +1437,59 @@ function onOpCanvasMouseMove(e) {
     const op = operators[clampedIndex];
     const leftOp = leftOps.get(op);
     const rightOp = rightOps.get(op);
+    const pairCount = maxPairCount || 1;
 
-    const maxTime = Math.max(...operators.map(o => Math.max(leftOps.get(o)?.time || 0, rightOps.get(o)?.time || 0)), 0);
+    let maxTime = 0;
+    for (const o of operators) {
+        const lo = leftOps.get(o);
+        const ro = rightOps.get(o);
+        for (let p = 0; p < pairCount; p++) {
+            const lt = lo?.pairs?.[p]?.time;
+            const rt = ro?.pairs?.[p]?.time;
+            if (lt != null && lt > maxTime) maxTime = lt;
+            if (rt != null && rt > maxTime) maxTime = rt;
+        }
+    }
     const timeMargin = (maxTime || 1) * 0.1;
     const adjustedMaxTime = maxTime + timeMargin;
-
     const yTimePos = (v) => padding.top + chartHeight - (v / adjustedMaxTime) * chartHeight;
 
-    const tooltipWidth = 260;
+    const lines = [
+        { text: op, bold: true, color: '#e2e8f0' }
+    ];
+
+    for (let p = 0; p < pairCount; p++) {
+        const pairLabel = pairCount > 1 ? ` #${p + 1}` : '';
+        lines.push({ text: `── ${leftDate}${pairLabel} ──`, bold: false, color: '#00d4aa' });
+        const lt = leftOp?.pairs?.[p]?.time;
+        const lr = leftOp?.pairs?.[p]?.ratio;
+        lines.push({ text: `  Time: ${lt != null ? lt.toFixed(3) : 'N/A'}`, bold: false, color: '#00d4aa' });
+        lines.push({ text: `  Ratio: ${lr != null ? (lr * 100).toFixed(1) + '%' : 'N/A'}`, bold: false, color: '#34d399' });
+    }
+
+    if (!isSingleMode) {
+        for (let p = 0; p < pairCount; p++) {
+            const pairLabel = pairCount > 1 ? ` #${p + 1}` : '';
+            lines.push({ text: `── ${rightDate}${pairLabel} ──`, bold: false, color: '#f87171' });
+            const rt = rightOp?.pairs?.[p]?.time;
+            const rr = rightOp?.pairs?.[p]?.ratio;
+            lines.push({ text: `  Time: ${rt != null ? rt.toFixed(3) : 'N/A'}`, bold: false, color: '#f87171' });
+            lines.push({ text: `  Ratio: ${rr != null ? (rr * 100).toFixed(1) + '%' : 'N/A'}`, bold: false, color: '#fca5a5' });
+        }
+    }
+
     const lineHeight = 18;
+    const tooltipWidth = 280;
+    const tooltipHeight = lines.length * lineHeight + 16;
     let tooltipX = cx + 20;
     let tooltipY = padding.top + 20;
 
     if (tooltipX + tooltipWidth > canvas.width - padding.right) {
         tooltipX = cx - tooltipWidth - 20;
     }
-
-    const lines = [
-        { text: op, bold: true, color: '#e2e8f0' },
-        { text: `── ${leftDate} ──`, bold: false, color: '#00d4aa' },
-        { text: `  Time: ${leftOp?.time != null ? leftOp.time.toFixed(3) : 'N/A'}`, bold: false, color: '#00d4aa' },
-        { text: `  Ratio: ${leftOp?.ratio != null ? (leftOp.ratio * 100).toFixed(1) + '%' : 'N/A'}`, bold: false, color: '#34d399' },
-        { text: `── ${rightDate} ──`, bold: false, color: '#f87171' },
-        { text: `  Time: ${rightOp?.time != null ? rightOp.time.toFixed(3) : 'N/A'}`, bold: false, color: '#f87171' },
-        { text: `  Ratio: ${rightOp?.ratio != null ? (rightOp.ratio * 100).toFixed(1) + '%' : 'N/A'}`, bold: false, color: '#fca5a5' }
-    ];
-
-    const tooltipHeight = lines.length * lineHeight + 16;
+    if (tooltipY + tooltipHeight > padding.top + chartHeight) {
+        tooltipY = padding.top + chartHeight - tooltipHeight - 10;
+    }
 
     ctx.fillStyle = 'rgba(15, 23, 42, 0.95)';
     ctx.strokeStyle = 'rgba(56, 189, 248, 0.3)';
@@ -1375,31 +1508,99 @@ function onOpCanvasMouseMove(e) {
         currentY += lineHeight;
     });
 
-    if (leftOp?.time != null) {
-        const y = yTimePos(leftOp.time);
-        ctx.beginPath();
-        ctx.arc(cx - 8, y, 5, 0, 2 * Math.PI);
-        ctx.fillStyle = '#0f172a';
-        ctx.fill();
-        ctx.strokeStyle = '#00d4aa';
-        ctx.lineWidth = 2;
-        ctx.stroke();
+    const totalBarSlots = isSingleMode ? pairCount : 2 * pairCount;
+    const singleBarWidth = Math.min(groupWidth / (totalBarSlots + 1), 30);
+    const intraGap = Math.min(singleBarWidth * 0.15, 3);
+    const leftBlockWidth = pairCount * singleBarWidth + (pairCount - 1) * intraGap;
+    const interGroupGap = isSingleMode ? 0 : Math.min(singleBarWidth * 0.5, 6);
+    const leftBlockStart = isSingleMode
+        ? cx - leftBlockWidth / 2
+        : cx - leftBlockWidth - interGroupGap / 2;
+
+    for (let p = 0; p < pairCount; p++) {
+        const lt = leftOp?.pairs?.[p]?.time;
+        if (lt != null) {
+            const y = yTimePos(lt);
+            const barX = leftBlockStart + p * (singleBarWidth + intraGap);
+            ctx.beginPath();
+            ctx.arc(barX + singleBarWidth / 2, y, 4, 0, 2 * Math.PI);
+            ctx.fillStyle = '#0f172a';
+            ctx.fill();
+            ctx.strokeStyle = '#00d4aa';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        }
     }
 
-    if (rightOp?.time != null) {
-        const y = yTimePos(rightOp.time);
-        ctx.beginPath();
-        ctx.arc(cx + 8, y, 5, 0, 2 * Math.PI);
-        ctx.fillStyle = '#0f172a';
-        ctx.fill();
-        ctx.strokeStyle = '#f87171';
-        ctx.lineWidth = 2;
-        ctx.stroke();
+    if (!isSingleMode) {
+        const rightBlockStart = cx + interGroupGap / 2;
+        for (let p = 0; p < pairCount; p++) {
+            const rt = rightOp?.pairs?.[p]?.time;
+            if (rt != null) {
+                const y = yTimePos(rt);
+                const barX = rightBlockStart + p * (singleBarWidth + intraGap);
+                ctx.beginPath();
+                ctx.arc(barX + singleBarWidth / 2, y, 4, 0, 2 * Math.PI);
+                ctx.fillStyle = '#0f172a';
+                ctx.fill();
+                ctx.strokeStyle = '#f87171';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
+        }
     }
 }
 
 function renderOpChartCurrent() {
     const leftOps = new Map(opChartState.leftData.map(d => [d.operator, d]));
-    const rightOps = new Map(opChartState.rightData.map(d => [d.operator, d]));
+    const rightOps = opChartState.rightData && opChartState.rightData.length > 0
+        ? new Map(opChartState.rightData.map(d => [d.operator, d]))
+        : new Map();
     renderOpChart(opChartState.operators, leftOps, rightOps, opChartState.leftDate, opChartState.rightDate, 1);
+}
+
+function initPanelFromUrl() {
+    const params = new URLSearchParams(window.location.search);
+    const panel = params.get('panel');
+    currentPanel = '';
+    if (panel === 'compare') {
+        switchPanel('compare');
+    } else {
+        switchPanel('trends');
+    }
+}
+
+window.switchPanel = function(panelId) {
+    if (currentPanel === panelId) return;
+    currentPanel = panelId;
+    const trendPanel = document.getElementById('trendPanel');
+    const comparePanel = document.getElementById('comparePanel');
+
+    trendPanel.style.display = 'none';
+    comparePanel.style.display = 'none';
+
+    if (panelId === 'compare') {
+        comparePanel.classList.remove('panel-animate-in', 'panel-animate-in-delayed');
+        comparePanel.style.display = 'block';
+        void comparePanel.offsetWidth;
+        comparePanel.classList.add('panel-animate-in');
+    } else {
+        trendPanel.classList.remove('panel-animate-in', 'panel-animate-in-delayed');
+        trendPanel.style.display = 'block';
+        void trendPanel.offsetWidth;
+        trendPanel.classList.add('panel-animate-in');
+    }
+
+    updateSubTabActiveState(panelId);
+};
+
+function updateSubTabActiveState(panelId) {
+    const tabBar = document.getElementById('subTabBar');
+    if (!tabBar) return;
+    tabBar.querySelectorAll('.sub-tab').forEach(tab => {
+        tab.classList.toggle('active', tab.dataset.panel === panelId);
+    });
+}
+
+function setupDropdowns() {
 }
