@@ -265,5 +265,3 @@ async function clearAllDataNoBackup() {
     location.reload();
 }
 
-function setupDropdowns() {
-}

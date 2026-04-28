@@ -1580,12 +1580,12 @@ window.switchPanel = function(panelId) {
     comparePanel.style.display = 'none';
 
     if (panelId === 'compare') {
-        comparePanel.classList.remove('panel-animate-in', 'panel-animate-in-delayed');
+        comparePanel.classList.remove('panel-animate-in');
         comparePanel.style.display = 'block';
         void comparePanel.offsetWidth;
         comparePanel.classList.add('panel-animate-in');
     } else {
-        trendPanel.classList.remove('panel-animate-in', 'panel-animate-in-delayed');
+        trendPanel.classList.remove('panel-animate-in');
         trendPanel.style.display = 'block';
         void trendPanel.offsetWidth;
         trendPanel.classList.add('panel-animate-in');
@@ -1602,5 +1602,3 @@ function updateSubTabActiveState(panelId) {
     });
 }
 
-function setupDropdowns() {
-}

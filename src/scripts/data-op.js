@@ -1848,7 +1848,7 @@ window.switchPanel = function(panelId) {
     }
 
     if (targetPanel) {
-        targetPanel.classList.remove('panel-animate-in', 'panel-animate-in-delayed');
+        targetPanel.classList.remove('panel-animate-in');
         targetPanel.style.display = 'block';
         void targetPanel.offsetWidth;
         targetPanel.classList.add('panel-animate-in');
@@ -1912,5 +1912,3 @@ function resetSubPanels() {
     }
 }
 
-function setupDropdowns() {
-}

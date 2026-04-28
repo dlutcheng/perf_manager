@@ -72,17 +72,6 @@ function deleteFromStore(storeName, key) {
     });
 }
 
-function clearStore(storeName) {
-    return new Promise((resolve, reject) => {
-        const transaction = db.transaction(storeName, 'readwrite');
-        const store = transaction.objectStore(storeName);
-        const request = store.clear();
-
-        request.onerror = () => reject(request.error);
-        request.onsuccess = () => resolve();
-    });
-}
-
 async function loadBenchmarkData() {
     if (!db) return {};
 
@@ -171,7 +160,6 @@ window.loadBenchmarkData = loadBenchmarkData;
 window.dbSaveBenchmarkData = saveBenchmarkData;
 window.loadAllExtraFields = loadAllExtraFields;
 window.saveExtraFieldsForVendor = saveExtraFieldsForVendor;
-window.dbSaveExtraFieldsForVendor = saveExtraFieldsForVendor;
 window.deleteExtraFieldsForBenchmark = deleteExtraFieldsForBenchmark;
 window.deleteExtraFieldsForVendor = deleteExtraFieldsForVendor;
 
@@ -250,13 +238,6 @@ async function getOperatorsDatesForConfig(benchmark, vendor, configuration) {
     return result;
 }
 
-async function hasOperatorsDataForRecord(benchmark, vendor, configuration, date, recordIndex) {
-    const allData = await loadAllOperatorsData();
-    const dateArr = allData[benchmark]?.[vendor]?.[configuration]?.[date];
-    if (!dateArr) return false;
-    return !!dateArr[recordIndex];
-}
-
 async function deleteOperatorsDataForRecord(benchmark, vendor, configuration, date, recordIndex) {
     if (!db) return false;
 
@@ -323,7 +304,6 @@ window.loadAllOperatorsData = loadAllOperatorsData;
 window.saveOperatorsDataForRecord = saveOperatorsDataForRecord;
 window.getOperatorsDataForRecord = getOperatorsDataForRecord;
 window.getOperatorsDatesForConfig = getOperatorsDatesForConfig;
-window.hasOperatorsDataForRecord = hasOperatorsDataForRecord;
 window.deleteOperatorsDataForRecord = deleteOperatorsDataForRecord;
 window.deleteOperatorsDataForBenchmark = deleteOperatorsDataForBenchmark;
 window.deleteOperatorsDataForVendor = deleteOperatorsDataForVendor;
