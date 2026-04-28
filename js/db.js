@@ -327,3 +327,4 @@ window.hasOperatorsDataForRecord = hasOperatorsDataForRecord;
 window.deleteOperatorsDataForRecord = deleteOperatorsDataForRecord;
 window.deleteOperatorsDataForBenchmark = deleteOperatorsDataForBenchmark;
 window.deleteOperatorsDataForVendor = deleteOperatorsDataForVendor;
+window.saveOperatorsAllData = function(allData) { return saveToStore(STORE_OPERATORS, 'all', allData); };

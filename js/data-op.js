@@ -462,14 +462,48 @@ async function saveRecord() {
     });
 
     if (editingRecord !== null) {
-        data[benchmark][vendor][configuration][editingRecord] = record;
+        const oldRecord = data[benchmark][vendor][configuration][editingRecord];
+        const oldDate = oldRecord?.date;
+        const newDate = date;
+        const recordIndex = editingRecord;
+
+        data[benchmark][vendor][configuration][recordIndex] = record;
         editingRecord = null;
         document.getElementById('saveRecordBtn').textContent = 'Save Record';
+
+        if (oldDate && newDate && oldDate !== newDate) {
+            try {
+                const allOpsData = await loadAllOperatorsData();
+                const configData = allOpsData[benchmark]?.[vendor]?.[configuration];
+                if (configData && configData[oldDate]) {
+                    const oldArr = configData[oldDate];
+                    const opsForRecord = oldArr[recordIndex] || null;
+
+                    if (opsForRecord) {
+                        if (!configData[newDate]) {
+                            configData[newDate] = [];
+                        }
+                        configData[newDate][recordIndex] = opsForRecord;
+                        oldArr[recordIndex] = undefined;
+
+                        const nonEmpty = oldArr.filter(item => item !== undefined && item !== null);
+                        if (nonEmpty.length === 0) {
+                            delete configData[oldDate];
+                        }
+
+                        await saveOperatorsAllData(allOpsData);
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to migrate operators data:', error);
+            }
+        }
     } else {
         data[benchmark][vendor][configuration].push(record);
     }
 
     await saveData();
+    operatorsDateIndices = await getOperatorsDatesForConfig(benchmark, vendor, configuration);
     clearForm();
     displayRecords();
 }
@@ -608,9 +642,9 @@ function displayRecords() {
 
     const records = data[benchmark]?.[vendor]?.[configuration] || [];
 
-    let filteredRecords = records;
+    let filteredRecords = [...records];
     if (dateFilter) {
-        filteredRecords = records.filter(r => r.date.includes(dateFilter));
+        filteredRecords = filteredRecords.filter(r => r.date.includes(dateFilter));
     }
 
     if (filteredRecords.length === 0) {
@@ -621,38 +655,40 @@ function displayRecords() {
         return;
     }
 
-    const activeSort = Object.keys(sortStates).find(key => sortStates[key] !== 0) || 'date';
+    const activeSort = Object.keys(sortStates).find(key => sortStates[key] !== 0);
 
-    filteredRecords.sort((a, b) => {
-        let aVal, bVal;
-        const state = sortStates[activeSort];
+    if (activeSort) {
+        filteredRecords.sort((a, b) => {
+            let aVal, bVal;
+            const state = sortStates[activeSort];
 
-        if (activeSort === 'date') {
-            aVal = new Date(a.date);
-            bVal = new Date(b.date);
-        } else if (activeSort === 'duration') {
-            aVal = a.duration;
-            bVal = b.duration;
-        } else {
-            const field = extraFields.find(f => f.id === parseInt(activeSort));
-            const fieldType = field?.type || 'float';
-            const aExtra = a.extras?.[activeSort];
-            const bExtra = b.extras?.[activeSort];
-            if (fieldType === 'string') {
-                aVal = aExtra?.value || '';
-                bVal = bExtra?.value || '';
+            if (activeSort === 'date') {
+                aVal = new Date(a.date);
+                bVal = new Date(b.date);
+            } else if (activeSort === 'duration') {
+                aVal = a.duration;
+                bVal = b.duration;
             } else {
-                aVal = aExtra?.value || 0;
-                bVal = bExtra?.value || 0;
+                const field = extraFields.find(f => f.id === parseInt(activeSort));
+                const fieldType = field?.type || 'float';
+                const aExtra = a.extras?.[activeSort];
+                const bExtra = b.extras?.[activeSort];
+                if (fieldType === 'string') {
+                    aVal = aExtra?.value || '';
+                    bVal = bExtra?.value || '';
+                } else {
+                    aVal = aExtra?.value || 0;
+                    bVal = bExtra?.value || 0;
+                }
             }
-        }
 
-        if (state === 1) {
-            return aVal > bVal ? 1 : aVal < bVal ? -1 : 0;
-        } else {
-            return aVal < bVal ? 1 : aVal > bVal ? -1 : 0;
-        }
-    });
+            if (state === 1) {
+                return aVal > bVal ? 1 : aVal < bVal ? -1 : 0;
+            } else {
+                return aVal < bVal ? 1 : aVal > bVal ? -1 : 0;
+            }
+        });
+    }
 
     const totalCount = filteredRecords.length;
     const totalPages = Math.max(1, Math.ceil(totalCount / pagination.pageSize));

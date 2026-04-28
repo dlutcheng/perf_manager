@@ -452,11 +452,13 @@ main {
     filter: drop-shadow(0 4px 12px rgba(0, 212, 170, 0.2));
 }
 
-.card-icon svg {
+.card-icon svg,
+.card-icon img {
     transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.home-card:hover .card-icon svg {
+.home-card:hover .card-icon svg,
+.home-card:hover .card-icon img {
     transform: scale(1.08);
 }
 
