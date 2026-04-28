@@ -1,6 +1,6 @@
-# Performance Manager
+# Benchmark Data Management System
 
-> 🚀 Built with AI via vibe coding.
+> Built with AI via vibe coding.
 
 A fully offline, browser-based benchmark performance management and visualization tool.
 
@@ -15,7 +15,7 @@ A fully offline, browser-based benchmark performance management and visualizatio
 ## Data Hierarchy
 
 | Step | Name | Example |
-|------|------|--------|
+|------|------|---------|
 | 1 | **Benchmark** | resnet50, llama2-7b |
 | 2 | **Architecture** | 16T r2p1, 8T r3p0 |
 | 3 | **Configuration** | fp16, int8 per-layer symm |
@@ -78,31 +78,37 @@ A fully offline, browser-based benchmark performance management and visualizatio
 
 All data stored in browser **IndexedDB** — works **fully offline** with no external dependencies.
 
-## File Structure
+## Project Structure
 
 ```
 perf_manager/
-├── index.html            # Home page
-├── html/
-│   ├── data.html        # Data management
-│   ├── data-op.html     # Data operations + XLSX import
-│   └── chart.html       # Data visualization + Operators comparison
-├── css/styles.css       # All styles (dark theme, animations)
-├── fonts/               # JetBrains Mono + Outfit (offline)
-├── js/
-│   ├── db.js            # IndexedDB wrapper
-│   ├── data.js          # Import/export, statistics
-│   ├── data-op.js       # CRUD logic, pagination, XLSX import
-│   ├── chart.js         # Canvas rendering, animations, tooltips
-│   └── xlsx.full.min.js # SheetJS (offline, for XLSX parsing)
-├── test_case/           # Sample XLSX files for testing
-└── compare_operators.jpg # Operators comparison chart example
+├── index.html                    # Home page (entry point)
+├── README.md                     # Project documentation
+├── LICENSE                       # MIT License
+├── compare_operators.jpg         # Operators comparison screenshot
+└── src/
+    ├── pages/                    # HTML pages
+    │   ├── chart.html            # Data visualization + Operators comparison
+    │   ├── data-op.html          # Data operations + XLSX import
+    │   └── data.html             # Data management (import/export)
+    ├── styles/
+    │   └── styles.css            # All styles (dark theme, animations)
+    ├── scripts/
+    │   ├── db.js                 # IndexedDB wrapper
+    │   ├── data.js               # Import/export, statistics
+    │   ├── data-op.js            # CRUD logic, pagination, XLSX import
+    │   ├── chart.js              # Canvas rendering, animations, tooltips
+    │   └── xlsx.full.min.js      # SheetJS (offline, for XLSX parsing)
+    ├── assets/
+    │   ├── icons/                # SVG icons and favicons
+    │   └── fonts/                # JetBrains Mono + Outfit (offline woff2)
+    └── test_fixtures/            # Sample XLSX files for testing
 ```
 
 ## Dependencies
 
 - **SheetJS** (`xlsx.full.min.js`) — Offline XLSX parsing
-- **Google Fonts** (embedded locally):
+- **Fonts** (embedded locally):
   - Outfit (sans-serif)
   - JetBrains Mono (monospace)
 
