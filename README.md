@@ -56,7 +56,7 @@ A fully offline, browser-based benchmark performance management and visualizatio
 
 ## Operators Comparison
 
-![Operators Comparison](compare_operators.jpg)
+![Operators Comparison](docs/images/compare_operators.jpg)
 
 - **Side-by-side comparison** of two different runs
 - **Unified X-axis** showing common operators
@@ -85,7 +85,9 @@ perf_manager/
 ├── index.html                    # Home page (entry point)
 ├── README.md                     # Project documentation
 ├── LICENSE                       # MIT License
-├── compare_operators.jpg         # Operators comparison screenshot
+├── docs/
+│   └── images/
+│       └── compare_operators.jpg # Operators comparison screenshot
 └── src/
     ├── pages/                    # HTML pages
     │   ├── chart.html            # Data visualization + Operators comparison
@@ -97,7 +99,8 @@ perf_manager/
     │   ├── db.js                 # IndexedDB wrapper
     │   ├── data.js               # Import/export, statistics
     │   ├── data-op.js            # CRUD logic, pagination, XLSX import
-    │   ├── chart.js              # Canvas rendering, animations, tooltips
+    │   └── chart.js              # Canvas rendering, animations, tooltips
+    ├── vendors/
     │   └── xlsx.full.min.js      # SheetJS (offline, for XLSX parsing)
     ├── assets/
     │   ├── icons/                # SVG icons and favicons
