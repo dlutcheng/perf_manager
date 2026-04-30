@@ -1,16 +1,17 @@
-# Benchmark Data Management System
+# 📊 Benchmark Data Management System
 
-> Built with AI via vibe coding.
+> 🤖 Built with AI via vibe coding.
 
-A fully offline, browser-based benchmark performance management and visualization tool.
+A fully offline, browser-based benchmark performance management and visualization tool. No server required — just open in your browser and start analyzing! 🚀
 
-## Features
+## ✨ Features
 
-- **Data Management** — Import/export JSON, per-benchmark statistics (Arch/Config/Record counts)
-- **Data Operations** — Full CRUD for benchmark records across a 3-level hierarchy (Benchmark → Architecture → Configuration). Supports custom extra fields per Architecture. Paginated record table with search, sort, and inline edit
-- **Data Visualization** — Multi-line Canvas charts with animated drawing, MAX/MIN point highlighting, hover tooltips with collision-aware positioning, and fullscreen view
-- **XLSX Import** — Load benchmark data from Excel files (`.xlsx`), automatically parse Summary Data and Operators Data sheets
-- **Operators Comparison** — Compare operators performance across different runs with dual-axis bar charts
+- 📁 **Data Management** — Import/export JSON backups, view per-benchmark statistics (Arch/Config/Record counts), clear data with optional backup
+- 📝 **Data Operations** — Full CRUD for benchmark records across a 3-level hierarchy (Benchmark → Architecture → Configuration). Supports custom extra fields per Architecture with int/float/string types. Paginated record table with search, sort, inline edit, and field filtering
+- 📈 **Performance Trends** — Multi-line Canvas charts with animated drawing, MAX/MIN point highlighting, hover tooltips with collision-aware positioning, and fullscreen view. Click table header radio buttons to instantly visualize any numeric field over time
+- 📊 **Operators Comparison** — Compare operators performance across different runs with dual-axis bar charts. Supports both single-date and compare-dates modes with interactive tooltips
+- 📤 **XLSX Import** — Load benchmark data from Excel files (`.xlsx`), automatically parse Summary Data and Operators Data sheets with automatic type detection
+- 🎨 **Modern UI** — Dark theme with smooth animations, responsive design, and offline fonts
 
 ## Data Hierarchy
 
@@ -70,47 +71,19 @@ A fully offline, browser-based benchmark performance management and visualizatio
 1. Open `index.html` in a browser (no server required for basic use)
 2. **Data Operations**: Select Benchmark → Arch → Configuration → Add/Edit records
 3. **XLSX Import**: Click "Load External XLSX" to import data from Excel files
-4. **Data Visualization**: Select Benchmark → choose Arch/Config lines → pick Y-axis metric → Draw Chart
-5. **Operators Comparison**: Select Benchmark → Arch → Configuration → choose two dates → Draw Chart
+4. **Performance Trends**: Select Benchmark → choose Arch/Config lines → pick Y-axis metric → Draw Chart. Or click radio buttons in the Existing Records table headers for instant visualization
+5. **Operators Comparison**: Select Benchmark → Arch → Configuration → choose one or two dates → Draw Chart. Or use the radio/checkbox buttons in the Existing Records table
 6. **Data Management**: Import/Export JSON backup, view per-benchmark statistics
 
 ## Storage
 
 All data stored in browser **IndexedDB** — works **fully offline** with no external dependencies.
 
-## Project Structure
-
-```
-perf_manager/
-├── index.html                    # Home page (entry point)
-├── README.md                     # Project documentation
-├── LICENSE                       # MIT License
-├── docs/
-│   └── images/
-│       └── compare_operators.jpg # Operators comparison screenshot
-└── src/
-    ├── pages/                    # HTML pages
-    │   ├── chart.html            # Data visualization + Operators comparison
-    │   ├── data-op.html          # Data operations + XLSX import
-    │   └── data.html             # Data management (import/export)
-    ├── styles/
-    │   └── styles.css            # All styles (dark theme, animations)
-    ├── scripts/
-    │   ├── db.js                 # IndexedDB wrapper
-    │   ├── data.js               # Import/export, statistics
-    │   ├── data-op.js            # CRUD logic, pagination, XLSX import
-    │   └── chart.js              # Canvas rendering, animations, tooltips
-    ├── vendors/
-    │   └── xlsx.full.min.js      # SheetJS (offline, for XLSX parsing)
-    ├── assets/
-    │   ├── icons/                # SVG icons and favicons
-    │   └── fonts/                # JetBrains Mono + Outfit (offline woff2)
-    └── test_fixtures/            # Sample XLSX files for testing
-```
-
 ## Dependencies
 
 - **SheetJS** (`xlsx.full.min.js`) — Offline XLSX parsing
+- **Choices.js** — Customizable select boxes with search
+- **SweetAlert2** — Beautiful popup dialogs
 - **Fonts** (embedded locally):
   - Outfit (sans-serif)
   - JetBrains Mono (monospace)
@@ -121,3 +94,4 @@ perf_manager/
 - **Responsive design**: Adapts to different screen sizes
 - **Dark theme**: Optimized for long sessions and reduced eye strain
 - **Automatic deduplication**: Prevents duplicate records during XLSX import
+- **Interactive charts**: Mouse hover for tooltips, click anywhere to exit fullscreen

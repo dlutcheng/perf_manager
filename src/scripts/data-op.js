@@ -5,6 +5,7 @@ let currentBenchmark = '';
 let currentVendor = '';
 let operatorsDateIndices = [];
 let selectedOpRows = [];
+let selectedSingleOpRow = null;
 let sortStates = {
     date: 0,
     duration: 0
@@ -17,6 +18,13 @@ let pagination = {
 };
 let currentPanel = 'operations';
 let choices = {};
+
+function getLocalDateString(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
 let shouldAnimateTable = false;
 let visibleExtraFieldIds = [];
 
@@ -41,11 +49,26 @@ let opCompareState = {
     rightLabel: '',
     operators: [],
     maxPairCount: 1,
+    isSingleMode: false,
     padding: null,
     chartWidth: 0,
     chartHeight: 0,
     animationId: null
 };
+
+let trendState = {
+    datasets: [],
+    labels: [],
+    yAxis: '',
+    benchmark: '',
+    padding: null,
+    chartWidth: 0,
+    chartHeight: 0,
+    animationId: null,
+    highlightAnnotations: []
+};
+
+let selectedTrendField = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
     await initDatabase();
@@ -131,7 +154,7 @@ function initApp() {
     }
 
     populateBenchmarkSelects();
-    document.getElementById('recordDate').value = new Date().toISOString().split('T')[0];
+    document.getElementById('recordDate').value = getLocalDateString(new Date());
     initPanelFromUrl();
 }
 
@@ -219,8 +242,10 @@ function setupEventListeners() {
     document.getElementById('addFieldBtn').addEventListener('click', addExtraField);
 
     document.getElementById('recordsList').addEventListener('click', (e) => {
-        if (e.target.classList.contains('sortable')) {
-            const fieldId = e.target.getAttribute('data-field');
+        if (e.target.classList.contains('trend-radio')) return;
+        const th = e.target.closest('th');
+        if (th && th.classList.contains('sortable')) {
+            const fieldId = th.getAttribute('data-field');
             if (fieldId) {
                 toggleSortInternal(fieldId);
             }
@@ -236,18 +261,42 @@ function setupEventListeners() {
         exitOpCompareFullscreen();
     });
 
-    document.getElementById('opCompareCanvas').addEventListener('mousemove', onOpCompareCanvasMouseMove);
+    document.getElementById('trendFullscreen').addEventListener('click', (e) => {
+        if (e.target.id === 'trendCanvas') return;
+        exitTrendFullscreen();
+    });
+
+    document.getElementById('trendCanvas').addEventListener('click', () => {
+        exitTrendFullscreen();
+    });
+
+    document.getElementById('opCompareCanvas').addEventListener('mousemove', (e) => {
+        window.onOpChartMouseMove(e, 'opCompareCanvas', opCompareState);
+    });
     document.getElementById('opCompareCanvas').addEventListener('mouseleave', () => {
         if (opCompareState.operators.length > 0) {
-            renderOpCompareChartCurrent();
+            window.renderOpChartCurrent('opCompareCanvas', opCompareState);
         }
+    });
+
+    document.getElementById('trendCanvas').addEventListener('mousemove', (e) => {
+        window.onLineChartMouseMove(e, 'trendCanvas', trendState);
+    });
+    document.getElementById('trendCanvas').addEventListener('mouseleave', () => {
+        window.onLineChartMouseLeave('trendCanvas', trendState);
     });
 
     window.addEventListener('resize', () => {
         if (document.getElementById('opCompareFullscreen').classList.contains('visible')) {
             const leftOps = new Map(opCompareState.leftData.map(d => [d.operator, d]));
-            const rightOps = new Map(opCompareState.rightData.map(d => [d.operator, d]));
-            animateOpCompareChart(opCompareState.operators, leftOps, rightOps, opCompareState.leftLabel, opCompareState.rightLabel);
+            const isSingleMode = !opCompareState.rightData || opCompareState.rightData.length === 0;
+            if (isSingleMode) {
+                const emptyRightOps = new Map();
+                window.animateOpChart(opCompareState.operators, leftOps, emptyRightOps, opCompareState.leftLabel, '', 'opCompareCanvas', opCompareState);
+            } else {
+                const rightOps = new Map(opCompareState.rightData.map(d => [d.operator, d]));
+                window.animateOpChart(opCompareState.operators, leftOps, rightOps, opCompareState.leftLabel, opCompareState.rightLabel, 'opCompareCanvas', opCompareState);
+            }
         }
     });
 }
@@ -585,7 +634,7 @@ async function saveRecord() {
 }
 
 function clearForm() {
-    const today = new Date().toISOString().split('T')[0];
+    const today = getLocalDateString(new Date());
     document.getElementById('recordDate').value = today;
     document.getElementById('recordDuration').value = '';
 
@@ -800,16 +849,35 @@ function displayRecords() {
     const tableClass = 'table-fixed-layout';
     let html = `<table class="${tableClass}">` + colgroup + '<thead><tr>';
     html += `<th class="sortable" data-field="date">Date${getSortArrow('date')}</th>`;
-    html += `<th class="sortable" data-field="duration">Duration (ms)${getSortArrow('duration')}</th>`;
+
+    const durationChecked = selectedTrendField === 'duration' ? ' checked' : '';
+    html += `<th class="sortable" data-field="duration">
+        <input type="radio" class="trend-radio" name="trendField" data-field="duration" value="duration"${durationChecked} onclick="onTrendFieldSelect(this)">
+        <span class="th-label">Duration (ms)${getSortArrow('duration')}</span>
+    </th>`;
 
     visibleFields.forEach(field => {
         if (!sortStates.hasOwnProperty(field.id)) {
             sortStates[field.id] = 0;
         }
-        html += `<th class="sortable" data-field="${field.id}">${field.name}${getSortArrow(field.id)}</th>`;
+        const fieldType = field.type || 'float';
+        if (fieldType !== 'string') {
+            const fieldChecked = selectedTrendField === `extra_${field.id}` ? ' checked' : '';
+            html += `<th class="sortable" data-field="${field.id}">
+                <input type="radio" class="trend-radio" name="trendField" data-field="extra_${field.id}" value="extra_${field.id}"${fieldChecked} onclick="onTrendFieldSelect(this)">
+                <span class="th-label">${field.name}${getSortArrow(field.id)}</span>
+            </th>`;
+        } else {
+            html += `<th class="sortable" data-field="${field.id}">${field.name}${getSortArrow(field.id)}</th>`;
+        }
     });
 
     html += '<th>Action</th></tr></thead><tbody>';
+
+    const opsRowCount = pageRecords.filter((record) => {
+        const originalIndex = records.indexOf(record);
+        return operatorsDateIndices.some(d => d.date === record.date && d.index === originalIndex);
+    }).length;
 
     pageRecords.forEach((record) => {
         const originalIndex = records.indexOf(record);
@@ -835,10 +903,16 @@ function displayRecords() {
             html += `<td>${displayValue}</td>`;
         });
 
-        const checkboxHtml = hasOps
+        const isSingleChecked = selectedSingleOpRow && selectedSingleOpRow.date === record.date && selectedSingleOpRow.index === originalIndex;
+        const singleCheckedAttr = isSingleChecked ? ' checked' : '';
+        const radioHtml = hasOps
+            ? `<input type="radio" class="op-single-cb" name="opSingleRadio" data-date="${record.date}" data-index="${originalIndex}"${singleCheckedAttr} onchange="onOpSingleCheck(this)">`
+            : '';
+        const checkboxHtml = hasOps && opsRowCount > 1
             ? `<input type="checkbox" class="op-compare-cb" data-date="${record.date}" data-index="${originalIndex}"${checkedAttr} onchange="onOpCompareCheck(this)">`
             : '';
         html += `<td class="action-cell">
+            ${radioHtml}
             ${checkboxHtml}
             <button class="edit-btn" onclick="editRecord(${originalIndex})">Edit</button>
             <button class="delete-btn" onclick="deleteRecord(${originalIndex})">Delete</button>
@@ -1338,7 +1412,7 @@ async function loadExternalXlsx() {
             return;
         }
 
-        const today = new Date().toISOString().split('T')[0];
+        const today = getLocalDateString(new Date());
         const existingRecords = data[benchmark]?.[vendor]?.[configuration] || [];
         const existingSigs = new Set(existingRecords.map(r => recordSignature(r, extraFields)));
 
@@ -1482,9 +1556,24 @@ function onOpCompareCheck(cb) {
     }
 }
 
-function clearOpCompareSelection() {
+function onOpSingleCheck(cb) {
+    const date = cb.dataset.date;
+    const index = parseInt(cb.dataset.index);
+    if (cb.checked) {
+        selectedSingleOpRow = { date, index };
+        enterOpSingleFullscreen();
+    } else {
+        selectedSingleOpRow = null;
+    }
+}
+
+function clearOpSelection() {
     selectedOpRows = [];
+    selectedSingleOpRow = null;
     document.querySelectorAll('.op-compare-cb').forEach(cb => {
+        cb.checked = false;
+    });
+    document.querySelectorAll('.op-single-cb').forEach(cb => {
         cb.checked = false;
     });
 }
@@ -1504,7 +1593,7 @@ async function enterOpCompareFullscreen() {
 
     if (!leftData || !rightData) {
         alertError('Failed to load operators data for comparison');
-        clearOpCompareSelection();
+        clearOpSelection();
         return;
     }
 
@@ -1532,9 +1621,52 @@ async function enterOpCompareFullscreen() {
     opCompareState.rightLabel = rightLabel;
     opCompareState.operators = allOperators;
     opCompareState.maxPairCount = maxPairCount;
+    opCompareState.isSingleMode = false;
 
     document.getElementById('opCompareFullscreen').classList.add('visible');
-    animateOpCompareChart(allOperators, leftOps, rightOps, leftLabel, rightLabel);
+    window.animateOpChart(allOperators, leftOps, rightOps, leftLabel, rightLabel, 'opCompareCanvas', opCompareState);
+}
+
+async function enterOpSingleFullscreen() {
+    const benchmark = document.getElementById('benchmarkSelect').value;
+    const vendor = document.getElementById('vendorSelect').value;
+    const configuration = document.getElementById('configurationSelect').value;
+
+    if (!benchmark || !vendor || !configuration || !selectedSingleOpRow) return;
+
+    const row = selectedSingleOpRow;
+    const singleData = await getOperatorsDataForRecord(benchmark, vendor, configuration, row.date, row.index);
+
+    if (!singleData) {
+        alertError('Failed to load operators data');
+        clearOpSelection();
+        return;
+    }
+
+    const singleOps = new Map(singleData.map(d => [d.operator, d]));
+    const allOperators = [...singleOps.keys()].sort();
+
+    let maxPairCount = 0;
+    for (const op of allOperators) {
+        const sp = singleOps.get(op)?.pairs?.length || 0;
+        if (sp > maxPairCount) maxPairCount = sp;
+    }
+    if (maxPairCount === 0) maxPairCount = 1;
+
+    const entry = operatorsDateIndices.find(e => e.date === row.date && e.index === row.index);
+    const label = entry ? entry.label : row.date;
+
+    opCompareState.leftData = singleData;
+    opCompareState.rightData = [];
+    opCompareState.leftLabel = label;
+    opCompareState.rightLabel = '';
+    opCompareState.operators = allOperators;
+    opCompareState.maxPairCount = maxPairCount;
+    opCompareState.isSingleMode = true;
+
+    document.getElementById('opCompareFullscreen').classList.add('visible');
+    const emptyRightOps = new Map();
+    window.animateOpChart(allOperators, singleOps, emptyRightOps, label, '', 'opCompareCanvas', opCompareState);
 }
 
 function exitOpCompareFullscreen() {
@@ -1543,351 +1675,84 @@ function exitOpCompareFullscreen() {
         opCompareState.animationId = null;
     }
     document.getElementById('opCompareFullscreen').classList.remove('visible');
-    clearOpCompareSelection();
+    clearOpSelection();
 }
 
-function animateOpCompareChart(allOperators, leftOps, rightOps, dateLeft, dateRight) {
-    if (opCompareState.animationId) {
-        cancelAnimationFrame(opCompareState.animationId);
-        opCompareState.animationId = null;
-    }
-    const duration = 800;
-    const startTime = performance.now();
-    function frame(now) {
-        const elapsed = now - startTime;
-        const progress = Math.min(elapsed / duration, 1);
-        const eased = 1 - Math.pow(1 - progress, 3);
-        renderOpCompareChart(allOperators, leftOps, rightOps, dateLeft, dateRight, eased);
-        if (progress < 1) {
-            opCompareState.animationId = requestAnimationFrame(frame);
-        } else {
-            opCompareState.animationId = null;
-        }
-    }
-    opCompareState.animationId = requestAnimationFrame(frame);
+function onTrendFieldSelect(radio) {
+    const field = radio.value;
+    selectedTrendField = field;
+    drawTrendChart();
 }
 
-function renderOpCompareChart(allOperators, leftOps, rightOps, dateLeft, dateRight, animProgress) {
-    if (animProgress === undefined) animProgress = 1;
+function drawTrendChart() {
+    const benchmark = document.getElementById('benchmarkSelect').value;
+    const vendor = document.getElementById('vendorSelect').value;
+    const configuration = document.getElementById('configurationSelect').value;
 
-    const canvas = document.getElementById('opCompareCanvas');
-    const ctx = canvas.getContext('2d');
-    const container = document.getElementById('opCompareContainer');
-    const rect = container.getBoundingClientRect();
-    const padding = { top: 60, right: 80, bottom: 160, left: 100 };
+    if (!benchmark || !vendor || !configuration || !selectedTrendField) return;
 
-    canvas.width = rect.width - 40 || window.innerWidth - 40;
-    canvas.height = rect.height - 40 || window.innerHeight - 90;
+    const allRecords = data[benchmark]?.[vendor]?.[configuration] || [];
+    if (allRecords.length === 0) return;
 
-    const chartWidth = canvas.width - padding.left - padding.right;
-    const chartHeight = canvas.height - padding.top - padding.bottom;
+    const sortedRecords = [...allRecords].sort((a, b) => new Date(a.date) - new Date(b.date));
 
-    opCompareState.padding = padding;
-    opCompareState.chartWidth = chartWidth;
-    opCompareState.chartHeight = chartHeight;
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    if (allOperators.length === 0) {
-        ctx.font = '15px "Outfit", sans-serif';
-        ctx.fillStyle = '#64748b';
-        ctx.textAlign = 'center';
-        ctx.fillText('No Operators Data', canvas.width / 2, canvas.height / 2);
-        return;
-    }
-
-    const maxPairCount = opCompareState.maxPairCount || 1;
-    const totalBarSlots = 2 * maxPairCount;
-
-    let maxTime = 0;
-    for (const op of allOperators) {
-        const leftOp = leftOps.get(op);
-        const rightOp = rightOps.get(op);
-        for (let p = 0; p < maxPairCount; p++) {
-            const lt = leftOp?.pairs?.[p]?.time;
-            const rt = rightOp?.pairs?.[p]?.time;
-            if (lt != null && lt > maxTime) maxTime = lt;
-            if (rt != null && rt > maxTime) maxTime = rt;
+    const dataPoints = sortedRecords.map(r => {
+        if (selectedTrendField === 'duration') {
+            return r.duration;
+        } else if (selectedTrendField.startsWith('extra_')) {
+            const fieldId = selectedTrendField.replace('extra_', '');
+            return r.extras && r.extras[fieldId] ? r.extras[fieldId].value : 0;
         }
-    }
-
-    const timeMargin = (maxTime || 1) * 0.1;
-    const adjustedMaxTime = maxTime + timeMargin;
-
-    const groupWidth = chartWidth / allOperators.length;
-    const singleBarWidth = Math.min(groupWidth / (totalBarSlots + 1), 30);
-    const intraGap = Math.min(singleBarWidth * 0.15, 3);
-
-    const xPosition = (index) => padding.left + groupWidth * index + groupWidth / 2;
-    const yTimePosition = (value) => padding.top + chartHeight - ((value) / adjustedMaxTime) * chartHeight;
-
-    ctx.strokeStyle = '#1e293b';
-    ctx.lineWidth = 1;
-    const gridLines = 5;
-    for (let i = 0; i <= gridLines; i++) {
-        const y = padding.top + (chartHeight / gridLines) * i;
-        ctx.beginPath();
-        ctx.moveTo(padding.left, y);
-        ctx.lineTo(padding.left + chartWidth, y);
-        ctx.stroke();
-
-        const timeVal = adjustedMaxTime - (adjustedMaxTime / gridLines) * i;
-        ctx.font = '12px "JetBrains Mono", monospace';
-        ctx.fillStyle = '#94a3b8';
-        ctx.textAlign = 'right';
-        ctx.fillText(timeVal.toFixed(2), padding.left - 12, y + 4);
-    }
-
-    ctx.font = '14px "Outfit", sans-serif';
-    ctx.fillStyle = '#cbd5e1';
-    ctx.textAlign = 'center';
-    ctx.fillText('Operators', canvas.width / 2, canvas.height - 12);
-
-    ctx.save();
-    ctx.translate(30, canvas.height / 2);
-    ctx.rotate(-Math.PI / 2);
-    ctx.fillStyle = '#cbd5e1';
-    ctx.fillText('Time (ms)', 0, 0);
-    ctx.restore();
-
-    ctx.font = '11px "JetBrains Mono", monospace';
-    ctx.fillStyle = '#94a3b8';
-    ctx.textAlign = 'right';
-    allOperators.forEach((op, index) => {
-        const x = xPosition(index);
-        ctx.save();
-        ctx.translate(x, padding.top + chartHeight + 14);
-        ctx.rotate(-Math.PI / 4);
-        ctx.fillText(op, 0, 0);
-        ctx.restore();
+        return 0;
     });
 
-    const visibleCount = Math.max(1, Math.ceil(allOperators.length * animProgress));
+    const dates = sortedRecords.map(r => r.date);
+    const allLabels = [...new Set(dates)].sort();
 
-    const leftTimeColor = '#00d4aa';
-    const rightTimeColor = '#f87171';
-
-    const leftBlockWidth = maxPairCount * singleBarWidth + (maxPairCount - 1) * intraGap;
-    const interGroupGap = Math.min(singleBarWidth * 0.5, 6);
-
-    for (let i = 0; i < visibleCount; i++) {
-        const op = allOperators[i];
-        const cx = xPosition(i);
-        const leftOp = leftOps.get(op);
-        const rightOp = rightOps.get(op);
-        const baseY = padding.top + chartHeight;
-
-        const leftBlockStart = cx - leftBlockWidth - interGroupGap / 2;
-        for (let p = 0; p < maxPairCount; p++) {
-            const timeVal = leftOp?.pairs?.[p]?.time;
-            if (timeVal == null) continue;
-            const animVal = timeVal * animProgress;
-            const barY = yTimePosition(animVal);
-            const barX = leftBlockStart + p * (singleBarWidth + intraGap);
-
-            const grad = ctx.createLinearGradient(0, barY, 0, baseY);
-            grad.addColorStop(0, leftTimeColor);
-            grad.addColorStop(1, 'rgba(0, 212, 170, 0.4)');
-            ctx.fillStyle = grad;
-            ctx.beginPath();
-            ctx.roundRect(barX, barY, singleBarWidth, baseY - barY, [2, 2, 0, 0]);
-            ctx.fill();
-        }
-
-        const rightBlockStart = cx + interGroupGap / 2;
-        for (let p = 0; p < maxPairCount; p++) {
-            const timeVal = rightOp?.pairs?.[p]?.time;
-            if (timeVal == null) continue;
-            const animVal = timeVal * animProgress;
-            const barY = yTimePosition(animVal);
-            const barX = rightBlockStart + p * (singleBarWidth + intraGap);
-
-            const grad = ctx.createLinearGradient(0, barY, 0, baseY);
-            grad.addColorStop(0, rightTimeColor);
-            grad.addColorStop(1, 'rgba(248, 113, 113, 0.4)');
-            ctx.fillStyle = grad;
-            ctx.beginPath();
-            ctx.roundRect(barX, barY, singleBarWidth, baseY - barY, [2, 2, 0, 0]);
-            ctx.fill();
-        }
-    }
-
-    const legendY = padding.top - 30;
-    const legendItems = [
-        { label: `${dateLeft}`, color: leftTimeColor },
-        { label: `${dateRight}`, color: rightTimeColor }
+    const COLORS = [
+        { line: '#38bdf8', fill: 'rgba(56, 189, 248, 0.12)' },
+        { line: '#f472b6', fill: 'rgba(244, 114, 182, 0.12)' },
+        { line: '#a78bfa', fill: 'rgba(167, 139, 250, 0.12)' },
+        { line: '#34d399', fill: 'rgba(52, 211, 153, 0.12)' },
+        { line: '#fbbf24', fill: 'rgba(251, 191, 36, 0.12)' },
+        { line: '#f87171', fill: 'rgba(248, 113, 113, 0.12)' }
     ];
 
-    let legendX = padding.left;
-    ctx.font = '12px "Outfit", sans-serif';
-    legendItems.forEach(item => {
-        const labelWidth = ctx.measureText(item.label).width;
-        const itemWidth = 20 + labelWidth + 24;
-
-        ctx.fillStyle = item.color;
-        ctx.beginPath();
-        ctx.roundRect(legendX, legendY, 14, 14, 3);
-        ctx.fill();
-
-        ctx.fillStyle = '#94a3b8';
-        ctx.textAlign = 'left';
-        ctx.fillText(item.label, legendX + 20, legendY + 12);
-        legendX += itemWidth;
-    });
-}
-
-function renderOpCompareChartCurrent() {
-    const leftOps = new Map(opCompareState.leftData.map(d => [d.operator, d]));
-    const rightOps = new Map(opCompareState.rightData.map(d => [d.operator, d]));
-    renderOpCompareChart(opCompareState.operators, leftOps, rightOps, opCompareState.leftLabel, opCompareState.rightLabel, 1);
-}
-
-function onOpCompareCanvasMouseMove(e) {
-    if (opCompareState.operators.length === 0) return;
-
-    const canvas = document.getElementById('opCompareCanvas');
-    const rect = canvas.getBoundingClientRect();
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
-
-    const { padding, chartWidth, chartHeight, operators, leftData, rightData, leftLabel, rightLabel, maxPairCount } = opCompareState;
-
-    if (mouseX < padding.left || mouseX > padding.left + chartWidth ||
-        mouseY < padding.top || mouseY > padding.top + chartHeight) {
-        renderOpCompareChartCurrent();
-        return;
-    }
-
-    const groupWidth = chartWidth / operators.length;
-    const nearestIndex = Math.floor((mouseX - padding.left) / groupWidth);
-    const clampedIndex = Math.max(0, Math.min(operators.length - 1, nearestIndex));
-
-    const leftOps = new Map(leftData.map(d => [d.operator, d]));
-    const rightOps = new Map(rightData.map(d => [d.operator, d]));
-
-    renderOpCompareChartCurrent();
-
-    const ctx = canvas.getContext('2d');
-    const cx = padding.left + groupWidth * clampedIndex + groupWidth / 2;
-
-    ctx.strokeStyle = 'rgba(56, 189, 248, 0.5)';
-    ctx.lineWidth = 1;
-    ctx.setLineDash([4, 4]);
-    ctx.beginPath();
-    ctx.moveTo(cx, padding.top);
-    ctx.lineTo(cx, padding.top + chartHeight);
-    ctx.stroke();
-    ctx.setLineDash([]);
-
-    const op = operators[clampedIndex];
-    const leftOp = leftOps.get(op);
-    const rightOp = rightOps.get(op);
-    const pairCount = maxPairCount || 1;
-
-    let maxTime = 0;
-    for (const o of operators) {
-        const lo = leftOps.get(o);
-        const ro = rightOps.get(o);
-        for (let p = 0; p < pairCount; p++) {
-            const lt = lo?.pairs?.[p]?.time;
-            const rt = ro?.pairs?.[p]?.time;
-            if (lt != null && lt > maxTime) maxTime = lt;
-            if (rt != null && rt > maxTime) maxTime = rt;
-        }
-    }
-    const timeMargin = (maxTime || 1) * 0.1;
-    const adjustedMaxTime = maxTime + timeMargin;
-    const yTimePos = (v) => padding.top + chartHeight - (v / adjustedMaxTime) * chartHeight;
-
-    const lines = [
-        { text: op, bold: true, color: '#e2e8f0' }
-    ];
-
-    for (let p = 0; p < pairCount; p++) {
-        const pairLabel = pairCount > 1 ? ` #${p + 1}` : '';
-        lines.push({ text: `── ${leftLabel}${pairLabel} ──`, bold: false, color: '#00d4aa' });
-        const lt = leftOp?.pairs?.[p]?.time;
-        const lr = leftOp?.pairs?.[p]?.ratio;
-        lines.push({ text: `  Time: ${lt != null ? lt.toFixed(3) : 'N/A'}`, bold: false, color: '#00d4aa' });
-        lines.push({ text: `  Ratio: ${lr != null ? (lr * 100).toFixed(1) + '%' : 'N/A'}`, bold: false, color: '#34d399' });
-    }
-
-    for (let p = 0; p < pairCount; p++) {
-        const pairLabel = pairCount > 1 ? ` #${p + 1}` : '';
-        lines.push({ text: `── ${rightLabel}${pairLabel} ──`, bold: false, color: '#f87171' });
-        const rt = rightOp?.pairs?.[p]?.time;
-        const rr = rightOp?.pairs?.[p]?.ratio;
-        lines.push({ text: `  Time: ${rt != null ? rt.toFixed(3) : 'N/A'}`, bold: false, color: '#f87171' });
-        lines.push({ text: `  Ratio: ${rr != null ? (rr * 100).toFixed(1) + '%' : 'N/A'}`, bold: false, color: '#fca5a5' });
-    }
-
-    const lineHeight = 18;
-    const tooltipWidth = 280;
-    const tooltipHeight = lines.length * lineHeight + 16;
-    let tooltipX = cx + 20;
-    let tooltipY = padding.top + 20;
-
-    if (tooltipX + tooltipWidth > canvas.width - padding.right) {
-        tooltipX = cx - tooltipWidth - 20;
-    }
-    if (tooltipY + tooltipHeight > padding.top + chartHeight) {
-        tooltipY = padding.top + chartHeight - tooltipHeight - 10;
-    }
-
-    ctx.fillStyle = 'rgba(15, 23, 42, 0.95)';
-    ctx.strokeStyle = 'rgba(56, 189, 248, 0.3)';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.roundRect(tooltipX - 8, tooltipY - 8, tooltipWidth, tooltipHeight, 6);
-    ctx.fill();
-    ctx.stroke();
-
-    let currentY = tooltipY + 4;
-    lines.forEach(line => {
-        ctx.font = line.bold ? 'bold 12px "JetBrains Mono", monospace' : '12px "JetBrains Mono", monospace';
-        ctx.fillStyle = line.color;
-        ctx.textAlign = 'left';
-        ctx.fillText(line.text, tooltipX, currentY + 12);
-        currentY += lineHeight;
+    const labelMap = {
+        duration: 'Duration (ms)'
+    };
+    extraFields.forEach(field => {
+        labelMap['extra_' + field.id] = field.name;
     });
 
-    const totalBarSlots = 2 * pairCount;
-    const singleBarWidth = Math.min(groupWidth / (totalBarSlots + 1), 30);
-    const intraGap = Math.min(singleBarWidth * 0.15, 3);
-    const leftBlockWidth = pairCount * singleBarWidth + (pairCount - 1) * intraGap;
-    const interGroupGap = Math.min(singleBarWidth * 0.5, 6);
-    const leftBlockStart = cx - leftBlockWidth - interGroupGap / 2;
-    const rightBlockStart = cx + interGroupGap / 2;
+    const dataset = {
+        label: labelMap[selectedTrendField] || selectedTrendField,
+        dates: dates,
+        values: dataPoints,
+        color: COLORS[0]
+    };
 
-    for (let p = 0; p < pairCount; p++) {
-        const lt = leftOp?.pairs?.[p]?.time;
-        if (lt != null) {
-            const y = yTimePos(lt);
-            const barX = leftBlockStart + p * (singleBarWidth + intraGap);
-            ctx.beginPath();
-            ctx.arc(barX + singleBarWidth / 2, y, 4, 0, 2 * Math.PI);
-            ctx.fillStyle = '#0f172a';
-            ctx.fill();
-            ctx.strokeStyle = '#00d4aa';
-            ctx.lineWidth = 2;
-            ctx.stroke();
-        }
-    }
+    trendState.datasets = [dataset];
+    trendState.labels = allLabels;
+    trendState.yAxis = selectedTrendField;
+    trendState.benchmark = benchmark;
 
-    for (let p = 0; p < pairCount; p++) {
-        const rt = rightOp?.pairs?.[p]?.time;
-        if (rt != null) {
-            const y = yTimePos(rt);
-            const barX = rightBlockStart + p * (singleBarWidth + intraGap);
-            ctx.beginPath();
-            ctx.arc(barX + singleBarWidth / 2, y, 4, 0, 2 * Math.PI);
-            ctx.fillStyle = '#0f172a';
-            ctx.fill();
-            ctx.strokeStyle = '#f87171';
-            ctx.lineWidth = 2;
-            ctx.stroke();
-        }
+    document.getElementById('trendFullscreen').classList.add('visible');
+    window.animateLineChart([dataset], allLabels, selectedTrendField, benchmark, 'trendCanvas', trendState);
+}
+
+function exitTrendFullscreen() {
+    if (trendState.animationId) {
+        cancelAnimationFrame(trendState.animationId);
+        trendState.animationId = null;
     }
+    document.getElementById('trendFullscreen').classList.remove('visible');
+    selectedTrendField = null;
+    document.querySelectorAll('.trend-radio').forEach(r => r.checked = false);
+}
+
+function renderTrendChartCurrent() {
+    window.renderLineChart(trendState.datasets, trendState.labels, trendState.yAxis, trendState.benchmark, 1, 'trendCanvas', trendState);
 }
 
 function initPanelFromUrl() {
@@ -1983,7 +1848,7 @@ function updateSubmenuStates(enabled) {
 function resetSubPanels() {
     updateSubmenuStates(false);
 
-    document.getElementById('recordDate').value = new Date().toISOString().split('T')[0];
+    document.getElementById('recordDate').value = getLocalDateString(new Date());
     document.getElementById('recordDuration').value = '';
     document.getElementById('dateSearchInput').value = '';
     dateFilter = '';

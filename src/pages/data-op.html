@@ -16,8 +16,8 @@
             <nav class="nav-menu">
                 <a href="../../index.html">Home</a>
                 <a href="data-op.html" class="active">Data Operations</a>
-                <a href="chart.html">Data Visualization</a>
-                <a href="data.html">Data Management</a>
+                <a href="data-vl.html">Data Visualization</a>
+                <a href="data-mg.html">Data Management</a>
             </nav>
         </header>
 
@@ -165,11 +165,19 @@
         <div class="chart-hint">Click anywhere to return</div>
     </div>
 
-    <script src="../vendors/xlsx.full.min.js"></script>
+    <div class="chart-fullscreen" id="trendFullscreen">
+        <div class="chart-container-fullscreen" id="trendContainer">
+            <canvas id="trendCanvas"></canvas>
+        </div>
+        <div class="chart-hint">Click anywhere to return</div>
+    </div>
+
     <script src="../scripts/db.js"></script>
+    <script src="../vendors/xlsx.full.min.js"></script>
     <script src="../vendors/sweetalert2.min.js"></script>
-    <script src="../scripts/swal-helper.js"></script>
     <script src="../vendors/choices.min.js"></script>
+    <script src="../scripts/swal-helper.js"></script>
+    <script src="../scripts/chart.js"></script>
     <script src="../scripts/data-op.js"></script>
 </body>
 </html>
