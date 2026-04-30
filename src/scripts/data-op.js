@@ -17,6 +17,7 @@ let pagination = {
 };
 let currentPanel = 'operations';
 let choices = {};
+let shouldAnimateTable = false;
 
 function addChoicesInputId(selectId, inputId) {
     const select = document.getElementById(selectId);
@@ -608,6 +609,7 @@ function filterRecordsByDate() {
     dateFilter = input.value.trim();
     selectedOpRows = [];
     pagination.currentPage = 1;
+    shouldAnimateTable = true;
     displayRecords();
 }
 
@@ -758,6 +760,18 @@ function displayRecords() {
     html += '</tbody></table>';
     container.innerHTML = html;
 
+    if (shouldAnimateTable) {
+        const table = container.querySelector('table');
+        if (table) {
+            table.classList.add('table-page-animate');
+            const maxDelay = Math.min(pageRecords.length, 11) * 30 + 350;
+            setTimeout(() => {
+                table.classList.remove('table-page-animate');
+            }, maxDelay);
+        }
+        shouldAnimateTable = false;
+    }
+
     renderPagination(totalCount, totalPages);
 }
 
@@ -782,6 +796,7 @@ function toggleSortInternal(fieldId) {
     }
     selectedOpRows = [];
     pagination.currentPage = 1;
+    shouldAnimateTable = true;
     displayRecords();
 }
 
@@ -987,6 +1002,7 @@ function renderPagination(totalCount, totalPages) {
 function goToPage(page) {
     selectedOpRows = [];
     pagination.currentPage = page;
+    shouldAnimateTable = true;
     displayRecords();
 }
 
@@ -995,6 +1011,7 @@ function changePageSize(size) {
     pagination.pageSize = size;
     pagination.customPageSize = '';
     pagination.currentPage = 1;
+    shouldAnimateTable = true;
     displayRecords();
 }
 
@@ -1013,6 +1030,7 @@ function applyCustomPageSize() {
     pagination.customPageSize = value;
     selectedOpRows = [];
     pagination.currentPage = 1;
+    shouldAnimateTable = true;
     displayRecords();
 }
 
@@ -1038,6 +1056,7 @@ function applyPageJump() {
     }
     pagination.currentPage = value;
     selectedOpRows = [];
+    shouldAnimateTable = true;
     displayRecords();
 }
 
