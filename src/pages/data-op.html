@@ -147,6 +147,10 @@
                 <div id="recordsSubtitle" class="records-subtitle"></div>
                 <div class="records-toolbar">
                     <input type="text" id="dateSearchInput" class="date-search-input" placeholder="Search by date (e.g., 2026-04)" oninput="filterRecordsByDate()">
+                    <div class="field-filter-group" id="fieldFilterGroup">
+                        <select id="fieldFilterSelect" multiple></select>
+                    </div>
+                    <button type="button" id="applyFieldFilterBtn" class="apply-field-filter-btn" onclick="applyFieldFilter()" disabled>Apply</button>
                 </div>
                 <div id="recordsList"></div>
                 <div id="paginationControls" class="pagination-controls"></div>

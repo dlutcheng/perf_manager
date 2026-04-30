@@ -18,6 +18,7 @@ let pagination = {
 let currentPanel = 'operations';
 let choices = {};
 let shouldAnimateTable = false;
+let visibleExtraFieldIds = [];
 
 function addChoicesInputId(selectId, inputId) {
     const select = document.getElementById(selectId);
@@ -92,6 +93,43 @@ function initApp() {
     addChoicesInputId('vendorSelect', 'choices-search-vendor');
     addChoicesInputId('configurationSelect', 'choices-search-configuration');
 
+    choices.fieldFilter = new Choices(document.getElementById('fieldFilterSelect'), {
+        removeItemButton: true,
+        searchEnabled: true,
+        searchPlaceholderValue: 'Search fields...',
+        shouldSort: false,
+        itemSelectText: '',
+        allowHTML: false,
+        placeholderValue: 'Select fields to display...',
+        placeholder: true
+    });
+    choices.fieldFilter.disable();
+    addChoicesInputId('fieldFilterSelect', 'choices-search-field-filter');
+    setTimeout(syncFieldFilterPlaceholder, 100);
+
+    document.getElementById('fieldFilterSelect').addEventListener('change', () => {
+        const selected = choices.fieldFilter.getValue(true);
+        visibleExtraFieldIds = Array.isArray(selected) ? selected.map(id => String(id)) : [];
+        const activeSort = Object.keys(sortStates).find(key => sortStates[key] !== 0);
+        if (activeSort && activeSort !== 'date' && activeSort !== 'duration'
+            && visibleExtraFieldIds.length > 0 && !visibleExtraFieldIds.includes(String(activeSort))) {
+            Object.keys(sortStates).forEach(key => { sortStates[key] = 0; });
+        }
+        syncFieldFilterPlaceholder();
+
+        const applyBtn = document.getElementById('applyFieldFilterBtn');
+        if (applyBtn) {
+            applyBtn.disabled = false;
+        }
+    });
+
+    const fieldFilterContainer = document.getElementById('fieldFilterSelect')?.closest('.choices');
+    if (fieldFilterContainer) {
+        fieldFilterContainer.addEventListener('focusin', () => {
+            requestAnimationFrame(syncFieldFilterPlaceholder);
+        });
+    }
+
     populateBenchmarkSelects();
     document.getElementById('recordDate').value = new Date().toISOString().split('T')[0];
     initPanelFromUrl();
@@ -108,6 +146,49 @@ async function loadExtraFields() {
 async function getExtraFieldsForVendor(benchmark, vendor) {
     const allVendorFields = await loadExtraFields();
     return allVendorFields[benchmark]?.[vendor] || [];
+}
+
+function syncFieldFilterPlaceholder() {
+    const container = document.getElementById('fieldFilterSelect')?.closest('.choices');
+    if (!container) return;
+    const list = container.querySelector('.choices__list--multiple');
+    const searchInput = container.querySelector('.choices__input--cloned');
+    const hasItems = visibleExtraFieldIds.length > 0;
+    if (list) {
+        list.classList.toggle('has-items', hasItems);
+    }
+    if (searchInput) {
+        if (hasItems) {
+            searchInput.style.cssText = 'opacity:0!important;pointer-events:none!important;position:absolute!important;left:0!important;top:0!important;width:100%!important;height:100%!important;min-width:0!important;padding:0!important;margin:0!important;border:none!important;flex:none!important;overflow:hidden!important;display:block!important;z-index:-1!important;';
+        } else {
+            searchInput.style.cssText = '';
+        }
+    }
+}
+
+function updateFieldFilterChoices() {
+    if (!choices.fieldFilter) return;
+    const fieldItems = extraFields.map(f => ({ value: String(f.id), label: f.name }));
+    choices.fieldFilter.clearStore();
+    if (fieldItems.length > 0) {
+        choices.fieldFilter.setChoices(fieldItems, 'value', 'label', true);
+        choices.fieldFilter.enable();
+    } else {
+        choices.fieldFilter.disable();
+    }
+    visibleExtraFieldIds = [];
+    choices.fieldFilter.removeActiveItems();
+    setTimeout(syncFieldFilterPlaceholder, 0);
+}
+
+function applyFieldFilter() {
+    shouldAnimateTable = true;
+    displayRecords();
+    syncFieldFilterPlaceholder();
+    const applyBtn = document.getElementById('applyFieldFilterBtn');
+    if (applyBtn) {
+        applyBtn.disabled = true;
+    }
 }
 
 async function saveData() {
@@ -210,6 +291,7 @@ async function onBenchmarkChange() {
     selectedOpRows = [];
     resetSubPanels();
     renderExtraFields();
+    updateFieldFilterChoices();
     displayRecords();
     switchPanel('operations');
 }
@@ -243,6 +325,7 @@ async function onVendorChange() {
     selectedOpRows = [];
     resetSubPanels();
     renderExtraFields();
+    updateFieldFilterChoices();
     displayRecords();
     switchPanel('operations');
 }
@@ -594,6 +677,7 @@ async function removeExtraField(id) {
     }
 
     renderExtraFields();
+    updateFieldFilterChoices();
     updateYAxisOptions();
     displayRecords();
 }
@@ -692,29 +776,33 @@ function displayRecords() {
     const endIndex = Math.min(startIndex + pagination.pageSize, totalCount);
     const pageRecords = filteredRecords.slice(startIndex, endIndex);
 
-    const colCount = 2 + extraFields.length + 1;
     const listEl = document.getElementById('recordsList');
-    const containerWidth = listEl ? listEl.clientWidth : 0;
-    if (containerWidth === 0 && listEl) {
+    if (listEl && listEl.clientWidth === 0) {
         requestAnimationFrame(() => displayRecords());
         return;
     }
 
+    const visibleFields = visibleExtraFieldIds.length > 0
+        ? extraFields.filter(f => visibleExtraFieldIds.includes(String(f.id)))
+        : [];
+
+    const colCount = 2 + visibleFields.length + 1;
+
     let colgroup = '<colgroup>';
-    colgroup += '<col style="min-width: 110px;">';
-    colgroup += '<col style="min-width: 130px;">';
+    colgroup += '<col style="width: 130px;">';
+    colgroup += '<col style="width: 150px;">';
     for (let i = 2; i < colCount - 1; i++) {
-        colgroup += '<col style="min-width: 80px;">';
+        colgroup += '<col style="width: 140px;">';
     }
-    colgroup += '<col style="min-width: 200px;">';
+    colgroup += '<col style="width: 200px;">';
     colgroup += '</colgroup>';
 
-    const tableClass = 'table-auto-layout';
+    const tableClass = 'table-fixed-layout';
     let html = `<table class="${tableClass}">` + colgroup + '<thead><tr>';
     html += `<th class="sortable" data-field="date">Date${getSortArrow('date')}</th>`;
     html += `<th class="sortable" data-field="duration">Duration (ms)${getSortArrow('duration')}</th>`;
 
-    extraFields.forEach(field => {
+    visibleFields.forEach(field => {
         if (!sortStates.hasOwnProperty(field.id)) {
             sortStates[field.id] = 0;
         }
@@ -733,7 +821,7 @@ function displayRecords() {
             <td>${record.date}</td>
             <td>${record.duration.toFixed(3)}</td>`;
 
-        extraFields.forEach(field => {
+        visibleFields.forEach(field => {
             const fieldType = field.type || 'float';
             const extra = record.extras?.[field.id];
             let displayValue;
@@ -912,6 +1000,7 @@ window.reloadExtraFields = async function() {
     if (currentBenchmark && currentVendor) {
         extraFields = await getExtraFieldsForVendor(currentBenchmark, currentVendor);
         renderExtraFields();
+        updateFieldFilterChoices();
         updateYAxisOptions();
     }
 };
@@ -1356,6 +1445,7 @@ async function loadExternalXlsx() {
 
         operatorsDateIndices = await getOperatorsDatesForConfig(benchmark, vendor, configuration);
         renderExtraFields();
+        updateFieldFilterChoices();
         displayRecords();
         notifyDataChanged();
 
