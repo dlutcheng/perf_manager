@@ -6,6 +6,20 @@ let currentPanel = 'trends';
 let opChartMode = 'single';
 let chartChoices = {};
 
+function addChoicesInputId(selectId, inputId) {
+    const select = document.getElementById(selectId);
+    if (select) {
+        const container = select.closest('.choices');
+        if (container) {
+            const searchInput = container.querySelector('.choices__input--cloned');
+            if (searchInput) {
+                searchInput.id = inputId;
+                searchInput.name = inputId;
+            }
+        }
+    }
+}
+
 let chartState = {
     datasets: [],
     labels: [],
@@ -54,6 +68,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     chartChoices.opConfig.disable();
     chartChoices.opDateLeft.disable();
     chartChoices.opDateRight.disable();
+
+    addChoicesInputId('chartBenchmarkSelect', 'choices-search-chart-benchmark');
+    addChoicesInputId('opBenchmarkSelect', 'choices-search-op-benchmark');
+    addChoicesInputId('opVendorSelect', 'choices-search-op-vendor');
+    addChoicesInputId('opConfigSelect', 'choices-search-op-config');
+    addChoicesInputId('yAxisSelect', 'choices-search-y-axis');
+    addChoicesInputId('opDateLeft', 'choices-search-op-date-left');
+    addChoicesInputId('opDateRight', 'choices-search-op-date-right');
 
     populateBenchmarkSelect();
     populateYAxisSelect();

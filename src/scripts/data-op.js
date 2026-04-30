@@ -18,6 +18,20 @@ let pagination = {
 let currentPanel = 'operations';
 let choices = {};
 
+function addChoicesInputId(selectId, inputId) {
+    const select = document.getElementById(selectId);
+    if (select) {
+        const container = select.closest('.choices');
+        if (container) {
+            const searchInput = container.querySelector('.choices__input--cloned');
+            if (searchInput) {
+                searchInput.id = inputId;
+                searchInput.name = inputId;
+            }
+        }
+    }
+}
+
 let opCompareState = {
     leftData: null,
     rightData: null,
@@ -72,6 +86,10 @@ function initApp() {
     choices.configuration = new Choices(document.getElementById('configurationSelect'), { ...choiceOpts, placeholderValue: '-- Select Configuration --' });
     choices.vendor.disable();
     choices.configuration.disable();
+
+    addChoicesInputId('benchmarkSelect', 'choices-search-benchmark');
+    addChoicesInputId('vendorSelect', 'choices-search-vendor');
+    addChoicesInputId('configurationSelect', 'choices-search-configuration');
 
     populateBenchmarkSelects();
     document.getElementById('recordDate').value = new Date().toISOString().split('T')[0];
@@ -675,29 +693,21 @@ function displayRecords() {
     const colCount = 2 + extraFields.length + 1;
     const listEl = document.getElementById('recordsList');
     const containerWidth = listEl ? listEl.clientWidth : 0;
-    const minDateWidth = 110;
-    const minDurationWidth = 130;
-    const minExtraWidth = 80;
-    const minActionWidth = 200;
-    const estimatedMinWidth = minDateWidth + minDurationWidth + extraFields.length * minExtraWidth + minActionWidth;
-    const useFixedLayout = containerWidth > 0 && estimatedMinWidth <= containerWidth;
+    if (containerWidth === 0 && listEl) {
+        requestAnimationFrame(() => displayRecords());
+        return;
+    }
 
     let colgroup = '<colgroup>';
-    if (useFixedLayout) {
-        for (let i = 0; i < colCount; i++) {
-            colgroup += '<col>';
-        }
-    } else {
-        colgroup += '<col style="min-width: 110px;">';
-        colgroup += '<col style="min-width: 130px;">';
-        for (let i = 2; i < colCount - 1; i++) {
-            colgroup += '<col style="min-width: 80px;">';
-        }
-        colgroup += '<col style="min-width: 200px;">';
+    colgroup += '<col style="min-width: 110px;">';
+    colgroup += '<col style="min-width: 130px;">';
+    for (let i = 2; i < colCount - 1; i++) {
+        colgroup += '<col style="min-width: 80px;">';
     }
+    colgroup += '<col style="min-width: 200px;">';
     colgroup += '</colgroup>';
 
-    const tableClass = useFixedLayout ? 'table-fixed-layout' : 'table-auto-layout';
+    const tableClass = 'table-auto-layout';
     let html = `<table class="${tableClass}">` + colgroup + '<thead><tr>';
     html += `<th class="sortable" data-field="date">Date${getSortArrow('date')}</th>`;
     html += `<th class="sortable" data-field="duration">Duration (ms)${getSortArrow('duration')}</th>`;
@@ -1806,6 +1816,7 @@ window.switchPanel = function(panelId) {
     rlPanel.style.display = 'none';
 
     let targetPanel;
+    let needDisplayRecords = false;
     if (panelId === 'operations') {
         targetPanel = opPanel;
     } else if (panelId === 'record-details') {
@@ -1813,7 +1824,7 @@ window.switchPanel = function(panelId) {
     } else if (panelId === 'existing-records') {
         targetPanel = rlPanel;
         if (isAllSelected()) {
-            displayRecords();
+            needDisplayRecords = true;
         }
     }
 
@@ -1822,6 +1833,10 @@ window.switchPanel = function(panelId) {
         targetPanel.style.display = 'block';
         void targetPanel.offsetWidth;
         targetPanel.classList.add('panel-animate-in');
+    }
+
+    if (needDisplayRecords) {
+        displayRecords();
     }
 
     updateSubTabActiveState(panelId);
