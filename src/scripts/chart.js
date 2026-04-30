@@ -34,6 +34,46 @@ let chartState = {
     animationId: null
 };
 
+let opDataHierarchyCache = null;
+
+async function getOpDataHierarchy() {
+    if (opDataHierarchyCache) {
+        return opDataHierarchyCache;
+    }
+    const allData = await loadAllOperatorsData();
+    const hierarchy = {};
+    for (const [benchmark, vendors] of Object.entries(allData)) {
+        hierarchy[benchmark] = {};
+        for (const [vendor, configs] of Object.entries(vendors)) {
+            const validConfigs = [];
+            for (const [config, dates] of Object.entries(configs)) {
+                let hasData = false;
+                for (const dateArr of Object.values(dates)) {
+                    if (Array.isArray(dateArr) && dateArr.some(item => item && (Array.isArray(item) ? item.length > 0 : Object.keys(item).length > 0))) {
+                        hasData = true;
+                        break;
+                    }
+                }
+                if (hasData) {
+                    validConfigs.push(config);
+                }
+            }
+            if (validConfigs.length > 0) {
+                hierarchy[benchmark][vendor] = validConfigs;
+            }
+        }
+        if (Object.keys(hierarchy[benchmark]).length === 0) {
+            delete hierarchy[benchmark];
+        }
+    }
+    opDataHierarchyCache = hierarchy;
+    return hierarchy;
+}
+
+function clearOpDataHierarchyCache() {
+    opDataHierarchyCache = null;
+}
+
 const COLORS = [
     { line: '#00d4aa', fill: 'rgba(0, 212, 170, 0.12)' },
     { line: '#f87171', fill: 'rgba(248, 113, 113, 0.12)' },
@@ -79,7 +119,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     populateBenchmarkSelect();
     populateYAxisSelect();
-    populateOpBenchmarkSelect();
+    await populateOpBenchmarkSelect();
 
     initPanelFromUrl();
 });
@@ -99,22 +139,24 @@ document.addEventListener('visibilitychange', async () => {
         await refreshDataAndFields();
         populateBenchmarkSelect();
         populateYAxisSelect();
-        populateOpBenchmarkSelect();
+        await populateOpBenchmarkSelect();
     }
 });
 
 window.addEventListener('benchmarkDataImported', async () => {
+    clearOpDataHierarchyCache();
     await refreshDataAndFields();
     populateBenchmarkSelect();
     populateYAxisSelect();
-    populateOpBenchmarkSelect();
+    await populateOpBenchmarkSelect();
 });
 
 window.addEventListener('benchmarkDataChanged', async () => {
+    clearOpDataHierarchyCache();
     await refreshDataAndFields();
     populateBenchmarkSelect();
     populateYAxisSelect();
-    populateOpBenchmarkSelect();
+    await populateOpBenchmarkSelect();
 });
 
 function getExtraFieldsForVendor(benchmark, vendor) {
@@ -1045,8 +1087,10 @@ window.setOpMode = function(mode) {
     onOpDateChange();
 };
 
-function populateOpBenchmarkSelect() {
-    const items = Object.keys(data).sort().map(b => ({ value: b, label: b }));
+async function populateOpBenchmarkSelect() {
+    const opHierarchy = await getOpDataHierarchy();
+    const benchmarks = Object.keys(opHierarchy).sort();
+    const items = benchmarks.map(b => ({ value: b, label: b }));
     chartChoices.opBenchmark.clearStore();
     chartChoices.opBenchmark.setChoices(items, 'value', 'label', true);
 }
@@ -1064,8 +1108,10 @@ async function onOpBenchmarkChange() {
     if (benchmark) chartChoices.opVendor.enable(); else chartChoices.opVendor.disable();
     document.getElementById('opDrawBtn').disabled = true;
 
-    if (benchmark && data[benchmark]) {
-        const vItems = Object.keys(data[benchmark]).sort().map(v => ({ value: v, label: v }));
+    if (benchmark) {
+        const opHierarchy = await getOpDataHierarchy();
+        const vendors = opHierarchy[benchmark] ? Object.keys(opHierarchy[benchmark]).sort() : [];
+        const vItems = vendors.map(v => ({ value: v, label: v }));
         chartChoices.opVendor.setChoices(vItems, 'value', 'label', true);
     }
 }
@@ -1082,8 +1128,10 @@ async function onOpVendorChange() {
     chartChoices.opDateRight.disable();
     document.getElementById('opDrawBtn').disabled = true;
 
-    if (benchmark && vendor && data[benchmark]?.[vendor]) {
-        const cItems = Object.keys(data[benchmark][vendor]).sort().map(c => ({ value: c, label: c }));
+    if (benchmark && vendor) {
+        const opHierarchy = await getOpDataHierarchy();
+        const configs = opHierarchy[benchmark]?.[vendor] || [];
+        const cItems = configs.map(c => ({ value: c, label: c }));
         chartChoices.opConfig.setChoices(cItems, 'value', 'label', true);
     }
 }
