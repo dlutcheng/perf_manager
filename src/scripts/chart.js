@@ -159,27 +159,40 @@ function getExtraFieldsIntersectionForVendors(benchmark, vendors) {
 
 function populateYAxisSelect() {
     const items = [{ value: 'duration', label: 'Duration (ms)' }];
-    if (chartChoices.yAxis) {
-        chartChoices.yAxis.clearStore();
-        chartChoices.yAxis.setChoices(items, 'value', 'label', true);
-    } else {
-        const yAxisSelect = document.getElementById('yAxisSelect');
-        yAxisSelect.innerHTML = '<option value="duration">Duration (ms)</option>';
-        extraFields.forEach(field => {
-            const fieldType = field.type || 'float';
-            if (fieldType !== 'string') {
-                yAxisSelect.innerHTML += `<option value="extra_${field.id}">${field.name}</option>`;
-            }
-        });
-        return;
-    }
     extraFields.forEach(field => {
         const fieldType = field.type || 'float';
         if (fieldType !== 'string') {
             items.push({ value: 'extra_' + field.id, label: field.name });
         }
     });
-    chartChoices.yAxis.setChoices(items, 'value', 'label', true);
+
+    const savedYAxis = chartState.yAxis || document.getElementById('yAxisSelect')?.value || 'duration';
+
+    if (chartChoices.yAxis) {
+        chartChoices.yAxis.clearStore();
+        chartChoices.yAxis.setChoices(items, 'value', 'label', true);
+        const validValues = items.map(i => i.value);
+        if (validValues.includes(savedYAxis)) {
+            chartChoices.yAxis.setChoiceByValue(savedYAxis);
+        } else {
+            chartChoices.yAxis.setChoiceByValue('duration');
+            chartState.yAxis = 'duration';
+        }
+    } else {
+        const yAxisSelect = document.getElementById('yAxisSelect');
+        yAxisSelect.innerHTML = '';
+        items.forEach(item => {
+            const option = document.createElement('option');
+            option.value = item.value;
+            option.textContent = item.label;
+            yAxisSelect.appendChild(option);
+        });
+        const validValues = items.map(i => i.value);
+        yAxisSelect.value = validValues.includes(savedYAxis) ? savedYAxis : 'duration';
+        if (!validValues.includes(savedYAxis)) {
+            chartState.yAxis = 'duration';
+        }
+    }
 }
 
 window.updateChartYAxisOptions = async function(benchmark, vendor) {
@@ -361,14 +374,7 @@ function updateExtraFieldsFromSelection() {
         extraFields = [];
     }
 
-    const currentYAxis = document.getElementById('yAxisSelect').value;
     populateYAxisSelect();
-    const yAxisSelect = document.getElementById('yAxisSelect');
-    if (yAxisSelect.querySelector(`option[value="${currentYAxis}"]`)) {
-        yAxisSelect.value = currentYAxis;
-    } else {
-        yAxisSelect.value = 'duration';
-    }
 }
 
 function updateDrawButtonState() {
