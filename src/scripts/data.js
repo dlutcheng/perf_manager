@@ -74,7 +74,7 @@ async function exportData() {
     try {
         const data = await loadBenchmarkData();
         if (Object.keys(data).length === 0) {
-            alert('No data to export');
+            alertInfo('No data to export');
             return;
         }
         const vendorFields = await loadExtraFields();
@@ -110,10 +110,10 @@ async function exportData() {
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
-        alert('Data exported successfully');
+        alertOk('Data exported successfully');
         flashButton('exportBtn');
     } catch (error) {
-        alert('Data export failed');
+        alertError('Data export failed');
     }
 }
 
@@ -193,7 +193,7 @@ async function importData() {
             try {
                 const imported = JSON.parse(event.target.result);
 
-                if (confirm('Import will overwrite existing data. Continue?')) {
+                if (await confirmDanger('Import', 'Import will overwrite existing data. Continue?')) {
                     const migrated = migrateOldFormatRecords(imported);
                     await dbSaveBenchmarkData(migrated);
 
@@ -213,11 +213,11 @@ async function importData() {
                     window.dispatchEvent(new CustomEvent('benchmarkDataImported'));
 
                     updateDataStatus();
-                    alert('Data imported successfully');
+                    alertOk('Data imported successfully');
                     flashButton('importBtn');
                 }
             } catch (error) {
-                alert('Data import failed: invalid JSON format');
+                alertError('Data import failed: invalid JSON format');
             }
         };
         reader.readAsText(file);
@@ -226,7 +226,7 @@ async function importData() {
 }
 
 async function clearAllData() {
-    if (!confirm('Clear all data? This cannot be undone!\n\nClick OK to auto-export backup first.')) {
+    if (!await confirmDanger('Warning', 'Clear all data? This cannot be undone!')) {
         return;
     }
 
@@ -250,18 +250,18 @@ async function clearAllData() {
 
     await deleteDatabase();
     updateDataStatus();
-    alert('All data cleared, backup downloaded.');
+    alertOk('All data cleared, backup downloaded.');
     location.reload();
 }
 
 async function clearAllDataNoBackup() {
-    if (!confirm('Clear all data WITHOUT backup? This cannot be undone!')) {
+    if (!await confirmDanger('Warning', 'Clear all data WITHOUT backup?')) {
         return;
     }
 
     await deleteDatabase();
     updateDataStatus();
-    alert('All data cleared.');
+    alertOk('All data cleared.');
     location.reload();
 }
 

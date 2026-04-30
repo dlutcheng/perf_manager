@@ -69,7 +69,7 @@ async function saveData() {
     try {
         await dbSaveBenchmarkData(data);
     } catch (error) {
-        alert('Failed to save data');
+        alertError('Failed to save data');
     }
 }
 
@@ -273,11 +273,11 @@ async function loadOperatorsIndices(benchmark, vendor, configuration) {
 async function addBenchmark() {
     const name = document.getElementById('newBenchmark').value.trim();
     if (!name) {
-        alert('Please enter Benchmark name');
+        alertError('Please enter Benchmark name');
         return;
     }
     if (data[name]) {
-        alert('Benchmark already exists');
+        alertError('Benchmark already exists');
         return;
     }
 
@@ -295,14 +295,14 @@ async function addVendor() {
     const benchmark = document.getElementById('benchmarkSelect').value;
     const name = document.getElementById('newVendor').value.trim();
     if (!name) {
-        alert('Please enter Arch name');
+        alertError('Please enter Arch name');
         return;
     }
     if (!data[benchmark]) {
         data[benchmark] = {};
     }
     if (data[benchmark][name]) {
-        alert('Arch already exists');
+        alertError('Arch already exists');
         return;
     }
 
@@ -326,14 +326,14 @@ async function addConfiguration() {
     const vendor = document.getElementById('vendorSelect').value;
     const name = document.getElementById('newConfiguration').value.trim();
     if (!name) {
-        alert('Please enter Configuration name');
+        alertError('Please enter Configuration name');
         return;
     }
     if (!data[benchmark][vendor]) {
         data[benchmark][vendor] = {};
     }
     if (data[benchmark][vendor][name]) {
-        alert('Configuration already exists');
+        alertError('Configuration already exists');
         return;
     }
 
@@ -356,7 +356,7 @@ async function deleteBenchmark() {
     const benchmark = document.getElementById('benchmarkSelect').value;
     if (!benchmark) return;
 
-    if (!confirm(`Delete Benchmark "${benchmark}"? All related data will be deleted.`)) {
+    if (!await confirmDanger('Delete', `Delete Benchmark "${benchmark}"? All related data will be deleted.`)) {
         return;
     }
 
@@ -376,7 +376,7 @@ async function deleteVendor() {
     const vendor = document.getElementById('vendorSelect').value;
     if (!benchmark || !vendor) return;
 
-    if (!confirm(`Delete Arch "${vendor}"? All related data will be deleted.`)) {
+    if (!await confirmDanger('Delete', `Delete Arch "${vendor}"? All related data will be deleted.`)) {
         return;
     }
 
@@ -404,7 +404,7 @@ async function deleteConfiguration() {
     const configuration = document.getElementById('configurationSelect').value;
     if (!benchmark || !vendor || !configuration) return;
 
-    if (!confirm(`Delete Configuration "${configuration}"? All related data will be deleted.`)) {
+    if (!await confirmDanger('Delete', `Delete Configuration "${configuration}"? All related data will be deleted.`)) {
         return;
     }
 
@@ -440,7 +440,7 @@ async function saveRecord() {
     const duration = parseFloat(document.getElementById('recordDuration').value) || 0;
 
     if (!date) {
-        alert('Please select a date');
+        alertError('Please select a date');
         return;
     }
 
@@ -546,16 +546,12 @@ function renderExtraFields() {
 }
 
 async function addExtraField() {
-    const name = prompt('Enter field name (e.g., Power(W)):');
+    const name = await promptField();
     if (!name) return;
 
-    let type = prompt('Enter field type (1: Integer, 2: Float, 3: String):', '2');
-    if (!type) return;
-    type = parseInt(type);
-    if (![1, 2, 3].includes(type)) {
-        alert('Invalid field type');
-        return;
-    }
+    const typeVal = await promptFieldType();
+    if (!typeVal) return;
+    const type = parseInt(typeVal);
 
     const id = Date.now();
     const typeMap = { 1: 'int', 2: 'float', 3: 'string' };
@@ -587,7 +583,7 @@ async function updateExtraFieldName(id, newName) {
 }
 
 async function removeExtraField(id) {
-    if (!confirm('Delete this field?')) return;
+    if (!await confirmDanger('Delete', 'Delete this field?')) return;
 
     extraFields = extraFields.filter(f => f.id !== id);
     await saveExtraFieldsForVendor(currentBenchmark, currentVendor, extraFields);
@@ -845,7 +841,7 @@ async function deleteRecord(index) {
     const vendor = document.getElementById('vendorSelect').value;
     const configuration = document.getElementById('configurationSelect').value;
 
-    if (!confirm('Delete this record?')) {
+    if (!await confirmDanger('Delete', 'Delete this record?')) {
         return;
     }
 
@@ -1022,11 +1018,11 @@ function applyCustomPageSize() {
     const input = document.getElementById('customPageSizeInput');
     const value = parseInt(input.value);
     if (!value || value < 1) {
-        alert('Please enter a valid number (>= 1)');
+        alertError('Please enter a valid number (>= 1)');
         return;
     }
     if (value > 500) {
-        alert('Maximum 500 rows per page');
+        alertError('Maximum 500 rows per page');
         return;
     }
     pagination.pageSize = value;
@@ -1040,7 +1036,7 @@ function applyPageJump() {
     const input = document.getElementById('pageJumpInput');
     const value = parseInt(input.value);
     if (!value || value < 1) {
-        alert('Please enter a valid page number');
+        alertError('Please enter a valid page number');
         return;
     }
     const benchmark = document.getElementById('benchmarkSelect').value;
@@ -1053,7 +1049,7 @@ function applyPageJump() {
     }
     const totalPages = Math.max(1, Math.ceil(filteredCount / pagination.pageSize));
     if (value > totalPages) {
-        alert(`Page number exceeds maximum (${totalPages})`);
+        alertError(`Page number exceeds maximum (${totalPages})`);
         return;
     }
     pagination.currentPage = value;
@@ -1211,12 +1207,12 @@ async function loadExternalXlsx() {
     const configuration = document.getElementById('configurationSelect').value;
 
     if (!benchmark || !vendor || !configuration) {
-        alert('Please select Benchmark, Arch and Configuration first');
+        alertError('Please select Benchmark, Arch and Configuration first');
         return;
     }
 
     if (!window.showDirectoryPicker) {
-        alert('Your browser does not support the File System Access API. Please use a modern browser (Chrome, Edge).');
+        alertError('Your browser does not support the File System Access API. Please use a modern browser (Chrome, Edge).');
         return;
     }
 
@@ -1246,7 +1242,7 @@ async function loadExternalXlsx() {
         }
 
         if (xlsxFiles.length === 0) {
-            alert('No .xlsx files found in the selected folder');
+            alertInfo('No .xlsx files found in the selected folder');
             return;
         }
 
@@ -1296,7 +1292,7 @@ async function loadExternalXlsx() {
             let msg = 'No new records to import.';
             if (noSummaryData > 0) msg += `\n${noSummaryData} file(s) had no "Summary Data" sheet.`;
             if (duplicatesSkipped > 0) msg += `\n${duplicatesSkipped} duplicate(s) skipped.`;
-            alert(msg);
+            alertInfo(msg);
             return;
         }
 
@@ -1363,10 +1359,10 @@ async function loadExternalXlsx() {
         let msg = `Successfully imported ${parsedResults.length} record(s).`;
         if (duplicatesSkipped > 0) msg += `\n${duplicatesSkipped} duplicate(s) skipped.`;
         if (noSummaryData > 0) msg += `\n${noSummaryData} file(s) had no "Summary Data" sheet.`;
-        alert(msg);
+        alertOk(msg);
     } catch (error) {
         console.error('XLSX loading error:', error);
-        alert('Failed to load XLSX files: ' + error.message);
+        alertError('Failed to load XLSX files: ' + error.message);
     } finally {
         btn.classList.remove('loading');
         btn.textContent = 'Load External XLSX';
@@ -1414,7 +1410,7 @@ async function enterOpCompareFullscreen() {
     const rightData = await getOperatorsDataForRecord(benchmark, vendor, configuration, right.date, right.index);
 
     if (!leftData || !rightData) {
-        alert('Failed to load operators data for comparison');
+        alertError('Failed to load operators data for comparison');
         clearOpCompareSelection();
         return;
     }
