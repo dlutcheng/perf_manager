@@ -304,7 +304,7 @@ header h1 {
     font-weight: 700;
     letter-spacing: -0.02em;
     position: relative;
-    animation: titleFadeIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) backwards;
+    animation: titleFadeIn 0.5s var(--ease-3) backwards;
 }
 
 @keyframes titleFadeIn {
@@ -337,7 +337,7 @@ header h1::after {
     border-radius: var(--border-radius-large);
     box-shadow: var(--box-shadow-light);
     border: 1px solid var(--color-border-lighter);
-    animation: navFadeIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) 0.15s backwards;
+    animation: navFadeIn 0.5s var(--ease-3) 0.15s backwards;
 }
 
 @keyframes navFadeIn {
@@ -357,7 +357,7 @@ header h1::after {
     color: var(--color-text-secondary);
     font-weight: 500;
     font-size: 14px;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.3s var(--ease-3);
     border: none;
     background: transparent;
     position: relative;
@@ -400,11 +400,11 @@ main {
     text-align: center;
     text-decoration: none;
     box-shadow: var(--box-shadow-base);
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.4s var(--ease-3);
     border: 1px solid var(--color-border-lighter);
     position: relative;
     overflow: hidden;
-    animation: cardSlideUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) backwards;
+    animation: cardSlideUp 0.6s var(--ease-3) backwards;
 }
 
 .home-card:nth-child(1) { animation-delay: 0.1s; }
@@ -454,7 +454,7 @@ main {
 
 .card-icon svg,
 .card-icon img {
-    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: transform 0.4s var(--ease-3);
 }
 
 .home-card:hover .card-icon svg,
@@ -524,7 +524,7 @@ main {
     font-size: 13px;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.25s var(--ease-3);
     font-family: 'Outfit', sans-serif;
     white-space: nowrap;
 }
@@ -582,7 +582,7 @@ main {
     font-size: 13px !important;
     font-weight: 500 !important;
     cursor: pointer !important;
-    transition: all 0.25s ease !important;
+    transition: all 0.25s var(--ease-2) !important;
     font-family: 'Outfit', sans-serif !important;
     width: auto !important;
 }
@@ -827,7 +827,7 @@ button {
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.3s var(--ease-3);
     font-family: 'Outfit', sans-serif;
     letter-spacing: 0.01em;
 }
@@ -917,7 +917,7 @@ button.add-field-btn:hover:not(:disabled) {
     border-radius: var(--border-radius-large);
     padding: 24px;
     box-shadow: var(--box-shadow-base);
-    transition: opacity 0.3s ease, transform 0.3s ease;
+    transition: opacity 0.3s var(--ease-2), transform 0.3s var(--ease-2);
     border: 1px solid var(--color-border-lighter);
 }
 
@@ -1052,7 +1052,7 @@ button.add-field-btn:hover:not(:disabled) {
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.3s var(--ease-3);
     width: 100%;
 }
 
@@ -1318,7 +1318,7 @@ button[type="button"]:disabled {
     border: 1px solid var(--color-border-lighter) !important;
     font-weight: 500 !important;
     font-family: 'JetBrains Mono', monospace !important;
-    transition: all 0.2s ease !important;
+    transition: all 0.2s var(--ease-2) !important;
 }
 
 .page-size-btn:hover:not(:disabled):not(.active) {
@@ -1399,7 +1399,7 @@ button[type="button"]:disabled {
     border: 1px solid var(--color-border-lighter) !important;
     font-weight: 500 !important;
     font-family: 'JetBrains Mono', monospace !important;
-    transition: all 0.2s ease !important;
+    transition: all 0.2s var(--ease-2) !important;
     text-align: center !important;
 }
 
@@ -1502,7 +1502,7 @@ button.edit-btn, button.delete-btn {
     font-size: 13px;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.3s var(--ease-3);
     width: auto;
     min-width: 70px;
     text-align: center;
@@ -1573,7 +1573,7 @@ button.delete-btn:disabled {
 
 .chart-fullscreen.visible {
     display: flex;
-    animation: chartFadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    animation: chartFadeIn 0.4s var(--ease-3) forwards;
 }
 
 @keyframes chartFadeIn {
@@ -1802,7 +1802,7 @@ table tr:hover td {
 }
 
 table tbody tr {
-    transition: background 0.2s ease, transform 0.15s ease;
+    transition: background 0.2s var(--ease-2), transform 0.15s var(--ease-2);
 }
 
 table tbody tr:hover {
@@ -1844,11 +1844,11 @@ button.edit-btn:active:not(:disabled), button.delete-btn:active:not(:disabled) {
 
 button:active:not(:disabled) {
     transform: scale(0.96);
-    transition: transform 0.1s ease;
+    transition: transform 0.1s var(--ease-2);
 }
 
 .benchmark-stat-item {
-    transition: all 0.25s ease;
+    transition: all 0.25s var(--ease-2);
 }
 
 .benchmark-stat-item:hover {
@@ -1858,7 +1858,7 @@ button:active:not(:disabled) {
 }
 
 .btn-pulse {
-    animation: drawPulse 0.6s ease-out;
+    animation: drawPulse 0.6s var(--ease-out-2);
 }
 
 @keyframes drawPulse {
@@ -1874,7 +1874,7 @@ button:active:not(:disabled) {
 }
 
 .btn-flash {
-    animation: successFlash 0.5s ease-out;
+    animation: successFlash 0.5s var(--ease-out-2);
 }
 
 @keyframes successFlash {
@@ -2040,7 +2040,7 @@ button:active:not(:disabled) {
     width: 100%;
     height: 100%;
     background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
-    transition: left 0.5s ease;
+    transition: left 0.5s var(--ease-2);
 }
 
 .xlsx-load-btn:hover:not(:disabled)::before {
@@ -2063,7 +2063,7 @@ button:active:not(:disabled) {
 
 .xlsx-load-btn:active:not(:disabled) {
     transform: scale(0.96);
-    transition: transform 0.1s ease;
+    transition: transform 0.1s var(--ease-2);
 }
 
 .xlsx-load-btn.loading {
@@ -2108,7 +2108,7 @@ button:active:not(:disabled) {
     height: 100%;
     background: linear-gradient(90deg, #0ea5e9, #38bdf8);
     border-radius: 2px;
-    transition: width 0.3s ease;
+    transition: width 0.3s var(--ease-2);
     width: 0%;
 }
 
@@ -2152,7 +2152,7 @@ button:active:not(:disabled) {
     width: 100%;
     height: 100%;
     background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
-    transition: left 0.5s ease;
+    transition: left 0.5s var(--ease-2);
 }
 
 .op-draw-btn:hover:not(:disabled)::before {
@@ -2175,5 +2175,5 @@ button:active:not(:disabled) {
 
 .op-draw-btn:active:not(:disabled) {
     transform: scale(0.96);
-    transition: transform 0.1s ease;
+    transition: transform 0.1s var(--ease-2);
 }
