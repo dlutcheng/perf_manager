@@ -16,6 +16,7 @@ let pagination = {
     customPageSize: ''
 };
 let currentPanel = 'operations';
+let choices = {};
 
 let opCompareState = {
     leftData: null,
@@ -36,6 +37,22 @@ document.addEventListener('DOMContentLoaded', async () => {
     initApp();
 });
 
+window.addEventListener('benchmarkDataImported', async () => {
+    await loadData();
+    rebuildAllChoices();
+});
+
+window.addEventListener('benchmarkDataChanged', async () => {
+    await loadData();
+    rebuildAllChoices();
+});
+
+async function rebuildAllChoices() {
+    populateBenchmarkSelects();
+    if (choices.vendor) { choices.vendor.disable(); choices.vendor.clearStore(); }
+    if (choices.configuration) { choices.configuration.disable(); choices.configuration.clearStore(); }
+}
+
 async function loadData() {
     try {
         data = await loadBenchmarkData() || {};
@@ -46,8 +63,17 @@ async function loadData() {
 
 function initApp() {
     setupEventListeners();
-    populateBenchmarkSelects();
     setupFormDirtyDetection();
+
+    const choiceOpts = { searchEnabled: true, searchPlaceholderValue: 'Search...',
+        shouldSort: false, itemSelectText: '', allowHTML: false };
+    choices.benchmark = new Choices(document.getElementById('benchmarkSelect'), { ...choiceOpts, placeholderValue: '-- Select Benchmark --' });
+    choices.vendor = new Choices(document.getElementById('vendorSelect'), { ...choiceOpts, placeholderValue: '-- Select Arch --' });
+    choices.configuration = new Choices(document.getElementById('configurationSelect'), { ...choiceOpts, placeholderValue: '-- Select Configuration --' });
+    choices.vendor.disable();
+    choices.configuration.disable();
+
+    populateBenchmarkSelects();
     document.getElementById('recordDate').value = new Date().toISOString().split('T')[0];
     initPanelFromUrl();
 }
@@ -70,24 +96,6 @@ async function saveData() {
         await dbSaveBenchmarkData(data);
     } catch (error) {
         alertError('Failed to save data');
-    }
-}
-
-function filterSelect(selectId, searchId) {
-    const select = document.getElementById(selectId);
-    const search = document.getElementById(searchId);
-    const filter = search.value.toLowerCase();
-
-    for (let i = 0; i < select.options.length; i++) {
-        const option = select.options[i];
-        const text = option.text.toLowerCase();
-        const value = option.value.toLowerCase();
-
-        if (text.includes(filter) || value.includes(filter)) {
-            option.style.display = '';
-        } else {
-            option.style.display = 'none';
-        }
     }
 }
 
@@ -145,33 +153,22 @@ function setupEventListeners() {
 }
 
 function populateBenchmarkSelects() {
-    const benchmarkSelect = document.getElementById('benchmarkSelect');
-    benchmarkSelect.innerHTML = '<option value="">-- Select Benchmark --</option>';
-    Object.keys(data).sort().forEach(benchmark => {
-        benchmarkSelect.innerHTML += `<option value="${benchmark}">${benchmark}</option>`;
-    });
+    const items = Object.keys(data).sort().map(b => ({ value: b, label: b }));
+    choices.benchmark.clearStore();
+    choices.benchmark.setChoices(items, 'value', 'label', true);
 }
 
 async function onBenchmarkChange() {
     const benchmark = document.getElementById('benchmarkSelect').value;
-    const vendorSelect = document.getElementById('vendorSelect');
-
     currentBenchmark = benchmark;
     currentVendor = '';
 
-    vendorSelect.innerHTML = '<option value="">-- Select Arch --</option>';
-    vendorSelect.disabled = !benchmark;
-
-    document.getElementById('vendorSearch').value = '';
-    document.getElementById('vendorSearch').disabled = !benchmark;
+    choices.vendor.clearStore();
+    choices.configuration.clearStore();
+    choices.configuration.disable();
+    if (benchmark) choices.vendor.enable(); else choices.vendor.disable();
 
     document.getElementById('newVendor').disabled = !benchmark;
-
-    document.getElementById('configurationSelect').innerHTML = '<option value="">-- Select Configuration --</option>';
-    document.getElementById('configurationSelect').disabled = true;
-
-    document.getElementById('configurationSearch').value = '';
-    document.getElementById('configurationSearch').disabled = true;
 
     document.getElementById('addVendorBtn').disabled = !benchmark;
     document.getElementById('deleteBenchmarkBtn').disabled = !benchmark;
@@ -185,9 +182,8 @@ async function onBenchmarkChange() {
     pagination.currentPage = 1;
 
     if (benchmark && data[benchmark]) {
-        Object.keys(data[benchmark]).sort().forEach(vendor => {
-            vendorSelect.innerHTML += `<option value="${vendor}">${vendor}</option>`;
-        });
+        const vendorItems = Object.keys(data[benchmark]).sort().map(v => ({ value: v, label: v }));
+        choices.vendor.setChoices(vendorItems, 'value', 'label', true);
     }
 
     extraFields = [];
@@ -202,15 +198,10 @@ async function onBenchmarkChange() {
 async function onVendorChange() {
     const benchmark = document.getElementById('benchmarkSelect').value;
     const vendor = document.getElementById('vendorSelect').value;
-    const configurationSelect = document.getElementById('configurationSelect');
-
     currentVendor = vendor;
 
-    configurationSelect.innerHTML = '<option value="">-- Select Configuration --</option>';
-    configurationSelect.disabled = !vendor;
-
-    document.getElementById('configurationSearch').value = '';
-    document.getElementById('configurationSearch').disabled = !vendor;
+    choices.configuration.clearStore();
+    if (vendor) choices.configuration.enable(); else choices.configuration.disable();
 
     document.getElementById('newConfiguration').disabled = !vendor;
 
@@ -224,9 +215,8 @@ async function onVendorChange() {
     pagination.currentPage = 1;
 
     if (benchmark && vendor && data[benchmark]?.[vendor]) {
-        Object.keys(data[benchmark][vendor]).sort().forEach(configuration => {
-            configurationSelect.innerHTML += `<option value="${configuration}">${configuration}</option>`;
-        });
+        const configItems = Object.keys(data[benchmark][vendor]).sort().map(c => ({ value: c, label: c }));
+        choices.configuration.setChoices(configItems, 'value', 'label', true);
     }
 
     extraFields = await getExtraFieldsForVendor(benchmark, vendor);
@@ -285,7 +275,7 @@ async function addBenchmark() {
     await saveData();
     populateBenchmarkSelects();
 
-    document.getElementById('benchmarkSelect').value = name;
+    choices.benchmark.setChoiceByValue(name);
     document.getElementById('newBenchmark').value = '';
     resetSubPanels();
     await onBenchmarkChange();
@@ -309,13 +299,9 @@ async function addVendor() {
     data[benchmark][name] = {};
     await saveData();
 
-    const vendorSelect = document.getElementById('vendorSelect');
-    vendorSelect.innerHTML = '<option value="">-- Select Arch --</option>';
-    Object.keys(data[benchmark]).sort().forEach(vendor => {
-        vendorSelect.innerHTML += `<option value="${vendor}">${vendor}</option>`;
-    });
-
-    vendorSelect.value = name;
+    const vItems = Object.keys(data[benchmark]).sort().map(v => ({ value: v, label: v }));
+    choices.vendor.setChoices(vItems, 'value', 'label', true);
+    choices.vendor.setChoiceByValue(name);
     document.getElementById('newVendor').value = '';
     resetSubPanels();
     await onVendorChange();
@@ -340,13 +326,9 @@ async function addConfiguration() {
     data[benchmark][vendor][name] = [];
     await saveData();
 
-    const configurationSelect = document.getElementById('configurationSelect');
-    configurationSelect.innerHTML = '<option value="">-- Select Configuration --</option>';
-    Object.keys(data[benchmark][vendor]).sort().forEach(configuration => {
-        configurationSelect.innerHTML += `<option value="${configuration}">${configuration}</option>`;
-    });
-
-    configurationSelect.value = name;
+    const cItems = Object.keys(data[benchmark][vendor]).sort().map(c => ({ value: c, label: c }));
+    choices.configuration.setChoices(cItems, 'value', 'label', true);
+    choices.configuration.setChoiceByValue(name);
     document.getElementById('newConfiguration').value = '';
     resetSubPanels();
     await onConfigurationChange();
@@ -387,12 +369,8 @@ async function deleteVendor() {
     await saveData();
     notifyDataChanged();
 
-    const vendorSelect = document.getElementById('vendorSelect');
-    vendorSelect.innerHTML = '<option value="">-- Select Arch --</option>';
-    Object.keys(data[benchmark]).sort().forEach(v => {
-        vendorSelect.innerHTML += `<option value="${v}">${v}</option>`;
-    });
-    vendorSelect.value = '';
+    const vItems = Object.keys(data[benchmark]).sort().map(v => ({ value: v, label: v }));
+    choices.vendor.setChoices(vItems, 'value', 'label', true);
 
     resetSubPanels();
     await onVendorChange();
@@ -413,12 +391,8 @@ async function deleteConfiguration() {
     await saveData();
     notifyDataChanged();
 
-    const configurationSelect = document.getElementById('configurationSelect');
-    configurationSelect.innerHTML = '<option value="">-- Select Configuration --</option>';
-    Object.keys(data[benchmark][vendor]).sort().forEach(p => {
-        configurationSelect.innerHTML += `<option value="${p}">${p}</option>`;
-    });
-    configurationSelect.value = '';
+    const cfgItems = Object.keys(data[benchmark][vendor]).sort().map(p => ({ value: p, label: p }));
+    choices.configuration.setChoices(cfgItems, 'value', 'label', true);
 
     resetSubPanels();
     await onConfigurationChange();

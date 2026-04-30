@@ -4,6 +4,7 @@ let allExtraFieldsCache = {};
 let chartMode = 'normal';
 let currentPanel = 'trends';
 let opChartMode = 'single';
+let chartChoices = {};
 
 let chartState = {
     datasets: [],
@@ -39,9 +40,25 @@ document.addEventListener('DOMContentLoaded', async () => {
     await refreshDataAndFields();
     setupEventListeners();
     setupOperatorsEventListeners();
+
+    const chOpts = { searchEnabled: true, searchPlaceholderValue: 'Search...',
+        shouldSort: false, itemSelectText: '', allowHTML: false };
+    chartChoices.benchmark = new Choices(document.getElementById('chartBenchmarkSelect'), { ...chOpts, placeholderValue: '-- Select Benchmark --' });
+    chartChoices.opBenchmark = new Choices(document.getElementById('opBenchmarkSelect'), { ...chOpts, placeholderValue: '-- Select Benchmark --' });
+    chartChoices.opVendor = new Choices(document.getElementById('opVendorSelect'), { ...chOpts, placeholderValue: '-- Select Arch --' });
+    chartChoices.opConfig = new Choices(document.getElementById('opConfigSelect'), { ...chOpts, placeholderValue: '-- Select Configuration --' });
+    chartChoices.yAxis = new Choices(document.getElementById('yAxisSelect'), { ...chOpts, placeholderValue: 'Duration (ms)' });
+    chartChoices.opDateLeft = new Choices(document.getElementById('opDateLeft'), { ...chOpts, placeholderValue: '-- Select Date --' });
+    chartChoices.opDateRight = new Choices(document.getElementById('opDateRight'), { ...chOpts, placeholderValue: '-- Select Date --' });
+    chartChoices.opVendor.disable();
+    chartChoices.opConfig.disable();
+    chartChoices.opDateLeft.disable();
+    chartChoices.opDateRight.disable();
+
     populateBenchmarkSelect();
     populateYAxisSelect();
     populateOpBenchmarkSelect();
+
     initPanelFromUrl();
 });
 
@@ -119,16 +136,28 @@ function getExtraFieldsIntersectionForVendors(benchmark, vendors) {
 }
 
 function populateYAxisSelect() {
-    const yAxisSelect = document.getElementById('yAxisSelect');
-    yAxisSelect.innerHTML = `
-        <option value="duration">Duration (ms)</option>
-    `;
+    const items = [{ value: 'duration', label: 'Duration (ms)' }];
+    if (chartChoices.yAxis) {
+        chartChoices.yAxis.clearStore();
+        chartChoices.yAxis.setChoices(items, 'value', 'label', true);
+    } else {
+        const yAxisSelect = document.getElementById('yAxisSelect');
+        yAxisSelect.innerHTML = '<option value="duration">Duration (ms)</option>';
+        extraFields.forEach(field => {
+            const fieldType = field.type || 'float';
+            if (fieldType !== 'string') {
+                yAxisSelect.innerHTML += `<option value="extra_${field.id}">${field.name}</option>`;
+            }
+        });
+        return;
+    }
     extraFields.forEach(field => {
         const fieldType = field.type || 'float';
         if (fieldType !== 'string') {
-            yAxisSelect.innerHTML += `<option value="extra_${field.id}">${field.name}</option>`;
+            items.push({ value: 'extra_' + field.id, label: field.name });
         }
     });
+    chartChoices.yAxis.setChoices(items, 'value', 'label', true);
 }
 
 window.updateChartYAxisOptions = async function(benchmark, vendor) {
@@ -170,12 +199,9 @@ function setupEventListeners() {
 }
 
 function populateBenchmarkSelect() {
-    const chartBenchmarkSelect = document.getElementById('chartBenchmarkSelect');
-    chartBenchmarkSelect.innerHTML = '<option value="">-- Select Benchmark --</option>';
-
-    Object.keys(data).sort().forEach(benchmark => {
-        chartBenchmarkSelect.innerHTML += `<option value="${benchmark}">${benchmark}</option>`;
-    });
+    const items = Object.keys(data).sort().map(b => ({ value: b, label: b }));
+    chartChoices.benchmark.clearStore();
+    chartChoices.benchmark.setChoices(items, 'value', 'label', true);
 }
 
 function toggleVendor(vendorId) {
@@ -992,56 +1018,45 @@ window.setOpMode = function(mode) {
 };
 
 function populateOpBenchmarkSelect() {
-    const select = document.getElementById('opBenchmarkSelect');
-    select.innerHTML = '<option value="">-- Select Benchmark --</option>';
-    Object.keys(data).sort().forEach(benchmark => {
-        select.innerHTML += `<option value="${benchmark}">${benchmark}</option>`;
-    });
+    const items = Object.keys(data).sort().map(b => ({ value: b, label: b }));
+    chartChoices.opBenchmark.clearStore();
+    chartChoices.opBenchmark.setChoices(items, 'value', 'label', true);
 }
 
 async function onOpBenchmarkChange() {
     const benchmark = document.getElementById('opBenchmarkSelect').value;
-    const vendorSelect = document.getElementById('opVendorSelect');
-    const configSelect = document.getElementById('opConfigSelect');
-    const dateLeftSelect = document.getElementById('opDateLeft');
-    const dateRightSelect = document.getElementById('opDateRight');
 
-    vendorSelect.innerHTML = '<option value="">-- Select Arch --</option>';
-    vendorSelect.disabled = !benchmark;
-    configSelect.innerHTML = '<option value="">-- Select Configuration --</option>';
-    configSelect.disabled = true;
-    dateLeftSelect.innerHTML = '<option value="">-- Select Date --</option>';
-    dateLeftSelect.disabled = true;
-    dateRightSelect.innerHTML = '<option value="">-- Select Date --</option>';
-    dateRightSelect.disabled = true;
+    chartChoices.opVendor.clearStore();
+    chartChoices.opConfig.clearStore();
+    chartChoices.opConfig.disable();
+    chartChoices.opDateLeft.clearStore();
+    chartChoices.opDateLeft.disable();
+    chartChoices.opDateRight.clearStore();
+    chartChoices.opDateRight.disable();
+    if (benchmark) chartChoices.opVendor.enable(); else chartChoices.opVendor.disable();
     document.getElementById('opDrawBtn').disabled = true;
 
     if (benchmark && data[benchmark]) {
-        Object.keys(data[benchmark]).sort().forEach(vendor => {
-            vendorSelect.innerHTML += `<option value="${vendor}">${vendor}</option>`;
-        });
+        const vItems = Object.keys(data[benchmark]).sort().map(v => ({ value: v, label: v }));
+        chartChoices.opVendor.setChoices(vItems, 'value', 'label', true);
     }
 }
 
 async function onOpVendorChange() {
     const benchmark = document.getElementById('opBenchmarkSelect').value;
     const vendor = document.getElementById('opVendorSelect').value;
-    const configSelect = document.getElementById('opConfigSelect');
-    const dateLeftSelect = document.getElementById('opDateLeft');
-    const dateRightSelect = document.getElementById('opDateRight');
 
-    configSelect.innerHTML = '<option value="">-- Select Configuration --</option>';
-    configSelect.disabled = !vendor;
-    dateLeftSelect.innerHTML = '<option value="">-- Select Date --</option>';
-    dateLeftSelect.disabled = true;
-    dateRightSelect.innerHTML = '<option value="">-- Select Date --</option>';
-    dateRightSelect.disabled = true;
+    chartChoices.opConfig.clearStore();
+    if (vendor) chartChoices.opConfig.enable(); else chartChoices.opConfig.disable();
+    chartChoices.opDateLeft.clearStore();
+    chartChoices.opDateLeft.disable();
+    chartChoices.opDateRight.clearStore();
+    chartChoices.opDateRight.disable();
     document.getElementById('opDrawBtn').disabled = true;
 
     if (benchmark && vendor && data[benchmark]?.[vendor]) {
-        Object.keys(data[benchmark][vendor]).sort().forEach(config => {
-            configSelect.innerHTML += `<option value="${config}">${config}</option>`;
-        });
+        const cItems = Object.keys(data[benchmark][vendor]).sort().map(c => ({ value: c, label: c }));
+        chartChoices.opConfig.setChoices(cItems, 'value', 'label', true);
     }
 }
 
@@ -1049,32 +1064,30 @@ async function onOpConfigChange() {
     const benchmark = document.getElementById('opBenchmarkSelect').value;
     const vendor = document.getElementById('opVendorSelect').value;
     const configuration = document.getElementById('opConfigSelect').value;
-    const dateLeftSelect = document.getElementById('opDateLeft');
-    const dateRightSelect = document.getElementById('opDateRight');
 
-    dateLeftSelect.innerHTML = '<option value="">-- Select Date --</option>';
-    dateRightSelect.innerHTML = '<option value="">-- Select Date --</option>';
+    chartChoices.opDateLeft.clearStore();
+    chartChoices.opDateRight.clearStore();
     document.getElementById('opDrawBtn').disabled = true;
 
     if (!benchmark || !vendor || !configuration) {
-        dateLeftSelect.disabled = true;
-        dateRightSelect.disabled = true;
+        chartChoices.opDateLeft.disable();
+        chartChoices.opDateRight.disable();
         return;
     }
 
     const dateEntries = await getOperatorsDatesForConfig(benchmark, vendor, configuration);
 
-    dateLeftSelect.disabled = dateEntries.length === 0;
-    dateRightSelect.disabled = dateEntries.length === 0;
+    if (dateEntries.length === 0) {
+        chartChoices.opDateLeft.disable();
+        chartChoices.opDateRight.disable();
+        return;
+    }
+    chartChoices.opDateLeft.enable();
+    chartChoices.opDateRight.enable();
 
-    dateLeftSelect.innerHTML = '<option value="">-- Select Date --</option>';
-    dateRightSelect.innerHTML = '<option value="">-- Select Date --</option>';
-
-    dateEntries.forEach(entry => {
-        const val = `${entry.date}|${entry.index}`;
-        dateLeftSelect.innerHTML += `<option value="${val}">${entry.label}</option>`;
-        dateRightSelect.innerHTML += `<option value="${val}">${entry.label}</option>`;
-    });
+    const dateItems = dateEntries.map(entry => ({ value: entry.date + '|' + entry.index, label: entry.label }));
+    chartChoices.opDateLeft.setChoices(dateItems, 'value', 'label', true);
+    chartChoices.opDateRight.setChoices(dateItems, 'value', 'label', true);
 }
 
 async function onOpDateChange() {
