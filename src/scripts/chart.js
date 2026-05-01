@@ -57,8 +57,9 @@ window.renderOpChart = function(allOperators, leftOps, rightOps, dateLeft, dateR
         return;
     }
 
+    const isSingleMode = stateObj.isSingleMode;
     const maxPairCount = stateObj.maxPairCount || 1;
-    const totalBarSlots = 2 * maxPairCount;
+    const totalBarSlots = isSingleMode ? maxPairCount : 2 * maxPairCount;
 
     let maxTime = 0;
     for (const op of allOperators) {
@@ -129,7 +130,7 @@ window.renderOpChart = function(allOperators, leftOps, rightOps, dateLeft, dateR
     const rightTimeColor = '#f87171';
 
     const leftBlockWidth = maxPairCount * singleBarWidth + (maxPairCount - 1) * intraGap;
-    const interGroupGap = Math.min(singleBarWidth * 0.5, 6);
+    const interGroupGap = isSingleMode ? 0 : Math.min(singleBarWidth * 0.5, 6);
 
     for (let i = 0; i < visibleCount; i++) {
         const op = allOperators[i];
@@ -138,7 +139,9 @@ window.renderOpChart = function(allOperators, leftOps, rightOps, dateLeft, dateR
         const rightOp = rightOps.get(op);
         const baseY = padding.top + chartHeight;
 
-        const leftBlockStart = cx - leftBlockWidth - interGroupGap / 2;
+        const leftBlockStart = isSingleMode
+            ? cx - leftBlockWidth / 2
+            : cx - leftBlockWidth - interGroupGap / 2;
         for (let p = 0; p < maxPairCount; p++) {
             const timeVal = leftOp?.pairs?.[p]?.time;
             if (timeVal == null) continue;
@@ -155,29 +158,33 @@ window.renderOpChart = function(allOperators, leftOps, rightOps, dateLeft, dateR
             ctx.fill();
         }
 
-        const rightBlockStart = cx + interGroupGap / 2;
-        for (let p = 0; p < maxPairCount; p++) {
-            const timeVal = rightOp?.pairs?.[p]?.time;
-            if (timeVal == null) continue;
-            const animVal = timeVal * animProgress;
-            const barY = yTimePosition(animVal);
-            const barX = rightBlockStart + p * (singleBarWidth + intraGap);
+        if (!isSingleMode) {
+            const rightBlockStart = cx + interGroupGap / 2;
+            for (let p = 0; p < maxPairCount; p++) {
+                const timeVal = rightOp?.pairs?.[p]?.time;
+                if (timeVal == null) continue;
+                const animVal = timeVal * animProgress;
+                const barY = yTimePosition(animVal);
+                const barX = rightBlockStart + p * (singleBarWidth + intraGap);
 
-            const grad = ctx.createLinearGradient(0, barY, 0, baseY);
-            grad.addColorStop(0, rightTimeColor);
-            grad.addColorStop(1, 'rgba(248, 113, 113, 0.4)');
-            ctx.fillStyle = grad;
-            ctx.beginPath();
-            ctx.roundRect(barX, barY, singleBarWidth, baseY - barY, [2, 2, 0, 0]);
-            ctx.fill();
+                const grad = ctx.createLinearGradient(0, barY, 0, baseY);
+                grad.addColorStop(0, rightTimeColor);
+                grad.addColorStop(1, 'rgba(248, 113, 113, 0.4)');
+                ctx.fillStyle = grad;
+                ctx.beginPath();
+                ctx.roundRect(barX, barY, singleBarWidth, baseY - barY, [2, 2, 0, 0]);
+                ctx.fill();
+            }
         }
     }
 
     const legendY = padding.top - 30;
-    const legendItems = [
-        { label: `${dateLeft}`, color: leftTimeColor },
-        { label: `${dateRight}`, color: rightTimeColor }
-    ];
+    const legendItems = isSingleMode
+        ? [{ label: `${dateLeft}`, color: leftTimeColor }]
+        : [
+            { label: `${dateLeft}`, color: leftTimeColor },
+            { label: `${dateRight}`, color: rightTimeColor }
+        ];
 
     let legendX = padding.left;
     ctx.font = '12px "Outfit", sans-serif';
@@ -195,325 +202,6 @@ window.renderOpChart = function(allOperators, leftOps, rightOps, dateLeft, dateR
         ctx.fillText(item.label, legendX + 20, legendY + 12);
         legendX += itemWidth;
     });
-};
-
-function getPieColor(index, total) {
-    const hue = (index * 360 / total) % 360;
-    return `hsl(${hue}, 40%, 60%)`;
-}
-
-function getPieColorDark(index, total) {
-    const hue = (index * 360 / total) % 360;
-    return `hsl(${hue}, 45%, 45%)`;
-}
-
-window.animateSingleOpChart = function(allOperators, singleOps, label, canvasId, stateObj) {
-    if (!stateObj) stateObj = {};
-    if (stateObj.animationId) {
-        cancelAnimationFrame(stateObj.animationId);
-        stateObj.animationId = null;
-    }
-
-    const duration = 1000;
-    const startTime = performance.now();
-
-    function frame(now) {
-        const elapsed = now - startTime;
-        const progress = Math.min(elapsed / duration, 1);
-        const eased = 1 - Math.pow(1 - progress, 3);
-
-        window.renderSingleOpChart(allOperators, singleOps, label, eased, canvasId, stateObj);
-
-        if (progress < 1) {
-            stateObj.animationId = requestAnimationFrame(frame);
-        } else {
-            stateObj.animationId = null;
-        }
-    }
-
-    stateObj.animationId = requestAnimationFrame(frame);
-};
-
-window.renderSingleOpChart = function(allOperators, singleOps, label, animProgress, canvasId, stateObj) {
-    if (animProgress === undefined) animProgress = 1;
-    if (!canvasId) canvasId = 'opCompareCanvas';
-    if (!stateObj) stateObj = {};
-
-    const canvas = document.getElementById(canvasId);
-    const ctx = canvas.getContext('2d');
-
-    const container = canvas.parentElement;
-    const rect = container.getBoundingClientRect();
-    const padding = { top: 60, right: 120, bottom: 100, left: 120 };
-
-    canvas.width = rect.width - 40 || window.innerWidth - 40;
-    canvas.height = rect.height - 40 || window.innerHeight - 90;
-
-    const chartWidth = canvas.width - padding.left - padding.right;
-    const chartHeight = canvas.height - padding.top - padding.bottom;
-
-    stateObj.padding = padding;
-    stateObj.chartWidth = chartWidth;
-    stateObj.chartHeight = chartHeight;
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    if (allOperators.length === 0) {
-        ctx.font = '15px "Outfit", sans-serif';
-        ctx.fillStyle = '#64748b';
-        ctx.textAlign = 'center';
-        ctx.fillText('No Operators Data', canvas.width / 2, canvas.height / 2);
-        return;
-    }
-
-    const maxPairCount = stateObj.maxPairCount || 1;
-
-    const pieData = [];
-    for (let p = 0; p < maxPairCount; p++) {
-        const segments = [];
-        let totalTime = 0;
-        for (const op of allOperators) {
-            const opData = singleOps.get(op);
-            const pair = opData?.pairs?.[p];
-            if (pair && pair.time != null) {
-                totalTime += pair.time;
-            }
-        }
-        if (totalTime === 0) totalTime = 1;
-
-        for (let i = 0; i < allOperators.length; i++) {
-            const op = allOperators[i];
-            const opData = singleOps.get(op);
-            const pair = opData?.pairs?.[p];
-            if (pair && pair.time != null) {
-                segments.push({
-                    operator: op,
-                    time: pair.time,
-                    ratio: pair.ratio,
-                    index: i,
-                    fraction: pair.time / totalTime
-                });
-            }
-        }
-        if (segments.length > 0) {
-            pieData.push({ pairIndex: p, segments, totalTime });
-        }
-    }
-
-    if (pieData.length === 0) {
-        ctx.font = '15px "Outfit", sans-serif';
-        ctx.fillStyle = '#64748b';
-        ctx.textAlign = 'center';
-        ctx.fillText('No Operators Data', canvas.width / 2, canvas.height / 2);
-        return;
-    }
-
-    ctx.font = '14px "Outfit", sans-serif';
-    ctx.fillStyle = '#cbd5e1';
-    ctx.textAlign = 'center';
-    ctx.fillText(`Operators - ${label}`, canvas.width / 2, 30);
-
-    const pieCount = pieData.length;
-    const availableWidth = chartWidth;
-    const pieSpacing = Math.min(availableWidth * 0.08, 60);
-    const totalSpacing = (pieCount - 1) * pieSpacing;
-    const pieDiameter = Math.min((availableWidth - totalSpacing) / pieCount, chartHeight * 0.55);
-    const pieRadius = pieDiameter / 2;
-
-    const totalPiesWidth = pieCount * pieDiameter + (pieCount - 1) * pieSpacing;
-    const startX = padding.left + (chartWidth - totalPiesWidth) / 2 + pieRadius;
-    const centerY = padding.top + chartHeight / 2;
-
-    const visiblePies = Math.max(1, Math.ceil(pieCount * animProgress));
-
-    for (let pIdx = 0; pIdx < visiblePies; pIdx++) {
-        const pie = pieData[pIdx];
-        const cx = startX + pIdx * (pieDiameter + pieSpacing);
-        const pieAnim = Math.min(1, animProgress * pieCount - pIdx);
-        const pieEased = pieAnim <= 0 ? 0 : 1 - Math.pow(1 - pieAnim, 3);
-
-        const maxTimeInPie = Math.max(...pie.segments.map(s => s.time), 1);
-        const minTimeInPie = Math.min(...pie.segments.map(s => s.time));
-        const timeRange = maxTimeInPie - minTimeInPie || 1;
-
-        let currentAngle = -Math.PI / 2;
-
-        for (let sIdx = 0; sIdx < pie.segments.length; sIdx++) {
-            const seg = pie.segments[sIdx];
-            const angleSize = seg.fraction * 2 * Math.PI;
-            const endAngle = currentAngle + angleSize * pieEased;
-
-            const radiusRatio = 0.3 + 0.7 * (seg.time - minTimeInPie) / timeRange;
-            const segRadius = pieRadius * radiusRatio * pieEased;
-
-            if (segRadius > 2) {
-                const color = getPieColor(seg.index, allOperators.length);
-                const colorDark = getPieColorDark(seg.index, allOperators.length);
-
-                ctx.beginPath();
-                ctx.moveTo(cx, centerY);
-                ctx.arc(cx, centerY, segRadius, currentAngle, endAngle);
-                ctx.closePath();
-
-                const grad = ctx.createRadialGradient(cx, centerY, 0, cx, centerY, segRadius);
-                grad.addColorStop(0, color);
-                grad.addColorStop(1, colorDark);
-                ctx.fillStyle = grad;
-                ctx.fill();
-
-                ctx.strokeStyle = 'rgba(15, 23, 42, 0.6)';
-                ctx.lineWidth = 1.5;
-                ctx.stroke();
-            }
-
-            currentAngle += angleSize;
-        }
-
-        if (pieEased > 0.5) {
-            const labelLineHeight = 44;
-            const labelRadius = pieRadius + 15;
-            const pieLeftBound = cx - pieRadius - 10;
-            const pieRightBound = cx + pieRadius + 10;
-
-            const rightLabels = [];
-            const leftLabels = [];
-
-            currentAngle = -Math.PI / 2;
-            for (let sIdx = 0; sIdx < pie.segments.length; sIdx++) {
-                const seg = pie.segments[sIdx];
-                const angleSize = seg.fraction * 2 * Math.PI;
-                const midAngle = currentAngle + angleSize / 2;
-
-                const radiusRatio = 0.3 + 0.7 * (seg.time - minTimeInPie) / timeRange;
-                const segRadius = pieRadius * radiusRatio * pieEased;
-
-                if (segRadius > 5) {
-                    const isRight = Math.cos(midAngle) >= 0;
-                    const labelInfo = {
-                        seg,
-                        midAngle,
-                        segRadius,
-                        color: getPieColor(seg.index, allOperators.length)
-                    };
-
-                    if (isRight) {
-                        rightLabels.push(labelInfo);
-                    } else {
-                        leftLabels.push(labelInfo);
-                    }
-                }
-
-                currentAngle += angleSize;
-            }
-
-            function distributeLabels(labels, isRightSide) {
-                if (labels.length === 0) return;
-
-                labels.sort((a, b) => Math.sin(a.midAngle) - Math.sin(b.midAngle));
-
-                const positions = [];
-                for (let i = 0; i < labels.length; i++) {
-                    const idealY = centerY + Math.sin(labels[i].midAngle) * (pieRadius + 60);
-                    let targetY = Math.max(
-                        centerY - pieRadius - 50,
-                        Math.min(centerY + pieRadius + 50, idealY)
-                    );
-                    positions.push({ ...labels[i], targetY });
-                }
-
-                positions.sort((a, b) => a.targetY - b.targetY);
-                for (let i = 1; i < positions.length; i++) {
-                    if (positions[i].targetY - positions[i - 1].targetY < labelLineHeight) {
-                        positions[i].targetY = positions[i - 1].targetY + labelLineHeight;
-                    }
-                }
-                for (let i = positions.length - 2; i >= 0; i--) {
-                    if (positions[i + 1].targetY - positions[i].targetY < labelLineHeight) {
-                        positions[i].targetY = positions[i + 1].targetY - labelLineHeight;
-                    }
-                }
-                for (let i = 0; i < positions.length; i++) {
-                    positions[i].targetY = Math.max(
-                        centerY - pieRadius - 60,
-                        Math.min(centerY + pieRadius + 60, positions[i].targetY)
-                    );
-                }
-
-                const labelX = isRightSide
-                    ? Math.min(pieRightBound + 20, canvas.width - 10)
-                    : Math.max(pieLeftBound - 20, 10);
-
-                for (const info of positions) {
-                    const edgeX = cx + Math.cos(info.midAngle) * labelRadius;
-                    const edgeY = centerY + Math.sin(info.midAngle) * labelRadius;
-
-                    ctx.strokeStyle = info.color;
-                    ctx.lineWidth = 1.2;
-                    ctx.beginPath();
-                    ctx.moveTo(
-                        cx + Math.cos(info.midAngle) * (info.segRadius + 2),
-                        centerY + Math.sin(info.midAngle) * (info.segRadius + 2)
-                    );
-                    ctx.lineTo(edgeX, edgeY);
-                    ctx.lineTo(labelX - (isRightSide ? 5 : -5), info.targetY);
-                    ctx.stroke();
-
-                    ctx.textAlign = isRightSide ? 'left' : 'right';
-                    ctx.textBaseline = 'middle';
-
-                    ctx.font = 'bold 13px "Outfit", sans-serif';
-                    ctx.fillStyle = '#f1f5f9';
-                    ctx.fillText(info.seg.operator, labelX, info.targetY - 9);
-
-                    ctx.font = '11px "JetBrains Mono", monospace';
-                    ctx.fillStyle = '#94a3b8';
-
-                    const nameW = 34;
-                    const valueW = 44;
-                    const totalW = nameW + 4 + valueW;
-
-                    let lineBaseX;
-                    if (isRightSide) {
-                        lineBaseX = labelX;
-                    } else {
-                        lineBaseX = labelX - totalW;
-                    }
-
-                    const nameX = lineBaseX;
-                    const colonX = lineBaseX + nameW + 2;
-                    const valueX = lineBaseX + nameW + 4;
-
-                    ctx.textAlign = 'left';
-                    ctx.fillText('time', nameX, info.targetY + 8);
-                    ctx.textAlign = 'center';
-                    ctx.fillText(':', colonX, info.targetY + 8);
-                    ctx.textAlign = 'right';
-                    ctx.fillText(info.seg.time.toFixed(2), valueX + valueW, info.targetY + 8);
-
-                    if (info.seg.ratio != null) {
-                        ctx.textAlign = 'left';
-                        ctx.fillText('ratio', nameX, info.targetY + 22);
-                        ctx.textAlign = 'center';
-                        ctx.fillText(':', colonX, info.targetY + 22);
-                        ctx.textAlign = 'right';
-                        ctx.fillText(`${(info.seg.ratio * 100).toFixed(1)}%`, valueX + valueW, info.targetY + 22);
-                    }
-                }
-            }
-
-            distributeLabels(rightLabels, true);
-            distributeLabels(leftLabels, false);
-        }
-
-        ctx.font = '14px "Outfit", sans-serif';
-        ctx.fillStyle = '#94a3b8';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'alphabetic';
-        const pairLabel = pieCount > 1 ? `#${pie.pairIndex + 1}` : '';
-        if (pairLabel) {
-            ctx.fillText(pairLabel, cx, centerY + pieRadius + 40);
-        }
-    }
 };
 
 window.animateLineChart = function(datasets, labels, yAxis, benchmark, canvasId, stateObj) {
@@ -1054,7 +742,6 @@ window.onLineChartMouseLeave = function(canvasId, stateObj) {
 
 window.onOpChartMouseMove = function(e, canvasId, stateObj) {
     if (stateObj.operators.length === 0) return;
-    if (stateObj.isSingleMode) return;
 
     const canvas = document.getElementById(canvasId);
     const rect = canvas.getBoundingClientRect();
@@ -1062,6 +749,7 @@ window.onOpChartMouseMove = function(e, canvasId, stateObj) {
     const mouseY = e.clientY - rect.top;
 
     const { padding, chartWidth, chartHeight, operators, leftData, rightData, leftDate, rightDate, maxPairCount } = stateObj;
+    const isSingleMode = !rightData || rightData.length === 0;
 
     if (mouseX < padding.left || mouseX > padding.left + chartWidth ||
         mouseY < padding.top || mouseY > padding.top + chartHeight) {
@@ -1074,7 +762,7 @@ window.onOpChartMouseMove = function(e, canvasId, stateObj) {
     const clampedIndex = Math.max(0, Math.min(operators.length - 1, nearestIndex));
 
     const leftOps = new Map(leftData.map(d => [d.operator, d]));
-    const rightOps = new Map(rightData.map(d => [d.operator, d]));
+    const rightOps = isSingleMode ? new Map() : new Map(rightData.map(d => [d.operator, d]));
 
     window.renderOpChartCurrent(canvasId, stateObj);
 
@@ -1123,13 +811,15 @@ window.onOpChartMouseMove = function(e, canvasId, stateObj) {
         lines.push({ text: `  Ratio: ${lr != null ? (lr * 100).toFixed(1) + '%' : 'N/A'}`, bold: false, color: '#34d399' });
     }
 
-    for (let p = 0; p < pairCount; p++) {
-        const pairLabel = pairCount > 1 ? ` #${p + 1}` : '';
-        lines.push({ text: `── ${rightDate}${pairLabel} ──`, bold: false, color: '#f87171' });
-        const rt = rightOp?.pairs?.[p]?.time;
-        const rr = rightOp?.pairs?.[p]?.ratio;
-        lines.push({ text: `  Time: ${rt != null ? rt.toFixed(3) : 'N/A'}`, bold: false, color: '#f87171' });
-        lines.push({ text: `  Ratio: ${rr != null ? (rr * 100).toFixed(1) + '%' : 'N/A'}`, bold: false, color: '#fca5a5' });
+    if (!isSingleMode) {
+        for (let p = 0; p < pairCount; p++) {
+            const pairLabel = pairCount > 1 ? ` #${p + 1}` : '';
+            lines.push({ text: `── ${rightDate}${pairLabel} ──`, bold: false, color: '#f87171' });
+            const rt = rightOp?.pairs?.[p]?.time;
+            const rr = rightOp?.pairs?.[p]?.ratio;
+            lines.push({ text: `  Time: ${rt != null ? rt.toFixed(3) : 'N/A'}`, bold: false, color: '#f87171' });
+            lines.push({ text: `  Ratio: ${rr != null ? (rr * 100).toFixed(1) + '%' : 'N/A'}`, bold: false, color: '#fca5a5' });
+        }
     }
 
     const lineHeight = 18;
@@ -1162,12 +852,14 @@ window.onOpChartMouseMove = function(e, canvasId, stateObj) {
         currentY += lineHeight;
     });
 
-    const totalBarSlots = 2 * pairCount;
+    const totalBarSlots = isSingleMode ? pairCount : 2 * pairCount;
     const singleBarWidth = Math.min(groupWidth / (totalBarSlots + 1), 30);
     const intraGap = Math.min(singleBarWidth * 0.15, 3);
     const leftBlockWidth = pairCount * singleBarWidth + (pairCount - 1) * intraGap;
-    const interGroupGap = Math.min(singleBarWidth * 0.5, 6);
-    const leftBlockStart = cx - leftBlockWidth - interGroupGap / 2;
+    const interGroupGap = isSingleMode ? 0 : Math.min(singleBarWidth * 0.5, 6);
+    const leftBlockStart = isSingleMode
+        ? cx - leftBlockWidth / 2
+        : cx - leftBlockWidth - interGroupGap / 2;
 
     for (let p = 0; p < pairCount; p++) {
         const lt = leftOp?.pairs?.[p]?.time;
@@ -1184,32 +876,30 @@ window.onOpChartMouseMove = function(e, canvasId, stateObj) {
         }
     }
 
-    const rightBlockStart = cx + interGroupGap / 2;
-    for (let p = 0; p < pairCount; p++) {
-        const rt = rightOp?.pairs?.[p]?.time;
-        if (rt != null) {
-            const y = yTimePos(rt);
-            const barX = rightBlockStart + p * (singleBarWidth + intraGap);
-            ctx.beginPath();
-            ctx.arc(barX + singleBarWidth / 2, y, 4, 0, 2 * Math.PI);
-            ctx.fillStyle = '#0f172a';
-            ctx.fill();
-            ctx.strokeStyle = '#f87171';
-            ctx.lineWidth = 2;
-            ctx.stroke();
+    if (!isSingleMode) {
+        const rightBlockStart = cx + interGroupGap / 2;
+        for (let p = 0; p < pairCount; p++) {
+            const rt = rightOp?.pairs?.[p]?.time;
+            if (rt != null) {
+                const y = yTimePos(rt);
+                const barX = rightBlockStart + p * (singleBarWidth + intraGap);
+                ctx.beginPath();
+                ctx.arc(barX + singleBarWidth / 2, y, 4, 0, 2 * Math.PI);
+                ctx.fillStyle = '#0f172a';
+                ctx.fill();
+                ctx.strokeStyle = '#f87171';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
         }
     }
 };
 
 window.renderOpChartCurrent = function(canvasId, stateObj) {
-    if (stateObj.isSingleMode) {
-        const singleOps = new Map(stateObj.leftData.map(d => [d.operator, d]));
-        const label = stateObj.leftDate || stateObj.leftLabel || '';
-        window.renderSingleOpChart(stateObj.operators, singleOps, label, 1, canvasId, stateObj);
-        return;
-    }
     const leftOps = new Map(stateObj.leftData.map(d => [d.operator, d]));
-    const rightOps = new Map(stateObj.rightData.map(d => [d.operator, d]));
+    const rightOps = stateObj.rightData && stateObj.rightData.length > 0
+        ? new Map(stateObj.rightData.map(d => [d.operator, d]))
+        : new Map();
     const leftLabel = stateObj.leftDate || stateObj.leftLabel || '';
     const rightLabel = stateObj.rightDate || stateObj.rightLabel || '';
     window.renderOpChart(stateObj.operators, leftOps, rightOps, leftLabel, rightLabel, 1, canvasId, stateObj);
