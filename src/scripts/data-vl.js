@@ -711,8 +711,7 @@ function drawOpChart() {
             opChartState.maxPairCount = maxPairCount;
             opChartState.isSingleMode = true;
 
-            const rightOps = new Map();
-            window.animateOpChart(allOperators, leftOps, rightOps, leftLabel, '', 'chartCanvas', opChartState);
+            window.animateSingleOpChart(allOperators, leftOps, leftLabel, 'chartCanvas', opChartState);
         });
     } else {
         const [rightDate, rightIdx] = dateRightVal.split('|');

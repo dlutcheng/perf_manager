@@ -288,12 +288,11 @@ function setupEventListeners() {
 
     window.addEventListener('resize', () => {
         if (document.getElementById('opCompareFullscreen').classList.contains('visible')) {
-            const leftOps = new Map(opCompareState.leftData.map(d => [d.operator, d]));
-            const isSingleMode = !opCompareState.rightData || opCompareState.rightData.length === 0;
-            if (isSingleMode) {
-                const emptyRightOps = new Map();
-                window.animateOpChart(opCompareState.operators, leftOps, emptyRightOps, opCompareState.leftLabel, '', 'opCompareCanvas', opCompareState);
+            if (opCompareState.isSingleMode) {
+                const singleOps = new Map(opCompareState.leftData.map(d => [d.operator, d]));
+                window.animateSingleOpChart(opCompareState.operators, singleOps, opCompareState.leftLabel, 'opCompareCanvas', opCompareState);
             } else {
+                const leftOps = new Map(opCompareState.leftData.map(d => [d.operator, d]));
                 const rightOps = new Map(opCompareState.rightData.map(d => [d.operator, d]));
                 window.animateOpChart(opCompareState.operators, leftOps, rightOps, opCompareState.leftLabel, opCompareState.rightLabel, 'opCompareCanvas', opCompareState);
             }
@@ -1665,8 +1664,7 @@ async function enterOpSingleFullscreen() {
     opCompareState.isSingleMode = true;
 
     document.getElementById('opCompareFullscreen').classList.add('visible');
-    const emptyRightOps = new Map();
-    window.animateOpChart(allOperators, singleOps, emptyRightOps, label, '', 'opCompareCanvas', opCompareState);
+    window.animateSingleOpChart(allOperators, singleOps, label, 'opCompareCanvas', opCompareState);
 }
 
 function exitOpCompareFullscreen() {
