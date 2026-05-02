@@ -55,16 +55,19 @@ A fully offline, browser-based benchmark performance management and visualizatio
    - Column C: ratio (%)
    - Stored separately for operator comparison
 
-## Operators Comparison
+## Data Visualization
+
+### Performance Trends
+
+![Performance Trends](docs/images/data_trends.jpg)
+
+### Operators List
+
+![Operators List](docs/images/list_operator.jpg)
+
+### Operators Comparison
 
 ![Operators Comparison](docs/images/compare_operators.jpg)
-
-- **Side-by-side comparison** of two different runs
-- **Unified X-axis** showing common operators
-- **Time (ms)** on left Y-axis (green/red bars)
-- **Ratio (%)** in tooltip only (no visual clutter)
-- **Interactive tooltips** with mouse-over information
-- **Fullscreen mode** for detailed analysis
 
 ## Usage
 
@@ -81,13 +84,13 @@ All data stored in browser **IndexedDB** — works **fully offline** with no ext
 
 ## Dependencies
 
-- **SheetJS** — Offline XLSX parsing
-- **Choices.js** — Customizable select boxes with search
-- **SweetAlert2** — Beautiful popup dialogs
-- **ECharts** — Interactive charts with line, bar, pie, and rose chart support
+- **[SheetJS](https://github.com/SheetJS/sheetjs)** — Offline XLSX parsing
+- **[Choices.js](https://github.com/Choices-js/Choices)** — Customizable select boxes with search
+- **[SweetAlert2](https://github.com/sweetalert2/sweetalert2)** — Beautiful popup dialogs
+- **[ECharts](https://github.com/apache/echarts)** — Interactive charts with line, bar, pie, and rose chart support
 - **Fonts** (embedded locally):
-  - Outfit (sans-serif)
-  - JetBrains Mono (monospace)
+  - [Outfit](https://github.com/Outfitio/Outfit-Fonts) (sans-serif)
+  - [JetBrains Mono](https://github.com/JetBrains/JetBrainsMono) (monospace)
 
 ## Notes
 
