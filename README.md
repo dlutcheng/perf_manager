@@ -8,8 +8,8 @@ A fully offline, browser-based benchmark performance management and visualizatio
 
 - 📁 **Data Management** — Import/export JSON backups, view per-benchmark statistics (Arch/Config/Record counts), clear data with optional backup
 - 📝 **Data Operations** — Full CRUD for benchmark records across a 3-level hierarchy (Benchmark → Architecture → Configuration). Supports custom extra fields per Architecture with int/float/string types. Paginated record table with search, sort, inline edit, and field filtering
-- 📈 **Performance Trends** — Multi-line Canvas charts with animated drawing, MAX/MIN point highlighting, hover tooltips with collision-aware positioning, and fullscreen view. Click table header radio buttons to instantly visualize any numeric field over time
-- 📊 **Operators Comparison** — Compare operators performance across different runs with dual-axis bar charts. Supports both single-date and compare-dates modes with interactive tooltips
+- 📈 **Performance Trends** — Multi-line charts with animated drawing, gradient area fills, hollow circle data points, MAX/MIN point highlighting with date labels, hover tooltips, and mouse-wheel zoom (1x–50x). Supports duplicate dates on X-axis. Click table header radio buttons to instantly visualize any numeric field over time
+- 📊 **Operators Comparison** — Compare operators performance across different runs. Single-date mode uses Nightingale rose charts with color-matched label lines; compare-dates mode uses grouped bar charts. Both modes support interactive tooltips with time and ratio percentages
 - 📤 **XLSX Import** — Load benchmark data from Excel files (`.xlsx`), automatically parse Summary Data and Operators Data sheets with automatic type detection
 - 🎨 **Modern UI** — Dark theme with smooth animations, responsive design, and offline fonts
 
@@ -81,9 +81,10 @@ All data stored in browser **IndexedDB** — works **fully offline** with no ext
 
 ## Dependencies
 
-- **SheetJS** (`xlsx.full.min.js`) — Offline XLSX parsing
+- **SheetJS** — Offline XLSX parsing
 - **Choices.js** — Customizable select boxes with search
 - **SweetAlert2** — Beautiful popup dialogs
+- **ECharts** — Interactive charts with line, bar, pie, and rose chart support
 - **Fonts** (embedded locally):
   - Outfit (sans-serif)
   - JetBrains Mono (monospace)

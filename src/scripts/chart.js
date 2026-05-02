@@ -1,906 +1,698 @@
-window.animateOpChart = function(allOperators, leftOps, rightOps, dateLeft, dateRight, canvasId, stateObj) {
-    if (!stateObj) stateObj = {};
-    if (stateObj.animationId) {
-        cancelAnimationFrame(stateObj.animationId);
-        stateObj.animationId = null;
+const CHART_COLORS = [
+    '#00d4aa', '#f87171', '#38bdf8', '#fbbf24', '#c084fc',
+    '#a3e635', '#fb923c', '#22d3ee', '#f472b6', '#34d399',
+    '#818cf8', '#facc15'
+];
+
+const DARK_THEME = {
+    backgroundColor: 'transparent',
+    textStyle: { fontFamily: 'Outfit, sans-serif' },
+    title: { textStyle: { color: '#e2e8f0' } },
+    legend: { textStyle: { color: '#94a3b8' } },
+    tooltip: {
+        backgroundColor: 'rgba(15, 23, 42, 0.95)',
+        borderColor: 'rgba(0, 212, 170, 0.3)',
+        textStyle: { color: '#e2e8f0', fontFamily: 'JetBrains Mono, monospace' },
+        extraCssText: 'box-shadow: 0 4px 24px rgba(0,0,0,0.4); border-radius: 8px;'
     }
-
-    const duration = 800;
-    const startTime = performance.now();
-
-    function frame(now) {
-        const elapsed = now - startTime;
-        const progress = Math.min(elapsed / duration, 1);
-        const eased = 1 - Math.pow(1 - progress, 3);
-
-        window.renderOpChart(allOperators, leftOps, rightOps, dateLeft, dateRight, eased, canvasId, stateObj);
-
-        if (progress < 1) {
-            stateObj.animationId = requestAnimationFrame(frame);
-        } else {
-            stateObj.animationId = null;
-        }
-    }
-
-    stateObj.animationId = requestAnimationFrame(frame);
 };
 
-window.renderOpChart = function(allOperators, leftOps, rightOps, dateLeft, dateRight, animProgress, canvasId, stateObj) {
-    if (animProgress === undefined) animProgress = 1;
-    if (!canvasId) canvasId = 'chartCanvas';
-    if (!stateObj) stateObj = {};
+let chartInstances = {};
 
-    const canvas = document.getElementById(canvasId);
-    const ctx = canvas.getContext('2d');
+function hexToRgba(hex, alpha) {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
 
-    const container = canvas.parentElement;
-    const rect = container.getBoundingClientRect();
-    const padding = { top: 60, right: 80, bottom: 160, left: 100 };
+function getOrCreateChart(containerId) {
+    const container = document.getElementById(containerId);
+    if (!container) return null;
 
-    canvas.width = rect.width - 40 || window.innerWidth - 40;
-    canvas.height = rect.height - 40 || window.innerHeight - 90;
-
-    const chartWidth = canvas.width - padding.left - padding.right;
-    const chartHeight = canvas.height - padding.top - padding.bottom;
-
-    stateObj.padding = padding;
-    stateObj.chartWidth = chartWidth;
-    stateObj.chartHeight = chartHeight;
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    if (allOperators.length === 0) {
-        ctx.font = '15px "Outfit", sans-serif';
-        ctx.fillStyle = '#64748b';
-        ctx.textAlign = 'center';
-        ctx.fillText('No Operators Data', canvas.width / 2, canvas.height / 2);
-        return;
+    if (chartInstances[containerId]) {
+        return chartInstances[containerId];
     }
 
-    const isSingleMode = stateObj.isSingleMode;
-    const maxPairCount = stateObj.maxPairCount || 1;
-    const totalBarSlots = isSingleMode ? maxPairCount : 2 * maxPairCount;
+    const chart = echarts.init(container, null, { renderer: 'canvas' });
+    chartInstances[containerId] = chart;
+    return chart;
+}
 
-    let maxTime = 0;
-    for (const op of allOperators) {
-        const leftOp = leftOps.get(op);
-        const rightOp = rightOps.get(op);
-        for (let p = 0; p < maxPairCount; p++) {
-            const lt = leftOp?.pairs?.[p]?.time;
-            const rt = rightOp?.pairs?.[p]?.time;
-            if (lt != null && lt > maxTime) maxTime = lt;
-            if (rt != null && rt > maxTime) maxTime = rt;
-        }
+window.disposeChart = function(containerId) {
+    if (chartInstances[containerId]) {
+        chartInstances[containerId].dispose();
+        delete chartInstances[containerId];
     }
-
-    const timeMargin = (maxTime || 1) * 0.1;
-    const adjustedMaxTime = maxTime + timeMargin;
-
-    const groupWidth = chartWidth / allOperators.length;
-    const singleBarWidth = Math.min(groupWidth / (totalBarSlots + 1), 30);
-    const intraGap = Math.min(singleBarWidth * 0.15, 3);
-
-    const xPosition = (index) => padding.left + groupWidth * index + groupWidth / 2;
-    const yTimePosition = (value) => padding.top + chartHeight - ((value) / adjustedMaxTime) * chartHeight;
-
-    ctx.strokeStyle = '#1e293b';
-    ctx.lineWidth = 1;
-    const gridLines = 5;
-    for (let i = 0; i <= gridLines; i++) {
-        const y = padding.top + (chartHeight / gridLines) * i;
-        ctx.beginPath();
-        ctx.moveTo(padding.left, y);
-        ctx.lineTo(padding.left + chartWidth, y);
-        ctx.stroke();
-
-        const timeVal = adjustedMaxTime - (adjustedMaxTime / gridLines) * i;
-        ctx.font = '12px "JetBrains Mono", monospace';
-        ctx.fillStyle = '#94a3b8';
-        ctx.textAlign = 'right';
-        ctx.fillText(timeVal.toFixed(2), padding.left - 12, y + 4);
-    }
-
-    ctx.font = '14px "Outfit", sans-serif';
-    ctx.fillStyle = '#cbd5e1';
-    ctx.textAlign = 'center';
-    ctx.fillText('Operators', canvas.width / 2, canvas.height - 12);
-
-    ctx.save();
-    ctx.translate(30, canvas.height / 2);
-    ctx.rotate(-Math.PI / 2);
-    ctx.fillStyle = '#cbd5e1';
-    ctx.fillText('Time (ms)', 0, 0);
-    ctx.restore();
-
-    ctx.font = '11px "JetBrains Mono", monospace';
-    ctx.fillStyle = '#94a3b8';
-    ctx.textAlign = 'right';
-    allOperators.forEach((op, index) => {
-        const x = xPosition(index);
-        ctx.save();
-        ctx.translate(x, padding.top + chartHeight + 14);
-        ctx.rotate(-Math.PI / 4);
-        ctx.fillText(op, 0, 0);
-        ctx.restore();
-    });
-
-    const visibleCount = Math.max(1, Math.ceil(allOperators.length * animProgress));
-
-    const leftTimeColor = '#00d4aa';
-    const rightTimeColor = '#f87171';
-
-    const leftBlockWidth = maxPairCount * singleBarWidth + (maxPairCount - 1) * intraGap;
-    const interGroupGap = isSingleMode ? 0 : Math.min(singleBarWidth * 0.5, 6);
-
-    for (let i = 0; i < visibleCount; i++) {
-        const op = allOperators[i];
-        const cx = xPosition(i);
-        const leftOp = leftOps.get(op);
-        const rightOp = rightOps.get(op);
-        const baseY = padding.top + chartHeight;
-
-        const leftBlockStart = isSingleMode
-            ? cx - leftBlockWidth / 2
-            : cx - leftBlockWidth - interGroupGap / 2;
-        for (let p = 0; p < maxPairCount; p++) {
-            const timeVal = leftOp?.pairs?.[p]?.time;
-            if (timeVal == null) continue;
-            const animVal = timeVal * animProgress;
-            const barY = yTimePosition(animVal);
-            const barX = leftBlockStart + p * (singleBarWidth + intraGap);
-
-            const grad = ctx.createLinearGradient(0, barY, 0, baseY);
-            grad.addColorStop(0, leftTimeColor);
-            grad.addColorStop(1, 'rgba(0, 212, 170, 0.4)');
-            ctx.fillStyle = grad;
-            ctx.beginPath();
-            ctx.roundRect(barX, barY, singleBarWidth, baseY - barY, [2, 2, 0, 0]);
-            ctx.fill();
-        }
-
-        if (!isSingleMode) {
-            const rightBlockStart = cx + interGroupGap / 2;
-            for (let p = 0; p < maxPairCount; p++) {
-                const timeVal = rightOp?.pairs?.[p]?.time;
-                if (timeVal == null) continue;
-                const animVal = timeVal * animProgress;
-                const barY = yTimePosition(animVal);
-                const barX = rightBlockStart + p * (singleBarWidth + intraGap);
-
-                const grad = ctx.createLinearGradient(0, barY, 0, baseY);
-                grad.addColorStop(0, rightTimeColor);
-                grad.addColorStop(1, 'rgba(248, 113, 113, 0.4)');
-                ctx.fillStyle = grad;
-                ctx.beginPath();
-                ctx.roundRect(barX, barY, singleBarWidth, baseY - barY, [2, 2, 0, 0]);
-                ctx.fill();
-            }
-        }
-    }
-
-    const legendY = padding.top - 30;
-    const legendItems = isSingleMode
-        ? [{ label: `${dateLeft}`, color: leftTimeColor }]
-        : [
-            { label: `${dateLeft}`, color: leftTimeColor },
-            { label: `${dateRight}`, color: rightTimeColor }
-        ];
-
-    let legendX = padding.left;
-    ctx.font = '12px "Outfit", sans-serif';
-    legendItems.forEach(item => {
-        const labelWidth = ctx.measureText(item.label).width;
-        const itemWidth = 20 + labelWidth + 24;
-
-        ctx.fillStyle = item.color;
-        ctx.beginPath();
-        ctx.roundRect(legendX, legendY, 14, 14, 3);
-        ctx.fill();
-
-        ctx.fillStyle = '#94a3b8';
-        ctx.textAlign = 'left';
-        ctx.fillText(item.label, legendX + 20, legendY + 12);
-        legendX += itemWidth;
-    });
 };
 
-window.animateLineChart = function(datasets, labels, yAxis, benchmark, canvasId, stateObj) {
-    if (!stateObj) stateObj = {};
-    if (stateObj.animationId) {
-        cancelAnimationFrame(stateObj.animationId);
-        stateObj.animationId = null;
-    }
-
-    const duration = 800;
-    const startTime = performance.now();
-
-    function frame(now) {
-        const elapsed = now - startTime;
-        const progress = Math.min(elapsed / duration, 1);
-        const eased = 1 - Math.pow(1 - progress, 3);
-
-        window.renderLineChart(datasets, labels, yAxis, benchmark, eased, canvasId, stateObj);
-
-        if (progress < 1) {
-            stateObj.animationId = requestAnimationFrame(frame);
-        } else {
-            stateObj.animationId = null;
-        }
-    }
-
-    stateObj.animationId = requestAnimationFrame(frame);
-};
-
-window.renderLineChart = function(datasets, labels, yAxis, benchmark, animProgress, canvasId, stateObj) {
-    if (animProgress === undefined) animProgress = 1;
-    if (!canvasId) canvasId = 'chartCanvas';
+window.renderLineChart = function(datasets, labels, yAxis, benchmark, containerId, stateObj) {
+    if (!containerId) containerId = 'chartCanvas';
     if (!stateObj) stateObj = {};
 
-    const canvas = document.getElementById(canvasId);
-    const ctx = canvas.getContext('2d');
+    const chart = getOrCreateChart(containerId);
+    if (!chart) return;
 
-    const container = canvas.parentElement;
-    const rect = container.getBoundingClientRect();
-    const padding = { top: 40, right: 50, bottom: 80, left: 100 };
-
-    canvas.width = rect.width - 40 || window.innerWidth - 40;
-    canvas.height = rect.height - 40 || window.innerHeight - 90;
-
-    const chartWidth = canvas.width - padding.left - padding.right;
-    const chartHeight = canvas.height - padding.top - padding.bottom;
-
-    stateObj.padding = padding;
-    stateObj.chartWidth = chartWidth;
-    stateObj.chartHeight = chartHeight;
-    stateObj.xPosition = (index) => padding.left + (chartWidth / (labels.length - 1 || 1)) * index;
-    stateObj.yPosition = (value) => {
-        const maxVal = Math.max(...stateObj.datasets.flatMap(d => d.values), 0);
-        const minVal = Math.min(...stateObj.datasets.flatMap(d => d.values), 0);
-        const range = maxVal - minVal || 1;
-        const margin = range * 0.1;
-        const adjustedMax = maxVal + margin;
-        const adjustedMin = Math.max(0, minVal - margin);
-        return padding.top + chartHeight - ((value - adjustedMin) / (adjustedMax - adjustedMin || 1)) * chartHeight;
-    };
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    const titleMap = {
-        duration: 'Duration (ms)'
-    };
+    const titleMap = { duration: 'Duration (ms)' };
     if (typeof extraFields !== 'undefined') {
         extraFields.forEach(field => {
             titleMap['extra_' + field.id] = field.name;
         });
     }
 
-    if (labels.length === 0) {
-        ctx.font = '15px "Outfit", sans-serif';
-        ctx.fillStyle = '#64748b';
-        ctx.textAlign = 'center';
-        ctx.fillText('No Data', canvas.width / 2, canvas.height / 2);
-        return;
-    }
-
     const allValues = datasets.flatMap(d => d.values);
     if (allValues.length === 0) {
-        ctx.font = '15px "Outfit", sans-serif';
-        ctx.fillStyle = '#64748b';
-        ctx.textAlign = 'center';
-        ctx.fillText('No Data', canvas.width / 2, canvas.height / 2);
+        chart.setOption({
+            backgroundColor: 'transparent',
+            graphic: [{
+                type: 'text',
+                left: 'center',
+                top: 'center',
+                style: { text: 'No Data', fill: '#64748b', font: '15px Outfit, sans-serif' }
+            }]
+        });
         return;
     }
 
-    let maxValue = Math.max(...allValues, 0);
-    let minValue = Math.min(...allValues, 0);
-    const valueRange = maxValue - minValue || 1;
-    const yMargin = valueRange * 0.1;
-    maxValue += yMargin;
-    minValue = Math.max(0, minValue - yMargin);
+    const series = datasets.map((dataset, index) => {
+        const data = dataset.values.map((val, idx) => {
+            const value = val !== null && val !== undefined ? val : 0;
+            return [dataset.dates[idx], value];
+        });
 
-    const xPosition = (index) => padding.left + (chartWidth / (labels.length - 1 || 1)) * index;
-    const yPosition = (value) => padding.top + chartHeight - ((value - minValue) / (maxValue - minValue || 1)) * chartHeight;
+        const color = dataset.color?.line || CHART_COLORS[index % CHART_COLORS.length];
 
-    ctx.strokeStyle = '#1e293b';
-    ctx.lineWidth = 1;
-    const gridLines = 5;
-    for (let i = 0; i <= gridLines; i++) {
-        const y = padding.top + (chartHeight / gridLines) * i;
-        ctx.beginPath();
-        ctx.moveTo(padding.left, y);
-        ctx.lineTo(padding.left + chartWidth, y);
-        ctx.stroke();
-
-        const value = maxValue - ((maxValue - minValue) / gridLines) * i;
-        ctx.font = '13px "JetBrains Mono", monospace';
-        ctx.fillStyle = '#64748b';
-        ctx.textAlign = 'right';
-        ctx.fillText(value.toFixed(3), padding.left - 15, y + 5);
-    }
-
-    ctx.font = '13px "JetBrains Mono", monospace';
-    ctx.fillStyle = '#94a3b8';
-    ctx.textAlign = 'center';
-    const labelStep = Math.ceil(labels.length / 15);
-    labels.forEach((label, index) => {
-        if (index % labelStep === 0 || index === labels.length - 1) {
-            const x = xPosition(index);
-            ctx.save();
-            ctx.translate(x, padding.top + chartHeight + 25);
-            ctx.rotate(-Math.PI / 6);
-            ctx.fillText(label, 0, 0);
-            ctx.restore();
-        }
-    });
-
-    ctx.font = '14px "Outfit", sans-serif';
-    ctx.fillStyle = '#cbd5e1';
-    ctx.textAlign = 'center';
-    ctx.fillText('Date', canvas.width / 2, canvas.height - 15);
-
-    ctx.save();
-    ctx.translate(30, canvas.height / 2);
-    ctx.rotate(-Math.PI / 2);
-    ctx.fillText(titleMap[yAxis] || yAxis, 0, 0);
-    ctx.restore();
-
-    const totalPoints = labels.length;
-    const visibleCount = Math.max(1, Math.ceil(totalPoints * animProgress));
-
-    datasets.forEach((dataset, datasetIndex) => {
-        const gradient = ctx.createLinearGradient(0, padding.top, 0, padding.top + chartHeight);
-        gradient.addColorStop(0, dataset.color.fill.replace('0.12', '0.20'));
-        gradient.addColorStop(1, dataset.color.fill.replace('0.12', '0'));
-
-        const points = [];
-        dataset.dates.forEach((date, index) => {
-            const labelIndex = labels.indexOf(date);
-            if (labelIndex < visibleCount) {
-                const x = xPosition(labelIndex);
-                const y = yPosition(dataset.values[index]);
-                points.push({ x, y, labelIndex });
+        let maxVal = -Infinity, minVal = Infinity;
+        let maxIdx = -1, minIdx = -1;
+        data.forEach((item, idx) => {
+            const val = item[1];
+            if (val > 0) {
+                if (val > maxVal) { maxVal = val; maxIdx = idx; }
+                if (val < minVal) { minVal = val; minIdx = idx; }
             }
         });
 
-        if (points.length === 0) return;
-
-        if (points.length > 1) {
-            ctx.beginPath();
-            ctx.moveTo(points[0].x, points[0].y);
-            for (let i = 1; i < points.length; i++) {
-                ctx.lineTo(points[i].x, points[i].y);
-            }
-            ctx.lineTo(points[points.length - 1].x, padding.top + chartHeight);
-            ctx.lineTo(points[0].x, padding.top + chartHeight);
-            ctx.closePath();
-            ctx.fillStyle = gradient;
-            ctx.fill();
-        }
-
-        ctx.strokeStyle = dataset.color.line;
-        ctx.lineWidth = 2.5;
-        ctx.beginPath();
-        points.forEach((point, index) => {
-            if (index === 0) {
-                ctx.moveTo(point.x, point.y);
-            } else {
-                ctx.lineTo(point.x, point.y);
-            }
-        });
-        ctx.stroke();
-
-        points.forEach((point) => {
-            ctx.beginPath();
-            ctx.arc(point.x, point.y, 5, 0, 2 * Math.PI);
-            ctx.fillStyle = '#0f172a';
-            ctx.fill();
-            ctx.strokeStyle = dataset.color.line;
-            ctx.lineWidth = 2;
-            ctx.stroke();
-        });
-    });
-
-    const highlightAnnotations = [];
-
-    if (animProgress >= 1) {
-        datasets.forEach((dataset, datasetIndex) => {
-            if (dataset.values.length <= 1) return;
-
-            let maxVal = -Infinity, minVal = Infinity;
-            let maxIdx = -1, minIdx = -1;
-            dataset.values.forEach((val, idx) => {
-                if (val >= maxVal) { maxVal = val; maxIdx = idx; }
-                if (val <= minVal) { minVal = val; minIdx = idx; }
+        const markPointData = [];
+        if (maxIdx >= 0) {
+            markPointData.push({
+                name: 'Max',
+                coord: [data[maxIdx][0], maxVal],
+                value: maxVal,
+                symbolOffset: [0, -20]
             });
-
-            const maxDate = dataset.dates[maxIdx];
-            const minDate = dataset.dates[minIdx];
-            const maxLabelIdx = labels.indexOf(maxDate);
-            const minLabelIdx = labels.indexOf(minDate);
-            const maxX = xPosition(maxLabelIdx);
-            const maxY = yPosition(maxVal);
-            const minX = xPosition(minLabelIdx);
-            const minY = yPosition(minVal);
-
-            ctx.beginPath();
-            ctx.arc(maxX, maxY, 7, 0, 2 * Math.PI);
-            ctx.fillStyle = dataset.color.line;
-            ctx.fill();
-            ctx.strokeStyle = '#0f172a';
-            ctx.lineWidth = 2;
-            ctx.stroke();
-
-            ctx.beginPath();
-            ctx.arc(minX, minY, 7, 0, 2 * Math.PI);
-            ctx.fillStyle = dataset.color.line;
-            ctx.fill();
-            ctx.strokeStyle = '#0f172a';
-            ctx.lineWidth = 2;
-            ctx.stroke();
-
-            highlightAnnotations.push({
-                x: maxX, y: maxY, value: maxVal, date: maxDate,
-                label: dataset.label, color: dataset.color.line, type: 'MAX'
+        }
+        if (minIdx >= 0 && minIdx !== maxIdx) {
+            markPointData.push({
+                name: 'Min',
+                coord: [data[minIdx][0], minVal],
+                value: minVal,
+                symbolOffset: [0, 20]
             });
-            highlightAnnotations.push({
-                x: minX, y: minY, value: minVal, date: minDate,
-                label: dataset.label, color: dataset.color.line, type: 'MIN'
-            });
-        });
-    }
-
-    stateObj.highlightAnnotations = [];
-
-    highlightAnnotations.forEach(ann => {
-        const tagText = `${ann.type}: ${ann.value.toFixed(3)}`;
-        const dateText = ann.date;
-        const labelText = ann.label;
-
-        ctx.font = 'bold 11px "JetBrains Mono", monospace';
-        const tagWidth = Math.max(ctx.measureText(tagText).width, ctx.measureText(dateText).width, ctx.measureText(labelText).width) + 16;
-        const tagHeight = 48;
-        const tagOffsetY = ann.type === 'MAX' ? -(tagHeight + 10) : 14;
-
-        let tagX = ann.x - tagWidth / 2;
-        let tagY = ann.y + tagOffsetY;
-
-        if (tagX < padding.left) tagX = padding.left;
-        if (tagX + tagWidth > canvas.width - padding.right) tagX = canvas.width - padding.right - tagWidth;
-        if (tagY < padding.top) tagY = padding.top;
-        if (tagY + tagHeight > padding.top + chartHeight) tagY = padding.top + chartHeight - tagHeight;
-
-        ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
-        ctx.strokeStyle = ann.color;
-        ctx.lineWidth = 1.5;
-        ctx.beginPath();
-        ctx.roundRect(tagX, tagY, tagWidth, tagHeight, 4);
-        ctx.fill();
-        ctx.stroke();
-
-        ctx.font = 'bold 11px "JetBrains Mono", monospace';
-        ctx.fillStyle = ann.color;
-        ctx.textAlign = 'left';
-        ctx.fillText(tagText, tagX + 8, tagY + 14);
-
-        ctx.font = '10px "JetBrains Mono", monospace';
-        ctx.fillStyle = '#94a3b8';
-        ctx.fillText(dateText, tagX + 8, tagY + 28);
-
-        ctx.font = '10px "Outfit", sans-serif';
-        ctx.fillStyle = '#64748b';
-        ctx.fillText(labelText, tagX + 8, tagY + 42);
-
-        stateObj.highlightAnnotations.push({ x: tagX, y: tagY, width: tagWidth, height: tagHeight });
-    });
-
-    const legendY = padding.top - 15;
-    let legendX = padding.left;
-    let legendRow = 0;
-    const legendLineHeight = 20;
-    const legendColorBox = 15;
-    const legendSpacing = 5;
-
-    datasets.forEach((dataset) => {
-        const labelWidth = ctx.measureText(dataset.label).width;
-        const legendItemWidth = legendColorBox + legendSpacing + labelWidth + 10;
-
-        if (legendX + legendItemWidth > canvas.width - padding.right) {
-            legendX = padding.left;
-            legendRow++;
         }
 
-        const finalX = legendX;
-        const finalY = legendY - legendRow * legendLineHeight;
-
-        ctx.fillStyle = dataset.color.line;
-        ctx.beginPath();
-        ctx.roundRect(finalX, finalY, legendColorBox, legendColorBox, 3);
-        ctx.fill();
-
-        ctx.font = '12px "Outfit", sans-serif';
-        ctx.fillStyle = '#94a3b8';
-        ctx.textAlign = 'left';
-        ctx.fillText(dataset.label, finalX + legendColorBox + legendSpacing, finalY + 12);
-
-        legendX += legendItemWidth + 10;
+        return {
+            name: dataset.label,
+            type: 'line',
+            data: data,
+            smooth: true,
+            symbol: 'circle',
+            symbolSize: 8,
+            showAllSymbol: true,
+            lineStyle: { width: 2.5, color: color },
+            itemStyle: { color: '#0f172a', borderColor: color, borderWidth: 2.5 },
+            areaStyle: {
+                color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                    { offset: 0, color: hexToRgba(color, 0.20) },
+                    { offset: 1, color: hexToRgba(color, 0) }
+                ])
+            },
+            emphasis: {
+                itemStyle: { borderWidth: 3, shadowBlur: 10, shadowColor: color }
+            },
+            markPoint: {
+                symbol: 'rect',
+                symbolSize: [70, 36],
+                symbolOffset: [0, -15],
+                label: {
+                    show: true,
+                    color: '#fff',
+                    fontSize: 12,
+                    fontFamily: 'JetBrains Mono, monospace',
+                    formatter: function(param) {
+                        const date = param.data && param.data.coord ? param.data.coord[0] : '';
+                        const shortDate = date ? date.substring(2) : '';
+                        return `${shortDate}\n${param.value.toFixed(2)}`;
+                    }
+                },
+                itemStyle: {
+                    color: color,
+                    borderRadius: 4
+                },
+                data: markPointData
+            },
+            animationDuration: 800,
+            animationEasing: 'cubicOut'
+        };
     });
-};
 
-window.wrapText = function(ctx, text, x, y, maxWidth, lineHeight) {
-    const words = text.split(' ');
-    let line = '';
-    let row = 0;
-    words.forEach(word => {
-        const testLine = line + word + ' ';
-        const metrics = ctx.measureText(testLine);
-        if (metrics.width > maxWidth && line !== '') {
-            ctx.fillText(line.trim(), x, y + row * lineHeight);
-            line = word + ' ';
-            row++;
-        } else {
-            line = testLine;
-        }
-    });
-    ctx.fillText(line.trim(), x, y + row * lineHeight);
-    return row + 1;
-};
-
-window.measureTextRows = function(ctx, text, maxWidth) {
-    const words = text.split(' ');
-    let line = '';
-    let row = 0;
-    words.forEach(word => {
-        const testLine = line + word + ' ';
-        const metrics = ctx.measureText(testLine);
-        if (metrics.width > maxWidth && line !== '') {
-            line = word + ' ';
-            row++;
-        } else {
-            line = testLine;
-        }
-    });
-    return row + 1;
-};
-
-window.onLineChartMouseMove = function(e, canvasId, stateObj) {
-    if (stateObj.labels.length === 0) return;
-
-    const canvas = document.getElementById(canvasId);
-    const rect = canvas.getBoundingClientRect();
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
-
-    const { padding, chartWidth, chartHeight, labels, datasets } = stateObj;
-
-    if (mouseX < padding.left || mouseX > padding.left + chartWidth ||
-        mouseY < padding.top || mouseY > padding.top + chartHeight) {
-        window.renderLineChart(datasets, labels, stateObj.yAxis, stateObj.benchmark, 1, canvasId, stateObj);
-        return;
-    }
-
-    const relativeX = mouseX - padding.left;
-    const nearestIndex = Math.round(relativeX / (chartWidth / (labels.length - 1 || 1)));
-    const clampedIndex = Math.max(0, Math.min(labels.length - 1, nearestIndex));
-    const nearestLabel = labels[clampedIndex];
-    const nearestX = padding.left + (chartWidth / (labels.length - 1 || 1)) * clampedIndex;
-
-    let maxValue = Math.max(...datasets.flatMap(d => d.values), 0);
-    let minValue = Math.min(...datasets.flatMap(d => d.values), 0);
-    const valueRange = maxValue - minValue || 1;
-    const yMargin = valueRange * 0.1;
-    maxValue += yMargin;
-    minValue = Math.max(0, minValue - yMargin);
-
-    const actualYPosition = (value) => padding.top + chartHeight - ((value - minValue) / (maxValue - minValue || 1)) * chartHeight;
-
-    window.renderLineChart(datasets, labels, stateObj.yAxis, stateObj.benchmark, 1, canvasId, stateObj);
-
-    const ctx = canvas.getContext('2d');
-
-    ctx.strokeStyle = 'rgba(0, 212, 170, 0.4)';
-    ctx.lineWidth = 1;
-    ctx.setLineDash([4, 4]);
-    ctx.beginPath();
-    ctx.moveTo(nearestX, padding.top);
-    ctx.lineTo(nearestX, padding.top + chartHeight);
-    ctx.stroke();
-    ctx.setLineDash([]);
-
-    const dataPointsAtNearestDate = [];
-    datasets.forEach(dataset => {
-        dataset.dates.forEach((date, index) => {
-            if (date === nearestLabel) {
-                dataPointsAtNearestDate.push({
-                    label: dataset.label,
-                    value: dataset.values[index],
-                    color: dataset.color.line,
-                    x: nearestX,
-                    y: actualYPosition(dataset.values[index])
+    chart.clear();
+    chart.setOption({
+        backgroundColor: 'transparent',
+        textStyle: DARK_THEME.textStyle,
+        tooltip: {
+            trigger: 'axis',
+            backgroundColor: DARK_THEME.tooltip.backgroundColor,
+            borderColor: DARK_THEME.tooltip.borderColor,
+            textStyle: DARK_THEME.tooltip.textStyle,
+            extraCssText: DARK_THEME.tooltip.extraCssText,
+            axisPointer: {
+                type: 'line',
+                lineStyle: { color: 'rgba(0, 212, 170, 0.4)', type: 'dashed' }
+            },
+            formatter: function(params) {
+                let result = params[0].axisValue + '<br/>';
+                params.forEach(p => {
+                    const seriesColor = datasets.find(d => d.label === p.seriesName)?.color?.line || CHART_COLORS[0];
+                    const marker = `<span style="display:inline-block;margin-right:5px;border-radius:50%;width:10px;height:10px;background-color:${seriesColor};"></span>`;
+                    const val = Array.isArray(p.value) ? p.value[1] : p.value;
+                    const value = val != null ? val.toFixed(3) : 'N/A';
+                    result += `${marker} ${p.seriesName}: ${value}<br/>`;
                 });
+                return result;
             }
-        });
+        },
+        legend: {
+            top: 20,
+            data: datasets.map(d => d.label),
+            textStyle: { color: '#94a3b8', fontFamily: 'Outfit, sans-serif' },
+            itemWidth: 14,
+            itemHeight: 14,
+            itemGap: 20
+        },
+        grid: { top: 60, right: 60, bottom: 80, left: 100 },
+        xAxis: {
+            type: 'category',
+            data: labels,
+            boundaryGap: false,
+            axisLine: { lineStyle: { color: '#1e293b' } },
+            axisTick: { lineStyle: { color: '#1e293b' } },
+            axisLabel: {
+                color: '#94a3b8',
+                fontFamily: 'JetBrains Mono, monospace',
+                rotate: 45,
+                interval: Math.ceil(labels.length / 15)
+            },
+            name: 'Date',
+            nameLocation: 'middle',
+            nameGap: 50,
+            nameTextStyle: { color: '#cbd5e1', fontFamily: 'Outfit, sans-serif' }
+        },
+        yAxis: {
+            type: 'value',
+            name: titleMap[yAxis] || yAxis,
+            nameTextStyle: { color: '#cbd5e1', fontFamily: 'Outfit, sans-serif' },
+            axisLine: { show: true, lineStyle: { color: '#1e293b' } },
+            axisTick: { lineStyle: { color: '#1e293b' } },
+            axisLabel: {
+                color: '#94a3b8',
+                fontFamily: 'JetBrains Mono, monospace',
+                formatter: function(value) {
+                    if (value === 0) return '0';
+                    if (value >= 1000) return (value / 1000).toFixed(1) + 'k';
+                    if (value >= 1) return value.toFixed(1);
+                    if (value >= 0.01) return value.toFixed(3);
+                    return value.toFixed(6);
+                }
+            },
+            splitLine: { lineStyle: { color: '#1e293b' } }
+        },
+        dataZoom: labels.length > 1 ? [
+            {
+                type: 'inside',
+                xAxisIndex: 0,
+                zoomOnMouseWheel: true,
+                moveOnMouseWheel: false,
+                moveOnMouseMove: false,
+                zoomLock: false,
+                start: 0,
+                end: 100,
+                minValueSpan: 1
+            }
+        ] : [],
+        series: series,
+        animationDuration: 800,
+        animationEasing: 'cubicOut'
     });
 
-    if (dataPointsAtNearestDate.length > 0) {
-        let tooltipX = nearestX + 20;
-        let tooltipY = Math.min(...dataPointsAtNearestDate.map(p => p.y));
-
-        const titleMap = {
-            duration: 'Duration (ms)'
-        };
-        if (typeof extraFields !== 'undefined') {
-            extraFields.forEach(field => {
-                titleMap['extra_' + field.id] = field.name;
-            });
-        }
-
-        const maxLabelWidth = Math.max(
-            ...dataPointsAtNearestDate.map(p => ctx.measureText(p.label).width),
-            ctx.measureText(stateObj.benchmark).width,
-            ctx.measureText(titleMap[stateObj.yAxis] || stateObj.yAxis).width
-        );
-        const tooltipWidth = Math.min(maxLabelWidth + 80, 300);
-        const lineHeight = 16;
-        const textMaxWidth = tooltipWidth - 30;
-
-        if (tooltipX + tooltipWidth > canvas.width) {
-            tooltipX = canvas.width - tooltipWidth - 10;
-        }
-        if (tooltipX < 10) tooltipX = 10;
-        if (tooltipY < padding.top + 80) {
-            tooltipY = padding.top + 80;
-        }
-
-        ctx.font = 'bold 12px "Outfit", sans-serif';
-        const rows0 = window.measureTextRows(ctx, stateObj.benchmark, textMaxWidth);
-        const rows1 = window.measureTextRows(ctx, titleMap[stateObj.yAxis] || stateObj.yAxis, textMaxWidth);
-        const rows2 = window.measureTextRows(ctx, nearestLabel, textMaxWidth);
-
-        let measuredY = tooltipY + 10 + (rows0 + rows1 + rows2) * lineHeight + 10;
-        const dataRows = [];
-        dataPointsAtNearestDate.forEach((point) => {
-            ctx.font = '12px "JetBrains Mono", monospace';
-            const text = `${point.label}: ${point.value.toFixed(3)}`;
-            const textRows = window.measureTextRows(ctx, text, textMaxWidth - 18);
-            dataRows.push(textRows);
-            measuredY += Math.max(textRows * lineHeight, 20);
-        });
-
-        const tooltipHeight = measuredY - tooltipY + 10;
-
-        const annotations = stateObj.highlightAnnotations || [];
-        const rectsOverlap = (r1, r2) => {
-            return r1.x < r2.x + r2.width && r1.x + r1.width > r2.x &&
-                   r1.y < r2.y + r2.height && r1.y + r1.height > r2.y;
-        };
-
-        const tooltipRect = { x: tooltipX - 5, y: tooltipY - 5, width: tooltipWidth, height: tooltipHeight };
-        let overlaps = annotations.some(ann => rectsOverlap(tooltipRect, ann));
-
-        if (overlaps) {
-            const candidates = [
-                { x: nearestX + 20, y: tooltipY },
-                { x: nearestX - tooltipWidth - 15, y: tooltipY },
-                { x: tooltipX, y: padding.top + 5 },
-                { x: tooltipX, y: padding.top + chartHeight - tooltipHeight - 5 },
-                { x: nearestX + 20, y: padding.top + chartHeight - tooltipHeight - 5 },
-                { x: nearestX - tooltipWidth - 15, y: padding.top + chartHeight - tooltipHeight - 5 },
-                { x: padding.left + 5, y: tooltipY },
-                { x: canvas.width - tooltipWidth - padding.right - 5, y: tooltipY }
-            ];
-
-            for (const candidate of candidates) {
-                let cx = candidate.x;
-                let cy = candidate.y;
-                if (cx < padding.left) cx = padding.left;
-                if (cx + tooltipWidth > canvas.width - padding.right) cx = canvas.width - padding.right - tooltipWidth;
-                if (cy < padding.top) cy = padding.top;
-                if (cy + tooltipHeight > padding.top + chartHeight) cy = padding.top + chartHeight - tooltipHeight;
-
-                const testRect = { x: cx - 5, y: cy - 5, width: tooltipWidth, height: tooltipHeight };
-                if (!annotations.some(ann => rectsOverlap(testRect, ann))) {
-                    tooltipX = cx;
-                    tooltipY = cy;
-                    overlaps = false;
-                    break;
-                }
-            }
-        }
-
-        ctx.fillStyle = 'rgba(30, 41, 59, 0.95)';
-        ctx.beginPath();
-        ctx.roundRect(tooltipX - 5, tooltipY - 5, tooltipWidth, tooltipHeight, 6);
-        ctx.fill();
-
-        ctx.font = 'bold 12px "Outfit", sans-serif';
-        ctx.fillStyle = '#64748b';
-        ctx.textAlign = 'left';
-        window.wrapText(ctx, stateObj.benchmark, tooltipX, tooltipY + 10, textMaxWidth, lineHeight);
-        window.wrapText(ctx, titleMap[stateObj.yAxis] || stateObj.yAxis, tooltipX, tooltipY + 10 + rows0 * lineHeight, textMaxWidth, lineHeight);
-        window.wrapText(ctx, nearestLabel, tooltipX, tooltipY + 10 + (rows0 + rows1) * lineHeight, textMaxWidth, lineHeight);
-
-        let currentY = tooltipY + 10 + (rows0 + rows1 + rows2) * lineHeight + 10;
-        dataPointsAtNearestDate.forEach((point, i) => {
-            ctx.font = '12px "JetBrains Mono", monospace';
-            ctx.fillStyle = point.color;
-            ctx.beginPath();
-            ctx.roundRect(tooltipX, currentY - 8, 12, 12, 2);
-            ctx.fill();
-
-            ctx.fillStyle = '#e2e8f0';
-            const text = `${point.label}: ${point.value.toFixed(3)}`;
-            window.wrapText(ctx, text, tooltipX + 18, currentY, textMaxWidth - 18, lineHeight);
-            currentY += Math.max(dataRows[i] * lineHeight, 20);
-        });
+    const zoomRateId = containerId + '_zoomRate';
+    let zoomRateEl = document.getElementById(zoomRateId);
+    if (!zoomRateEl) {
+        zoomRateEl = document.createElement('div');
+        zoomRateEl.id = zoomRateId;
+        zoomRateEl.style.cssText = 'position:absolute;top:10px;right:10px;color:#94a3b8;font-family:JetBrains Mono,monospace;font-size:12px;z-index:10;pointer-events:none;';
+        document.getElementById(containerId).style.position = 'relative';
+        document.getElementById(containerId).appendChild(zoomRateEl);
     }
+
+    if (labels.length > 1) {
+        chart.on('dataZoom', function(params) {
+            const option = chart.getOption();
+            const start = option.dataZoom[0].start;
+            const end = option.dataZoom[0].end;
+            const rate = (100 / (end - start)).toFixed(1);
+            zoomRateEl.textContent = rate + 'x';
+        });
+        zoomRateEl.textContent = '1.0x';
+        zoomRateEl.style.display = 'block';
+    } else {
+        zoomRateEl.style.display = 'none';
+    }
+
+    stateObj.chart = chart;
 };
 
-window.onLineChartMouseLeave = function(canvasId, stateObj) {
-    if (stateObj.labels.length === 0) return;
-    window.renderLineChart(stateObj.datasets, stateObj.labels, stateObj.yAxis, stateObj.benchmark, 1, canvasId, stateObj);
+window.animateLineChart = function(datasets, labels, yAxis, benchmark, containerId, stateObj) {
+    window.renderLineChart(datasets, labels, yAxis, benchmark, containerId, stateObj);
 };
 
-window.onOpChartMouseMove = function(e, canvasId, stateObj) {
-    if (stateObj.operators.length === 0) return;
+window.renderOpChart = function(allOperators, leftOps, rightOps, dateLeft, dateRight, containerId, stateObj) {
+    if (!containerId) containerId = 'chartCanvas';
+    if (!stateObj) stateObj = {};
 
-    const canvas = document.getElementById(canvasId);
-    const rect = canvas.getBoundingClientRect();
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
+    const chart = getOrCreateChart(containerId);
+    if (!chart) return;
 
-    const { padding, chartWidth, chartHeight, operators, leftData, rightData, leftDate, rightDate, maxPairCount } = stateObj;
-    const isSingleMode = !rightData || rightData.length === 0;
-
-    if (mouseX < padding.left || mouseX > padding.left + chartWidth ||
-        mouseY < padding.top || mouseY > padding.top + chartHeight) {
-        window.renderOpChartCurrent(canvasId, stateObj);
+    if (allOperators.length === 0) {
+        chart.setOption({
+            backgroundColor: 'transparent',
+            graphic: [{
+                type: 'text',
+                left: 'center',
+                top: 'center',
+                style: { text: 'No Operators Data', fill: '#64748b', font: '15px Outfit, sans-serif' }
+            }]
+        });
         return;
     }
 
-    const groupWidth = chartWidth / operators.length;
-    const nearestIndex = Math.floor((mouseX - padding.left) / groupWidth);
-    const clampedIndex = Math.max(0, Math.min(operators.length - 1, nearestIndex));
+    const isSingleMode = stateObj.isSingleMode;
+    const maxPairCount = stateObj.maxPairCount || 1;
 
-    const leftOps = new Map(leftData.map(d => [d.operator, d]));
-    const rightOps = isSingleMode ? new Map() : new Map(rightData.map(d => [d.operator, d]));
+    chart.clear();
 
-    window.renderOpChartCurrent(canvasId, stateObj);
+    if (isSingleMode) {
+        const pieSeries = [];
+        const pieTitles = [];
 
-    const ctx = canvas.getContext('2d');
-    const cx = padding.left + groupWidth * clampedIndex + groupWidth / 2;
+        for (let p = 0; p < maxPairCount; p++) {
+            const pieData = [];
+            allOperators.forEach((op, idx) => {
+                const leftOp = leftOps.get(op);
+                const timeVal = leftOp?.pairs?.[p]?.time ?? 0;
+                const ratioVal = leftOp?.pairs?.[p]?.ratio ?? 0;
+                const color = CHART_COLORS[idx % CHART_COLORS.length];
+                pieData.push({
+                    name: op,
+                    value: timeVal,
+                    ratio: ratioVal,
+                    itemStyle: { color: color },
+                    labelLine: {
+                        lineStyle: {
+                            color: color
+                        }
+                    }
+                });
+            });
 
-    ctx.strokeStyle = 'rgba(56, 189, 248, 0.5)';
-    ctx.lineWidth = 1;
-    ctx.setLineDash([4, 4]);
-    ctx.beginPath();
-    ctx.moveTo(cx, padding.top);
-    ctx.lineTo(cx, padding.top + chartHeight);
-    ctx.stroke();
-    ctx.setLineDash([]);
+            const centerX = maxPairCount === 1 ? '50%' : `${(100 / maxPairCount) * p + (100 / maxPairCount / 2)}%`;
+            const titleText = maxPairCount > 1 ? `core${p}` : dateLeft;
 
-    const op = operators[clampedIndex];
-    const leftOp = leftOps.get(op);
-    const rightOp = rightOps.get(op);
-    const pairCount = maxPairCount || 1;
+            pieTitles.push({
+                text: titleText,
+                left: centerX,
+                top: '85%',
+                textAlign: 'center',
+                textStyle: {
+                    color: '#94a3b8',
+                    fontFamily: 'Outfit, sans-serif',
+                    fontSize: 14
+                }
+            });
 
-    let maxTime = 0;
-    for (const o of operators) {
-        const lo = leftOps.get(o);
-        const ro = rightOps.get(o);
-        for (let p = 0; p < pairCount; p++) {
-            const lt = lo?.pairs?.[p]?.time;
-            const rt = ro?.pairs?.[p]?.time;
-            if (lt != null && lt > maxTime) maxTime = lt;
-            if (rt != null && rt > maxTime) maxTime = rt;
+            pieSeries.push({
+                name: titleText,
+                type: 'pie',
+                roseType: 'area',
+                radius: ['15%', '55%'],
+                center: [centerX, '45%'],
+                data: pieData,
+                itemStyle: {
+                    borderRadius: 4,
+                    borderColor: '#0f172a',
+                    borderWidth: 2
+                },
+                label: {
+                    show: true,
+                    alignTo: 'labelLine',
+                    formatter: function(param) {
+                        const ratioPercent = param.data.ratio != null ? (param.data.ratio * 100).toFixed(2) + '%' : 'N/A';
+                    return `{name|${param.name}}\n{time|time: ${param.value.toFixed(2)}}\n{ratio|ratio: ${ratioPercent}}`;
+                    },
+                    rich: {
+                        name: {
+                            color: '#e2e8f0',
+                            fontSize: 11,
+                            fontWeight: 'bold',
+                            fontFamily: 'JetBrains Mono, monospace'
+                        },
+                        time: {
+                            color: '#94a3b8',
+                            fontSize: 10,
+                            fontFamily: 'JetBrains Mono, monospace'
+                        },
+                        ratio: {
+                            color: '#94a3b8',
+                            fontSize: 10,
+                            fontFamily: 'JetBrains Mono, monospace'
+                        }
+                    }
+                },
+                labelLine: {
+                    smooth: 0.2,
+                    length: 15,
+                    length2: 20
+                },
+                emphasis: {
+                    itemStyle: {
+                        shadowBlur: 20,
+                        shadowOffsetX: 0,
+                        shadowColor: 'rgba(0, 0, 0, 0.5)'
+                    }
+                },
+                animationType: 'scale',
+                animationEasing: 'elasticOut',
+                animationDelay: function(idx) {
+                    return Math.random() * 200;
+                }
+            });
         }
-    }
-    const timeMargin = (maxTime || 1) * 0.1;
-    const adjustedMaxTime = maxTime + timeMargin;
-    const yTimePos = (v) => padding.top + chartHeight - (v / adjustedMaxTime) * chartHeight;
 
-    const lines = [
-        { text: op, bold: true, color: '#e2e8f0' }
-    ];
-
-    for (let p = 0; p < pairCount; p++) {
-        const pairLabel = pairCount > 1 ? ` #${p + 1}` : '';
-        lines.push({ text: `── ${leftDate}${pairLabel} ──`, bold: false, color: '#00d4aa' });
-        const lt = leftOp?.pairs?.[p]?.time;
-        const lr = leftOp?.pairs?.[p]?.ratio;
-        lines.push({ text: `  Time: ${lt != null ? lt.toFixed(3) : 'N/A'}`, bold: false, color: '#00d4aa' });
-        lines.push({ text: `  Ratio: ${lr != null ? (lr * 100).toFixed(1) + '%' : 'N/A'}`, bold: false, color: '#34d399' });
-    }
-
-    if (!isSingleMode) {
-        for (let p = 0; p < pairCount; p++) {
-            const pairLabel = pairCount > 1 ? ` #${p + 1}` : '';
-            lines.push({ text: `── ${rightDate}${pairLabel} ──`, bold: false, color: '#f87171' });
-            const rt = rightOp?.pairs?.[p]?.time;
-            const rr = rightOp?.pairs?.[p]?.ratio;
-            lines.push({ text: `  Time: ${rt != null ? rt.toFixed(3) : 'N/A'}`, bold: false, color: '#f87171' });
-            lines.push({ text: `  Ratio: ${rr != null ? (rr * 100).toFixed(1) + '%' : 'N/A'}`, bold: false, color: '#fca5a5' });
-        }
-    }
-
-    const lineHeight = 18;
-    const tooltipWidth = 280;
-    const tooltipHeight = lines.length * lineHeight + 16;
-    let tooltipX = cx + 20;
-    let tooltipY = padding.top + 20;
-
-    if (tooltipX + tooltipWidth > canvas.width - padding.right) {
-        tooltipX = cx - tooltipWidth - 20;
-    }
-    if (tooltipY + tooltipHeight > padding.top + chartHeight) {
-        tooltipY = padding.top + chartHeight - tooltipHeight - 10;
-    }
-
-    ctx.fillStyle = 'rgba(15, 23, 42, 0.95)';
-    ctx.strokeStyle = 'rgba(56, 189, 248, 0.3)';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.roundRect(tooltipX - 8, tooltipY - 8, tooltipWidth, tooltipHeight, 6);
-    ctx.fill();
-    ctx.stroke();
-
-    let currentY = tooltipY + 4;
-    lines.forEach(line => {
-        ctx.font = line.bold ? 'bold 12px "JetBrains Mono", monospace' : '12px "JetBrains Mono", monospace';
-        ctx.fillStyle = line.color;
-        ctx.textAlign = 'left';
-        ctx.fillText(line.text, tooltipX, currentY + 12);
-        currentY += lineHeight;
-    });
-
-    const totalBarSlots = isSingleMode ? pairCount : 2 * pairCount;
-    const singleBarWidth = Math.min(groupWidth / (totalBarSlots + 1), 30);
-    const intraGap = Math.min(singleBarWidth * 0.15, 3);
-    const leftBlockWidth = pairCount * singleBarWidth + (pairCount - 1) * intraGap;
-    const interGroupGap = isSingleMode ? 0 : Math.min(singleBarWidth * 0.5, 6);
-    const leftBlockStart = isSingleMode
-        ? cx - leftBlockWidth / 2
-        : cx - leftBlockWidth - interGroupGap / 2;
-
-    for (let p = 0; p < pairCount; p++) {
-        const lt = leftOp?.pairs?.[p]?.time;
-        if (lt != null) {
-            const y = yTimePos(lt);
-            const barX = leftBlockStart + p * (singleBarWidth + intraGap);
-            ctx.beginPath();
-            ctx.arc(barX + singleBarWidth / 2, y, 4, 0, 2 * Math.PI);
-            ctx.fillStyle = '#0f172a';
-            ctx.fill();
-            ctx.strokeStyle = '#00d4aa';
-            ctx.lineWidth = 2;
-            ctx.stroke();
-        }
-    }
-
-    if (!isSingleMode) {
-        const rightBlockStart = cx + interGroupGap / 2;
-        for (let p = 0; p < pairCount; p++) {
-            const rt = rightOp?.pairs?.[p]?.time;
-            if (rt != null) {
-                const y = yTimePos(rt);
-                const barX = rightBlockStart + p * (singleBarWidth + intraGap);
-                ctx.beginPath();
-                ctx.arc(barX + singleBarWidth / 2, y, 4, 0, 2 * Math.PI);
-                ctx.fillStyle = '#0f172a';
-                ctx.fill();
-                ctx.strokeStyle = '#f87171';
-                ctx.lineWidth = 2;
-                ctx.stroke();
+        chart.setOption({
+            backgroundColor: 'transparent',
+            textStyle: DARK_THEME.textStyle,
+            title: pieTitles,
+            tooltip: {
+                trigger: 'item',
+                backgroundColor: DARK_THEME.tooltip.backgroundColor,
+                borderColor: DARK_THEME.tooltip.borderColor,
+                textStyle: DARK_THEME.tooltip.textStyle,
+                extraCssText: DARK_THEME.tooltip.extraCssText,
+                formatter: function(param) {
+                    const color = param.color;
+                    const marker = `<span style="display:inline-block;margin-right:5px;border-radius:50%;width:10px;height:10px;background-color:${color};"></span>`;
+                    const ratioPercent = param.data.ratio != null ? (param.data.ratio * 100).toFixed(2) + '%' : 'N/A';
+                    return `${marker} <strong>${param.name}</strong><br/>time: ${param.value.toFixed(2)}<br/>ratio: ${ratioPercent}`;
+                }
+            },
+            legend: {
+                show: false
+            },
+            series: pieSeries,
+            animationDuration: 1000,
+            animationEasing: 'cubicOut'
+        });
+    } else {
+        let maxTime = 0;
+        for (const op of allOperators) {
+            const leftOp = leftOps.get(op);
+            const rightOp = rightOps.get(op);
+            for (let p = 0; p < maxPairCount; p++) {
+                const lt = leftOp?.pairs?.[p]?.time;
+                const rt = rightOp?.pairs?.[p]?.time;
+                if (lt != null && lt > maxTime) maxTime = lt;
+                if (rt != null && rt > maxTime) maxTime = rt;
             }
         }
+
+        const timeMargin = (maxTime || 1) * 0.1;
+        const adjustedMaxTime = maxTime + timeMargin;
+
+        const series = [];
+        const legendData = [];
+
+        for (let p = 0; p < maxPairCount; p++) {
+            const leftData = allOperators.map(op => {
+                const leftOp = leftOps.get(op);
+                const timeVal = leftOp?.pairs?.[p]?.time;
+                return timeVal != null ? timeVal : 0;
+            });
+
+            const pairLabel = maxPairCount > 1 ? ` core${p}` : '';
+            const leftSeriesName = `${dateLeft}${pairLabel}`;
+            legendData.push(leftSeriesName);
+
+            series.push({
+                name: leftSeriesName,
+                type: 'bar',
+                data: leftData,
+                itemStyle: {
+                    color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                        { offset: 0, color: '#00d4aa' },
+                        { offset: 1, color: 'rgba(0, 212, 170, 0.4)' }
+                    ]),
+                    borderRadius: [2, 2, 0, 0]
+                },
+                emphasis: {
+                    itemStyle: {
+                        shadowBlur: 10,
+                        shadowColor: 'rgba(0, 212, 170, 0.5)'
+                    }
+                },
+                barGap: '10%',
+                barCategoryGap: '30%',
+                animationDuration: 800,
+                animationEasing: 'cubicOut'
+            });
+
+            const rightData = allOperators.map(op => {
+                const rightOp = rightOps.get(op);
+                const timeVal = rightOp?.pairs?.[p]?.time;
+                return timeVal != null ? timeVal : 0;
+            });
+
+            const rightSeriesName = `${dateRight}${pairLabel}`;
+            legendData.push(rightSeriesName);
+
+            series.push({
+                name: rightSeriesName,
+                type: 'bar',
+                data: rightData,
+                itemStyle: {
+                    color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                        { offset: 0, color: '#f87171' },
+                        { offset: 1, color: 'rgba(248, 113, 113, 0.4)' }
+                    ]),
+                    borderRadius: [2, 2, 0, 0]
+                },
+                emphasis: {
+                    itemStyle: {
+                        shadowBlur: 10,
+                        shadowColor: 'rgba(248, 113, 113, 0.5)'
+                    }
+                },
+                barGap: '10%',
+                barCategoryGap: '30%',
+                animationDuration: 800,
+                animationEasing: 'cubicOut'
+            });
+        }
+
+        chart.setOption({
+            backgroundColor: 'transparent',
+            textStyle: DARK_THEME.textStyle,
+            tooltip: {
+                trigger: 'axis',
+                backgroundColor: DARK_THEME.tooltip.backgroundColor,
+                borderColor: DARK_THEME.tooltip.borderColor,
+                textStyle: DARK_THEME.tooltip.textStyle,
+                extraCssText: DARK_THEME.tooltip.extraCssText,
+                axisPointer: { type: 'shadow' }
+            },
+            legend: {
+                top: 20,
+                data: legendData,
+                textStyle: { color: '#94a3b8', fontFamily: 'Outfit, sans-serif' },
+                itemWidth: 14,
+                itemHeight: 14,
+                itemGap: 20
+            },
+            grid: { top: 60, right: 60, bottom: 160, left: 100 },
+            xAxis: {
+                type: 'category',
+                data: allOperators,
+                axisLine: { lineStyle: { color: '#1e293b' } },
+                axisTick: { lineStyle: { color: '#1e293b' } },
+                axisLabel: {
+                    color: '#94a3b8',
+                    fontFamily: 'JetBrains Mono, monospace',
+                    rotate: 45,
+                    interval: 0
+                },
+                name: 'Operators',
+                nameLocation: 'middle',
+                nameGap: 140,
+                nameTextStyle: { color: '#cbd5e1', fontFamily: 'Outfit, sans-serif' }
+            },
+            yAxis: {
+                type: 'value',
+                max: adjustedMaxTime || 1,
+                name: 'Time (ms)',
+                nameTextStyle: { color: '#cbd5e1', fontFamily: 'Outfit, sans-serif' },
+                axisLine: { show: true, lineStyle: { color: '#1e293b' } },
+                axisTick: { lineStyle: { color: '#1e293b' } },
+                axisLabel: {
+                    color: '#94a3b8',
+                    fontFamily: 'JetBrains Mono, monospace',
+                    formatter: function(value) {
+                        if (value === 0) return '0';
+                        if (value >= 1000) return (value / 1000).toFixed(1) + 'k';
+                        if (value >= 1) return value.toFixed(1);
+                        if (value >= 0.01) return value.toFixed(3);
+                        return value.toFixed(6);
+                    }
+                },
+                splitLine: { lineStyle: { color: '#1e293b' } }
+            },
+            series: series,
+            animationDuration: 800,
+            animationEasing: 'cubicOut'
+        });
+    }
+
+    stateObj.chart = chart;
+};
+
+window.animateOpChart = function(allOperators, leftOps, rightOps, dateLeft, dateRight, containerId, stateObj) {
+    window.renderOpChart(allOperators, leftOps, rightOps, dateLeft, dateRight, containerId, stateObj);
+};
+
+window.renderRoseChart = function(data, containerId, title) {
+    if (!containerId) containerId = 'chartCanvas';
+
+    const chart = getOrCreateChart(containerId);
+    if (!chart) return;
+
+    if (!data || data.length === 0) {
+        chart.setOption({
+            backgroundColor: 'transparent',
+            graphic: [{
+                type: 'text',
+                left: 'center',
+                top: 'center',
+                style: { text: 'No Data', fill: '#64748b', font: '15px Outfit, sans-serif' }
+            }]
+        });
+        return;
+    }
+
+    const roseData = data.map((item, index) => ({
+        value: item.value,
+        name: item.name,
+        itemStyle: {
+            color: CHART_COLORS[index % CHART_COLORS.length]
+        }
+    }));
+
+    chart.setOption({
+        backgroundColor: 'transparent',
+        textStyle: DARK_THEME.textStyle,
+        tooltip: {
+            trigger: 'item',
+            backgroundColor: DARK_THEME.tooltip.backgroundColor,
+            borderColor: DARK_THEME.tooltip.borderColor,
+            textStyle: DARK_THEME.tooltip.textStyle,
+            extraCssText: DARK_THEME.tooltip.extraCssText,
+            formatter: '{b}: {c} ({d}%)'
+        },
+        legend: {
+            orient: 'vertical',
+            left: 'left',
+            top: 'center',
+            textStyle: { color: '#94a3b8', fontFamily: 'Outfit, sans-serif' },
+            itemWidth: 14,
+            itemHeight: 14,
+            itemGap: 12
+        },
+        series: [{
+            name: title || 'Data',
+            type: 'pie',
+            radius: ['20%', '75%'],
+            center: ['60%', '50%'],
+            roseType: 'area',
+            itemStyle: {
+                borderRadius: 4,
+                borderColor: '#0f172a',
+                borderWidth: 2
+            },
+            label: {
+                color: '#94a3b8',
+                fontFamily: 'JetBrains Mono, monospace'
+            },
+            emphasis: {
+                label: {
+                    show: true,
+                    fontSize: 14,
+                    fontWeight: 'bold',
+                    color: '#e2e8f0'
+                },
+                itemStyle: {
+                    shadowBlur: 20,
+                    shadowOffsetX: 0,
+                    shadowColor: 'rgba(0, 0, 0, 0.5)'
+                }
+            },
+            data: roseData,
+            animationType: 'scale',
+            animationEasing: 'elasticOut',
+            animationDelay: function(idx) {
+                return Math.random() * 200;
+            }
+        }]
+    });
+
+    return chart;
+};
+
+window.renderOpChartCurrent = function(containerId, stateObj) {
+    const chart = chartInstances[containerId];
+    if (chart) {
+        chart.dispatchAction({ type: 'hideTip' });
     }
 };
 
-window.renderOpChartCurrent = function(canvasId, stateObj) {
-    const leftOps = new Map(stateObj.leftData.map(d => [d.operator, d]));
-    const rightOps = stateObj.rightData && stateObj.rightData.length > 0
-        ? new Map(stateObj.rightData.map(d => [d.operator, d]))
-        : new Map();
-    const leftLabel = stateObj.leftDate || stateObj.leftLabel || '';
-    const rightLabel = stateObj.rightDate || stateObj.rightLabel || '';
-    window.renderOpChart(stateObj.operators, leftOps, rightOps, leftLabel, rightLabel, 1, canvasId, stateObj);
+window.onLineChartMouseMove = function(e, containerId, stateObj) {
+    const chart = chartInstances[containerId];
+    if (chart) {
+        chart.dispatchAction({ type: 'showTip', x: e.clientX, y: e.clientY });
+    }
 };
+
+window.onLineChartMouseLeave = function(containerId, stateObj) {
+    const chart = chartInstances[containerId];
+    if (chart) {
+        chart.dispatchAction({ type: 'hideTip' });
+    }
+};
+
+window.onOpChartMouseMove = function(e, containerId, stateObj) {
+};
+
+window.resizeCharts = function() {
+    Object.values(chartInstances).forEach(chart => {
+        if (chart && chart.resize) {
+            chart.resize();
+        }
+    });
+};
+
+window.addEventListener('resize', window.resizeCharts);

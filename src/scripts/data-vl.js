@@ -246,6 +246,7 @@ window.updateChartYAxisOptions = async function(benchmark, vendor) {
 
 function setupEventListeners() {
     document.getElementById('chartBenchmarkSelect').addEventListener('change', onBenchmarkChange);
+    document.getElementById('yAxisSelect').addEventListener('change', onYAxisChange);
     document.getElementById('drawChartBtn').addEventListener('click', function() {
         this.classList.remove('btn-pulse');
         void this.offsetWidth;
@@ -290,6 +291,14 @@ function toggleVendor(vendorId) {
     } else {
         content.style.display = 'none';
         arrow.textContent = '▶';
+    }
+}
+
+function onYAxisChange() {
+    const yAxis = document.getElementById('yAxisSelect').value;
+    chartState.yAxis = yAxis;
+    if (document.getElementById('chartFullscreen').classList.contains('visible')) {
+        drawChart();
     }
 }
 
@@ -486,7 +495,8 @@ function drawChart() {
         colorIndex++;
     });
 
-    const allLabels = [...new Set(datasets.flatMap(d => d.dates))].sort();
+    const allDates = datasets.flatMap(d => d.dates);
+    const allLabels = [...new Set(allDates)].sort();
 
     chartState.datasets = datasets;
     chartState.labels = allLabels;
@@ -498,10 +508,8 @@ function drawChart() {
 
 window.addEventListener('resize', () => {
     if (document.getElementById('chartFullscreen').classList.contains('visible')) {
-        if (chartMode === 'operators') {
-            drawOpChart();
-        } else {
-            window.animateLineChart(chartState.datasets, chartState.labels, chartState.yAxis, chartState.benchmark, 'chartCanvas', chartState);
+        if (typeof window.resizeCharts === 'function') {
+            window.resizeCharts();
         }
     }
 });
